@@ -1,0 +1,23 @@
+-- Script to delete all data and insert test data
+-- Use this for H2 database
+
+-- Delete all existing data
+DELETE FROM duplicator;
+
+-- Reset the auto-increment counter (H2 syntax)
+ALTER TABLE duplicator ALTER COLUMN duplicator_id RESTART WITH 1;
+
+-- Insert test data
+INSERT INTO duplicator (name, phone_number, vehicle_type, vehicle_no, id_no, key_no, key_type, date_added, remarks, quantity, amount, image_path) 
+VALUES 
+('Rajesh Kumar', '9876543210', '2 Wheeler', 'KA-01-AB-1234', 'AADHAAR123456', 'KEY001', 'Personal', '2025-10-20', 'Regular customer', 1, 150.00, NULL),
+('Priya Sharma', '9876543211', '4 Wheeler', 'KA-02-CD-5678', 'AADHAAR234567', 'KEY002', 'Personal', '2025-10-21', 'First time customer', 2, 300.00, NULL),
+('Ramesh Industries', '9876543212', '4 Wheeler', 'KA-03-EF-9012', 'GST987654321', 'KEY003', 'Commercial', '2025-10-22', 'Business fleet key', 5, 750.00, NULL),
+('Anita Desai', '9876543213', '2 Wheeler', 'KA-04-GH-3456', 'AADHAAR345678', 'KEY004', 'Personal', '2025-10-23', 'Lost original key', 1, 175.00, NULL),
+('Tech Solutions Ltd', '9876543214', '4 Wheeler', 'KA-05-IJ-7890', 'GST876543210', 'KEY005', 'Commercial', '2025-10-24', 'Company vehicle', 3, 450.00, NULL),
+('Suresh Menon', '9876543215', 'Other', NULL, 'AADHAAR456789', 'KEY006', 'Personal', '2025-10-25', 'Locker key duplicate', 1, 100.00, NULL),
+('Global Logistics', '9876543216', '4 Wheeler', 'KA-06-KL-2345', 'GST765432109', 'KEY007', 'Commercial', '2025-10-26', 'Delivery van key', 10, 1500.00, NULL),
+('Kavita Iyer', '9876543217', '2 Wheeler', 'KA-07-MN-6789', 'AADHAAR567890', 'KEY008', 'Personal', '2025-10-26', 'Spare key needed', 2, 250.00, NULL);
+
+-- Display the inserted data
+SELECT * FROM duplicator ORDER BY duplicator_id;

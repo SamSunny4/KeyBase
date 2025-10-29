@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="KeyBase" default="jar" basedir=".">
+    <property name="src.dir" value="src"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir" value="${build.dir}/jar"/>
+    <property name="main-class" value="src.MainForm"/>
+    <property name="config.dir" value="config"/>
+    <property name="resources.dir" value="resources"/>
+    <property name="dist.dir" value="dist"/>
+
+    <!-- Path for compilation -->
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <!-- Clean build directories -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- Create necessary directories -->
+    <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${jar.dir}"/>
+    </target>
+
+    <!-- Compile the source code -->
+    <target name="compile" depends="init">
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false">
+            <classpath refid="classpath"/>
+        </javac>
+    </target>
+
+    <!-- Create the JAR file -->
+    <target name="jar" depends="compile">
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+            </manifest>
+            
+            <!-- Include config files -->
+            <fileset dir="." includes="${config.dir}/**"/>
+            <fileset dir="." includes="${resources.dir}/**"/>
+        </jar>
+    </target>
+
+    <!-- Generate the classpath for the manifest -->
+    <target name="manifest-classpath" depends="init">
+        <pathconvert property="manifest.classpath" pathsep=" ">
+            <path refid="classpath"/>
+            <chainedmapper>
+                <flattenmapper/>
+                <globmapper from="*" to="lib/*"/>
+            </chainedmapper>
+        </pathconvert>
+    </target>
+
+    <!-- Build the final distributable package -->
+    <target name="dist" depends="clean,jar,manifest-classpath">
+        <delete dir="${dist.dir}" failonerror="false"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${dist.dir}/lib"/>
+        <mkdir dir="${dist.dir}/config"/>
+        <mkdir dir="${dist.dir}/resources"/>
+        <mkdir dir="${dist.dir}/data"/>
+        
+        <!-- Copy the JAR file -->
+        <copy file="${jar.dir}/${ant.project.name}.jar" todir="${dist.dir}"/>
+        
+        <!-- Copy the library files -->
+        <copy todir="${dist.dir}/lib">
+            <fileset dir="${lib.dir}" includes="**/*.jar"/>
+        </copy>
+        
+        <!-- Copy the config files -->
+        <copy todir="${dist.dir}/config">
+            <fileset dir="${config.dir}" includes="**/*"/>
+        </copy>
+        
+        <!-- Copy the resources if they exist -->
+        <copy todir="${dist.dir}/resources" failonerror="false">
+            <fileset dir="${resources.dir}" includes="**/*" erroronmissingdir="false"/>
+        </copy>
+        
+        <!-- Create batch file to launch on Windows -->
+        <echo file="${dist.dir}/KeyBase.bat">@echo off
+java -cp "lib/*;KeyBase.jar" src.MainForm
+</echo>
+        
+        <!-- Create shell script for Unix-like systems -->
+        <echo file="${dist.dir}/KeyBase.sh">#!/bin/bash
+java -cp "lib/*:KeyBase.jar" src.MainForm
+</echo>
+        <chmod file="${dist.dir}/KeyBase.sh" perm="755"/>
+    </target>
+
+    <!-- Run the application -->
+    <target name="run" depends="jar">
+        <java classname="${main-class}" fork="true">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${jar.dir}/${ant.project.name}.jar"/>
+            </classpath>
+        </java>
+    </target>
+    
+    <!-- Initialize database -->
+    <target name="init-db" depends="compile" description="Initialize the H2 database">
+        <echo message="Initializing H2 database..."/>
+        <mkdir dir="data"/>
+        <!-- Copy config files to ensure they're accessible -->
+        <copy todir="${build.dir}/classes/config" failonerror="false">
+            <fileset dir="${config.dir}" includes="**/*"/>
+        </copy>
+        <java classname="src.DatabaseInitializer" fork="true">
+            <classpath>
+                <path refid="classpath"/>
+                <path location="${classes.dir}"/>
+            </classpath>
+        </java>
+        <echo message="Database initialized successfully."/>
+    </target>
+    
+    <!-- Full build and run with database initialization -->
+    <target name="full-build" depends="clean,dist,init-db" description="Full build with database initialization">
+        <echo message="Build complete. Run the application with: cd dist; ./KeyBase.bat (Windows) or ./KeyBase.sh (Unix)"/>
+    </target>
+</project>

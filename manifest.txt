@@ -1,0 +1,2 @@
+Main-Class: src.KeyBase
+Class-Path: lib/h2-2.1.214.jar lib/mysql-connector-java-8.0.28.jar lib/webcam-capture-0.3.12.jar lib/bridj-0.7.0.jar lib/slf4j-api-1.7.36.jar lib/slf4j-simple-1.7.36.jar
