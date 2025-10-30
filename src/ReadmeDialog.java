@@ -19,10 +19,11 @@ public class ReadmeDialog extends JDialog {
         // Main content panel
         JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
         contentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        contentPanel.setBackground(Color.WHITE);
         
         // Title panel
         JPanel titlePanel = new JPanel(new BorderLayout());
-        titlePanel.setBackground(new Color(41, 128, 185));
+        titlePanel.setBackground(new Color(60, 62, 128));
         titlePanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         
         JLabel titleLabel = new JLabel("KeyBase - User Guide & Documentation");
@@ -67,9 +68,14 @@ public class ReadmeDialog extends JDialog {
         
         // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        buttonPanel.setBackground(Color.WHITE);
         
         JButton btnClose = new JButton("Close");
-        btnClose.setFont(new Font("Arial", Font.PLAIN, 12));
+        btnClose.setFont(new Font("Arial", Font.BOLD, 12));
+        btnClose.setBackground(new Color(109, 193, 210));
+        btnClose.setForeground(new Color(60, 62, 128));
+        btnClose.setFocusPainted(false);
+        btnClose.setPreferredSize(new Dimension(100, 32));
         btnClose.addActionListener(e -> dispose());
         
         buttonPanel.add(btnClose);

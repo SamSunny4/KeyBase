@@ -233,7 +233,7 @@ public class SearchWindow extends JFrame {
         
         // Split pane for results and image preview
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(700);
+        splitPane.setDividerLocation(850);
         splitPane.setDividerSize(8);
         splitPane.setContinuousLayout(true);
         
@@ -342,7 +342,7 @@ public class SearchWindow extends JFrame {
         lblImagePreview = new JLabel("No Image Selected", SwingConstants.CENTER);
         lblImagePreview.setFont(new Font("Arial", Font.ITALIC, 12));
         lblImagePreview.setForeground(Color.GRAY);
-        lblImagePreview.setPreferredSize(new Dimension(350, 350));
+        lblImagePreview.setPreferredSize(new Dimension(220, 220));
         lblImagePreview.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
         imagePanel.add(lblImagePreview, BorderLayout.CENTER);
@@ -476,7 +476,7 @@ public class SearchWindow extends JFrame {
             }
             
             ResultSet rs = pstmt.executeQuery();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
             
             while (rs.next()) {
                 java.sql.Date dateAdded = rs.getDate("date_added");
@@ -595,7 +595,7 @@ public class SearchWindow extends JFrame {
                 writer.append("ID,Name,Phone Number,Key Type,Vehicle No,ID Number,Key Number,Key For,Date Added,Remarks,Quantity,Amount\n");
                 
                 // Write each row from the current table view
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                 for (int i = 0; i < tableModel.getRowCount(); i++) {
                     for (int j = 0; j < tableModel.getColumnCount(); j++) {
                         Object value = tableModel.getValueAt(i, j);
@@ -726,7 +726,7 @@ public class SearchWindow extends JFrame {
                     String keyFor = d.getKeyType();
                     writer.append("Key For,").append(escapeCsv(keyFor != null ? keyFor : "N/A")).append("\n");
                     
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                     String dateStr = (d.getDateAdded() != null) 
                         ? dateFormat.format(d.getDateAdded()) : "N/A";
                     writer.append("Date Added,").append(dateStr).append("\n");
