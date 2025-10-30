@@ -12,6 +12,10 @@ public class KeyBase {
         splash.setVisible(true);
         
         // Run initialization in background thread
+        startInitialization(splash);
+    }
+    
+    private static void startInitialization(SplashScreen splash) {
         new Thread(() -> {
             try {
                 // Ensure proper directory structure exists
@@ -26,6 +30,34 @@ public class KeyBase {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e) {
                     System.err.println("Failed to set system look and feel: " + e.getMessage());
+                }
+                
+                // Verify license
+                splash.updateStatus("Verifying license...");
+                Thread.sleep(300);
+                LicenseManager licenseManager = new LicenseManager();
+                
+                if (!licenseManager.isLicenseValid()) {
+                    // Close splash and show license prompt
+                    splash.close();
+                    
+                    SwingUtilities.invokeLater(() -> {
+                        boolean licenseActivated = licenseManager.promptForLicenseKey(null);
+                        
+                        if (!licenseActivated) {
+                            JOptionPane.showMessageDialog(null,
+                                "KeyBase cannot start without a valid license.\nApplication will now exit.",
+                                "License Required",
+                                JOptionPane.ERROR_MESSAGE);
+                            System.exit(0);
+                        } else {
+                            // License activated, restart the splash and continue
+                            SplashScreen newSplash = new SplashScreen();
+                            newSplash.setVisible(true);
+                            startInitialization(newSplash);
+                        }
+                    });
+                    return;
                 }
                 
                 // Test database connection
