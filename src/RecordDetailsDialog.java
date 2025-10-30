@@ -65,10 +65,10 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         // Key Number
         addDetailRow(detailsPanel, gbc, row++, "Key Number:", duplicator.getKeyNo());
         
-        // Key For
-        String keyFor = duplicator.getKeyType();
-        addDetailRow(detailsPanel, gbc, row++, "Key For:", 
-            (keyFor != null && !keyFor.trim().isEmpty()) ? keyFor : "N/A");
+        // Purpose
+        String purpose = duplicator.getPurpose();
+        addDetailRow(detailsPanel, gbc, row++, "Purpose:", 
+            (purpose != null && !purpose.trim().isEmpty()) ? purpose : "N/A");
         
         // Date
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
@@ -311,12 +311,12 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         g2d.drawString(duplicator.getKeyNo(), valueX, y);
         y += lineHeight;
         
-        String keyFor = duplicator.getKeyType();
-        if (keyFor != null && !keyFor.trim().isEmpty()) {
+        String purpose = duplicator.getPurpose();
+        if (purpose != null && !purpose.trim().isEmpty()) {
             g2d.setFont(labelFont);
-            g2d.drawString("Key For:", labelX, y);
+            g2d.drawString("Purpose:", labelX, y);
             g2d.setFont(valueFont);
-            g2d.drawString(keyFor, valueX, y);
+            g2d.drawString(purpose, valueX, y);
             y += lineHeight;
         }
         
@@ -401,8 +401,8 @@ public class RecordDetailsDialog extends JDialog implements Printable {
                 writer.append("ID Number,").append(escapeCsv(duplicator.getIdNo())).append("\n");
                 writer.append("Key Number,").append(escapeCsv(duplicator.getKeyNo())).append("\n");
                 
-                String keyFor = duplicator.getKeyType();
-                writer.append("Key For,").append(escapeCsv(keyFor != null ? keyFor : "N/A")).append("\n");
+                String purpose = duplicator.getPurpose();
+                writer.append("Purpose,").append(escapeCsv(purpose != null ? purpose : "N/A")).append("\n");
                 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String dateStr = (duplicator.getDateAdded() != null) 
@@ -479,7 +479,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             "- Vehicle No → deleted\n" +
             "- ID Number → deleted\n" +
             "- Key Number → deleted\n" +
-            "- Key For → deleted\n" +
+            "- Purpose → deleted\n" +
             "- Remarks → deleted\n" +
             "- Date → cleared\n" +
             "- Quantity → 0\n" +

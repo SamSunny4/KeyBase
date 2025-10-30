@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -1091,6 +1092,16 @@ public class MainForm extends JFrame {
             }
         });
         
+    JMenuItem deleteRecordsItem = new JMenuItem("Delete Records");
+    deleteRecordsItem.setToolTipText("Delete records within a specified date range");
+    deleteRecordsItem.setMnemonic(KeyEvent.VK_D);
+        deleteRecordsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showDeleteRecordsDialog();
+            }
+        });
+        
     JMenuItem preferencesItem = new JMenuItem("Preferences");
     preferencesItem.setToolTipText("Application preferences");
     preferencesItem.setMnemonic(KeyEvent.VK_P);
@@ -1112,6 +1123,8 @@ public class MainForm extends JFrame {
         fileMenu.add(viewEntriesItem);
         fileMenu.add(searchItem);
         fileMenu.add(exportItem);
+        fileMenu.addSeparator();
+        fileMenu.add(deleteRecordsItem);
         fileMenu.add(preferencesItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
@@ -1434,6 +1447,11 @@ public class MainForm extends JFrame {
         }
     }
     
+    // Public method to refresh the table (called by dialogs)
+    public void refreshTable() {
+        loadKeyEntries();
+    }
+    
     private void showKeyEntriesDialog() {
         // Refresh and display the table (or open a new dialog with more details)
         loadKeyEntries();
@@ -1441,6 +1459,11 @@ public class MainForm extends JFrame {
             "Key entries refreshed in the main window.",
             "Key Entries",
             JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    private void showDeleteRecordsDialog() {
+        DeleteRecordsDialog deleteDialog = new DeleteRecordsDialog(this);
+        deleteDialog.setVisible(true);
     }
     
     private void showPreferencesDialog() {

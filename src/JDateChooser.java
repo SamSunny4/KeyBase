@@ -40,7 +40,13 @@ public class JDateChooser extends JPanel {
     
     private void showCalendar() {
         Window parentWindow = SwingUtilities.getWindowAncestor(this);
-        calendarDialog = new JDialog((Frame) parentWindow, "Select Date", true);
+        if (parentWindow instanceof Frame) {
+            calendarDialog = new JDialog((Frame) parentWindow, "Select Date", true);
+        } else if (parentWindow instanceof Dialog) {
+            calendarDialog = new JDialog((Dialog) parentWindow, "Select Date", true);
+        } else {
+            calendarDialog = new JDialog((Frame) null, "Select Date", true);
+        }
         calendarDialog.setLayout(new BorderLayout());
         calendarDialog.setBackground(Color.WHITE);
         

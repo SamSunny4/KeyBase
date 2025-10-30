@@ -460,12 +460,12 @@ public class EditRecordDialog extends JDialog {
         // Save vehicle number
         duplicator.setVehicleNo(txtVehicleNo.getText().trim());
         
-        // Save Key For (purpose)
-        String selectedKeyFor = (String) cmbKeyFor.getSelectedItem();
-        if (!"SELECT".equals(selectedKeyFor)) {
-            duplicator.setKeyType(selectedKeyFor);
+        // Save Purpose
+        String selectedPurpose = (String) cmbKeyFor.getSelectedItem();
+        if (!"SELECT".equals(selectedPurpose)) {
+            duplicator.setPurpose(selectedPurpose);
         } else {
-            duplicator.setKeyType(null);
+            duplicator.setPurpose(null);
         }
         
         duplicator.setDateAdded(dateChooser.getDate());
