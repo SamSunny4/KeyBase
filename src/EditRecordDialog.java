@@ -32,7 +32,7 @@ public class EditRecordDialog extends JDialog {
         this.duplicator = duplicator;
         this.imagePath = duplicator.getImagePath();
         
-        setSize(900, 700);
+        setSize(850, 620);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         
@@ -45,6 +45,10 @@ public class EditRecordDialog extends JDialog {
         contentPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         contentPanel.setBackground(Color.WHITE);
         
+        // Main panel with form on left and image on right
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(Color.WHITE);
+        
         // Form panel
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
@@ -53,17 +57,17 @@ public class EditRecordDialog extends JDialog {
             "Edit Record Details",
             javax.swing.border.TitledBorder.LEFT,
             javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 14),
+            new Font("Arial", Font.BOLD, 13),
             new Color(60, 62, 128)
         ));
         
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 15, 8, 15);
+        gbc.insets = new Insets(6, 10, 6, 10);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
         int row = 0;
-        Font labelFont = new Font("Arial", Font.BOLD, 13);
+        Font labelFont = new Font("Arial", Font.BOLD, 12);
         Color labelColor = new Color(60, 62, 128);
         
         // Name
@@ -75,9 +79,9 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblName, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtName = new JTextField(30);
-        txtName.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtName.setPreferredSize(new Dimension(400, 28));
+        txtName = new JTextField(25);
+        txtName.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtName.setPreferredSize(new Dimension(300, 26));
         formPanel.add(txtName, gbc);
         row++;
         
@@ -90,9 +94,9 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblPhone, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtPhoneNumber = new JTextField(30);
-        txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtPhoneNumber.setPreferredSize(new Dimension(400, 28));
+        txtPhoneNumber = new JTextField(25);
+        txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtPhoneNumber.setPreferredSize(new Dimension(300, 26));
         formPanel.add(txtPhoneNumber, gbc);
         row++;
         
@@ -106,8 +110,8 @@ public class EditRecordDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         cmbKeyType = new JComboBox<>(new String[]{"SELECT", "2 Wheeler", "4 Wheeler", "Other"});
-        cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 13));
-        cmbKeyType.setPreferredSize(new Dimension(400, 28));
+        cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbKeyType.setPreferredSize(new Dimension(300, 26));
         cmbKeyType.addItemListener(e -> updateVehicleNoVisibility());
         formPanel.add(cmbKeyType, gbc);
         row++;
@@ -121,9 +125,9 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblVehicleNo, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtVehicleNo = new JTextField(30);
-        txtVehicleNo.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtVehicleNo.setPreferredSize(new Dimension(400, 28));
+        txtVehicleNo = new JTextField(25);
+        txtVehicleNo.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtVehicleNo.setPreferredSize(new Dimension(300, 26));
         formPanel.add(txtVehicleNo, gbc);
         row++;
         
@@ -136,9 +140,9 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblIdNo, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtIdNo = new JTextField(30);
-        txtIdNo.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtIdNo.setPreferredSize(new Dimension(400, 28));
+        txtIdNo = new JTextField(25);
+        txtIdNo.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtIdNo.setPreferredSize(new Dimension(300, 26));
         formPanel.add(txtIdNo, gbc);
         row++;
         
@@ -151,24 +155,24 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblKeyNo, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtKeyNo = new JTextField(30);
-        txtKeyNo.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtKeyNo.setPreferredSize(new Dimension(400, 28));
+        txtKeyNo = new JTextField(25);
+        txtKeyNo.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtKeyNo.setPreferredSize(new Dimension(300, 26));
         formPanel.add(txtKeyNo, gbc);
         row++;
         
-        // Key For
+        // Purpose
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblKeyFor = new JLabel("Key For:");
+        JLabel lblKeyFor = new JLabel("Purpose:");
         lblKeyFor.setFont(labelFont);
         lblKeyFor.setForeground(labelColor);
         formPanel.add(lblKeyFor, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        cmbKeyFor = new JComboBox<>(new String[]{"SELECT", "Home", "Office", "Locker", "Department", "Suspicious"});
-        cmbKeyFor.setFont(new Font("Arial", Font.PLAIN, 13));
-        cmbKeyFor.setPreferredSize(new Dimension(400, 28));
+        cmbKeyFor = new JComboBox<>(new String[]{"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
+        cmbKeyFor.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbKeyFor.setPreferredSize(new Dimension(300, 26));
         formPanel.add(cmbKeyFor, gbc);
         row++;
         
@@ -196,8 +200,8 @@ public class EditRecordDialog extends JDialog {
         gbc.weightx = 1.0;
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
         spnQuantity = new JSpinner(spinnerModel);
-        ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField().setFont(new Font("Arial", Font.PLAIN, 13));
-        spnQuantity.setPreferredSize(new Dimension(150, 28));
+        ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField().setFont(new Font("Arial", Font.PLAIN, 12));
+        spnQuantity.setPreferredSize(new Dimension(40, 26));
         formPanel.add(spnQuantity, gbc);
         row++;
         
@@ -210,9 +214,9 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblAmount, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtAmount = new JTextField(30);
-        txtAmount.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtAmount.setPreferredSize(new Dimension(200, 28));
+        txtAmount = new JTextField(25);
+        txtAmount.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtAmount.setPreferredSize(new Dimension(150, 26));
         formPanel.add(txtAmount, gbc);
         row++;
         
@@ -225,15 +229,15 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblRemarks, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtRemarks = new JTextField(30);
-        txtRemarks.setFont(new Font("Arial", Font.PLAIN, 13));
-        txtRemarks.setPreferredSize(new Dimension(400, 28));
+        txtRemarks = new JTextField(25);
+        txtRemarks.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtRemarks.setPreferredSize(new Dimension(300, 26));
         formPanel.add(txtRemarks, gbc);
         row++;
         
-        // Image preview
-        gbc.gridx = 0; gbc.gridy = row;
-        gbc.gridwidth = 2;
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        
+        // Image panel on the right
         JPanel imagePanel = new JPanel(new BorderLayout(5, 5));
         imagePanel.setBackground(Color.WHITE);
         imagePanel.setBorder(BorderFactory.createTitledBorder(
@@ -244,9 +248,12 @@ public class EditRecordDialog extends JDialog {
             new Font("Arial", Font.BOLD, 12),
             new Color(60, 62, 128)
         ));
+        imagePanel.setPreferredSize(new Dimension(220, 0));
+        
         lblImagePreview = new JLabel();
         lblImagePreview.setHorizontalAlignment(JLabel.CENTER);
-        lblImagePreview.setPreferredSize(new Dimension(150, 150));
+        lblImagePreview.setVerticalAlignment(JLabel.CENTER);
+        lblImagePreview.setPreferredSize(new Dimension(200, 200));
         lblImagePreview.setBackground(new Color(250, 250, 250));
         lblImagePreview.setOpaque(true);
         lblImagePreview.setBorder(BorderFactory.createCompoundBorder(
@@ -257,18 +264,18 @@ public class EditRecordDialog extends JDialog {
         
         // Delete image button
         btnDeleteImage = new JButton("Delete Image");
-        btnDeleteImage.setFont(new Font("Arial", Font.BOLD, 11));
+        btnDeleteImage.setFont(new Font("Arial", Font.BOLD, 10));
         btnDeleteImage.setBackground(new Color(220, 80, 80));
         btnDeleteImage.setForeground(Color.RED);
         btnDeleteImage.setFocusPainted(false);
-        btnDeleteImage.setPreferredSize(new Dimension(120, 28));
+        btnDeleteImage.setPreferredSize(new Dimension(110, 26));
         btnDeleteImage.setToolTipText("Delete the captured image");
         btnDeleteImage.addActionListener(e -> deleteImage());
         imagePanel.add(btnDeleteImage, BorderLayout.SOUTH);
         
-        formPanel.add(imagePanel, gbc);
+        mainPanel.add(imagePanel, BorderLayout.EAST);
         
-        contentPanel.add(formPanel, BorderLayout.CENTER);
+        contentPanel.add(mainPanel, BorderLayout.CENTER);
         
         // Buttons
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
@@ -304,9 +311,22 @@ public class EditRecordDialog extends JDialog {
         txtIdNo.setText(duplicator.getIdNo());
         txtKeyNo.setText(duplicator.getKeyNo());
         
-        String keyFor = duplicator.getKeyType();
-        if (keyFor != null && !keyFor.trim().isEmpty()) {
-            cmbKeyFor.setSelectedItem(keyFor);
+        // Load vehicle number
+        String vehicleNo = duplicator.getVehicleNo();
+        if (vehicleNo != null && !vehicleNo.trim().isEmpty()) {
+            txtVehicleNo.setText(vehicleNo);
+            
+            // Try to determine vehicle type from vehicle number
+            if (!vehicleNo.equalsIgnoreCase("N/A") && !vehicleNo.equalsIgnoreCase("deleted")) {
+                // If vehicle number exists, try to guess type or default to 2 Wheeler
+                cmbKeyType.setSelectedItem("2 Wheeler");
+            }
+        }
+        
+        // Load Purpose
+        String purpose = duplicator.getPurpose();
+        if (purpose != null && !purpose.trim().isEmpty()) {
+            cmbKeyFor.setSelectedItem(purpose);
         }
         
         if (duplicator.getDateAdded() != null) {
@@ -323,7 +343,7 @@ public class EditRecordDialog extends JDialog {
                 File imageFile = new File(imagePath);
                 if (imageFile.exists()) {
                     BufferedImage img = ImageIO.read(imageFile);
-                    Image scaledImg = img.getScaledInstance(140, 140, Image.SCALE_SMOOTH);
+                    Image scaledImg = img.getScaledInstance(180, 180, Image.SCALE_SMOOTH);
                     lblImagePreview.setIcon(new ImageIcon(scaledImg));
                     btnDeleteImage.setVisible(true);
                 } else {
@@ -437,6 +457,10 @@ public class EditRecordDialog extends JDialog {
         duplicator.setIdNo(txtIdNo.getText().trim());
         duplicator.setKeyNo(txtKeyNo.getText().trim());
         
+        // Save vehicle number
+        duplicator.setVehicleNo(txtVehicleNo.getText().trim());
+        
+        // Save Key For (purpose)
         String selectedKeyFor = (String) cmbKeyFor.getSelectedItem();
         if (!"SELECT".equals(selectedKeyFor)) {
             duplicator.setKeyType(selectedKeyFor);

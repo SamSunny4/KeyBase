@@ -137,10 +137,10 @@ public class SearchWindow extends JFrame {
             }
         });
         
-        // Filter by key for
+        // Filter by purpose
         gbc.gridx = 0;
         gbc.gridy = 1;
-        JLabel lblKeyFor = new JLabel("Key For:");
+        JLabel lblKeyFor = new JLabel("Purpose:");
         lblKeyFor.setFont(new Font("Arial", Font.BOLD, 12));
         searchPanel.add(lblKeyFor, gbc);
         
@@ -238,7 +238,7 @@ public class SearchWindow extends JFrame {
         splitPane.setContinuousLayout(true);
         
         // Table for results
-        String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "ID No", "Date", "Remarks", "Quantity", "Amount"};
+        String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -489,6 +489,7 @@ public class SearchWindow extends JFrame {
                     rs.getString("vehicle_no"),
                     rs.getString("key_no"),
                     rs.getString("key_type"),
+                    rs.getString("purpose"),
                     rs.getString("id_no"),
                     dateStr,
                     rs.getString("remarks"),
@@ -592,7 +593,7 @@ public class SearchWindow extends JFrame {
             // Export only the filtered/visible results from the table
             try (java.io.FileWriter writer = new java.io.FileWriter(filePath)) {
                 // Write header
-                writer.append("ID,Name,Phone Number,Key Type,Vehicle No,ID Number,Key Number,Key For,Date Added,Remarks,Quantity,Amount\n");
+                writer.append("ID,Name,Phone Number,Key Type,Vehicle No,ID Number,Key Number,Purpose,Date Added,Remarks,Quantity,Amount\n");
                 
                 // Write each row from the current table view
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
@@ -723,8 +724,8 @@ public class SearchWindow extends JFrame {
                     writer.append("ID Number,").append(escapeCsv(d.getIdNo())).append("\n");
                     writer.append("Key Number,").append(escapeCsv(d.getKeyNo())).append("\n");
                     
-                    String keyFor = d.getKeyType();
-                    writer.append("Key For,").append(escapeCsv(keyFor != null ? keyFor : "N/A")).append("\n");
+                    String purpose = d.getPurpose();
+                    writer.append("Purpose,").append(escapeCsv(purpose != null ? purpose : "N/A")).append("\n");
                     
                     SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                     String dateStr = (d.getDateAdded() != null) 

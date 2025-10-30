@@ -105,6 +105,14 @@ public class DatabaseInitializer {
                 }
             }
             
+            // Try to add key_for column if it doesn't exist (for existing databases)
+            try {
+                stmt.execute("ALTER TABLE duplicator ADD COLUMN IF NOT EXISTS key_for VARCHAR(50)");
+                System.out.println("Added key_for column to duplicator table (if it didn't exist).");
+            } catch (Exception e) {
+                System.out.println("Could not add key_for column: " + e.getMessage());
+            }
+            
             // After creating tables, optionally look for sample data script and execute it
             // Try multiple possible locations for the sample data file
             String[] samplePaths = {

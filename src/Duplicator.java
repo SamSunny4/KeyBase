@@ -12,6 +12,7 @@ public class Duplicator {
     private String vehicleNo;
     private String keyNo;
     private String keyType;
+    private String purpose;
     private Date dateAdded;
     private String remarks;
     private int quantity;
@@ -24,7 +25,7 @@ public class Duplicator {
 
     // Constructor with all fields except ID (which is auto-incremented)
     public Duplicator(String name, String phoneNumber, String idNo, String vehicleNo,
-                      String keyNo, String keyType, Date dateAdded, String remarks, 
+                      String keyNo, String keyType, String purpose, Date dateAdded, String remarks, 
                       int quantity, double amount, String imagePath) {
         this.name = name;
         this.phoneNumber = phoneNumber;
@@ -32,6 +33,7 @@ public class Duplicator {
         this.vehicleNo = vehicleNo;
         this.keyNo = keyNo;
         this.keyType = keyType;
+        this.purpose = purpose;
         this.dateAdded = dateAdded;
         this.remarks = remarks;
         this.quantity = quantity;
@@ -104,6 +106,14 @@ public class Duplicator {
         this.keyType = keyType;
     }
     
+    public String getPurpose() {
+        return purpose;
+    }
+    
+    public void setPurpose(String purpose) {
+        this.purpose = purpose;
+    }
+    
     public Date getDateAdded() {
         return dateAdded;
     }
@@ -138,8 +148,8 @@ public class Duplicator {
 
     // Save to database
     public boolean save() {
-        String sql = "INSERT INTO duplicator (name, phone_number, id_no, vehicle_no, key_no, key_type, date_added, remarks, quantity, amount, image_path) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO duplicator (name, phone_number, id_no, vehicle_no, key_no, key_type, purpose, date_added, remarks, quantity, amount, image_path) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                      
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -171,25 +181,31 @@ public class Duplicator {
                 pstmt.setString(6, keyType);
             }
             
-            if (dateAdded != null) {
-                pstmt.setDate(7, new java.sql.Date(dateAdded.getTime()));
+            if (purpose == null || purpose.trim().isEmpty() || purpose.equals("SELECT")) {
+                pstmt.setNull(7, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setNull(7, java.sql.Types.DATE);
+                pstmt.setString(7, purpose);
+            }
+            
+            if (dateAdded != null) {
+                pstmt.setDate(8, new java.sql.Date(dateAdded.getTime()));
+            } else {
+                pstmt.setNull(8, java.sql.Types.DATE);
             }
             
             if (remarks == null || remarks.trim().isEmpty()) {
-                pstmt.setNull(8, java.sql.Types.VARCHAR);
+                pstmt.setNull(9, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setString(8, remarks);
+                pstmt.setString(9, remarks);
             }
             
-            pstmt.setInt(9, quantity);
-            pstmt.setDouble(10, amount);
+            pstmt.setInt(10, quantity);
+            pstmt.setDouble(11, amount);
             
             if (imagePath == null || imagePath.trim().isEmpty()) {
-                pstmt.setNull(11, java.sql.Types.VARCHAR);
+                pstmt.setNull(12, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setString(11, imagePath);
+                pstmt.setString(12, imagePath);
             }
             
             int affectedRows = pstmt.executeUpdate();
@@ -254,7 +270,7 @@ public class Duplicator {
     // Update existing record
     public boolean update() {
         String sql = "UPDATE duplicator SET name = ?, phone_number = ?, id_no = ?, vehicle_no = ?, key_no = ?, " +
-                     "key_type = ?, date_added = ?, remarks = ?, quantity = ?, amount = ?, image_path = ? " +
+                     "key_type = ?, purpose = ?, date_added = ?, remarks = ?, quantity = ?, amount = ?, image_path = ? " +
                      "WHERE duplicator_id = ?";
                      
         try (Connection conn = DatabaseConnection.getConnection();
@@ -287,28 +303,34 @@ public class Duplicator {
                 pstmt.setString(6, keyType);
             }
             
-            if (dateAdded != null) {
-                pstmt.setDate(7, new java.sql.Date(dateAdded.getTime()));
+            if (purpose == null || purpose.trim().isEmpty() || purpose.equals("SELECT")) {
+                pstmt.setNull(7, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setNull(7, java.sql.Types.DATE);
+                pstmt.setString(7, purpose);
+            }
+            
+            if (dateAdded != null) {
+                pstmt.setDate(8, new java.sql.Date(dateAdded.getTime()));
+            } else {
+                pstmt.setNull(8, java.sql.Types.DATE);
             }
             
             if (remarks == null || remarks.trim().isEmpty()) {
-                pstmt.setNull(8, java.sql.Types.VARCHAR);
+                pstmt.setNull(9, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setString(8, remarks);
+                pstmt.setString(9, remarks);
             }
             
-            pstmt.setInt(9, quantity);
-            pstmt.setDouble(10, amount);
+            pstmt.setInt(10, quantity);
+            pstmt.setDouble(11, amount);
             
             if (imagePath == null || imagePath.trim().isEmpty()) {
-                pstmt.setNull(11, java.sql.Types.VARCHAR);
+                pstmt.setNull(12, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setString(11, imagePath);
+                pstmt.setString(12, imagePath);
             }
             
-            pstmt.setInt(12, duplicatorId);
+            pstmt.setInt(13, duplicatorId);
             
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;

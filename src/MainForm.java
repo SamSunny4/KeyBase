@@ -529,12 +529,12 @@ public class MainForm extends JFrame {
         });
         formPanel.add(txtKeyNo, gbc);
         
-        // Key For field
+        // Purpose field
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
-        JLabel lblKeyFor = new JLabel("Key For:");
+        JLabel lblKeyFor = new JLabel("Purpose:");
         lblKeyFor.setFont(new Font("Arial", Font.BOLD, 12));
         formPanel.add(lblKeyFor, gbc);
         
@@ -908,7 +908,7 @@ public class MainForm extends JFrame {
         add(formPanel, BorderLayout.NORTH);
         
         // Create table for key entries at the bottom
-        String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "ID No", "Date", "Remarks", "Quantity", "Amount"};
+        String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -962,18 +962,19 @@ public class MainForm extends JFrame {
         tblKeyEntries.getTableHeader().setPreferredSize(new Dimension(0, 35));
         
         // set preferred column widths
-        if (tblKeyEntries.getColumnModel().getColumnCount() >= 11) {
+        if (tblKeyEntries.getColumnModel().getColumnCount() >= 12) {
             tblKeyEntries.getColumnModel().getColumn(0).setPreferredWidth(50); // ID
             tblKeyEntries.getColumnModel().getColumn(1).setPreferredWidth(150); // Name
             tblKeyEntries.getColumnModel().getColumn(2).setPreferredWidth(100); // Phone
             tblKeyEntries.getColumnModel().getColumn(3).setPreferredWidth(110); // Vehicle No
             tblKeyEntries.getColumnModel().getColumn(4).setPreferredWidth(90); // Key No
             tblKeyEntries.getColumnModel().getColumn(5).setPreferredWidth(90); // Key Type
-            tblKeyEntries.getColumnModel().getColumn(6).setPreferredWidth(110); // ID No
-            tblKeyEntries.getColumnModel().getColumn(7).setPreferredWidth(90); // Date
-            tblKeyEntries.getColumnModel().getColumn(8).setPreferredWidth(150); // Remarks
-            tblKeyEntries.getColumnModel().getColumn(9).setPreferredWidth(70); // Quantity
-            tblKeyEntries.getColumnModel().getColumn(10).setPreferredWidth(80); // Amount
+            tblKeyEntries.getColumnModel().getColumn(6).setPreferredWidth(90); // Purpose
+            tblKeyEntries.getColumnModel().getColumn(7).setPreferredWidth(110); // ID No
+            tblKeyEntries.getColumnModel().getColumn(8).setPreferredWidth(90); // Date
+            tblKeyEntries.getColumnModel().getColumn(9).setPreferredWidth(150); // Remarks
+            tblKeyEntries.getColumnModel().getColumn(10).setPreferredWidth(70); // Quantity
+            tblKeyEntries.getColumnModel().getColumn(11).setPreferredWidth(80); // Amount
         }
 
         // Double-click row to show details
@@ -1277,6 +1278,7 @@ public class MainForm extends JFrame {
             txtVehicleNo.getText().trim(),
             txtKeyNo.getText().trim(),
             (String) cmbVehicleType.getSelectedItem(),
+            (String) cmbKeyType.getSelectedItem(),
             currentDate,
             txtRemarks.getText().trim(),
             quantity,
@@ -1415,6 +1417,7 @@ public class MainForm extends JFrame {
                     rs.getString("vehicle_no"),
                     rs.getString("key_no"),
                     rs.getString("key_type"),
+                    rs.getString("purpose"),
                     rs.getString("id_no"),
                     dateStr,
                     rs.getString("remarks"),
@@ -1481,6 +1484,7 @@ public class MainForm extends JFrame {
                     d.setIdNo(rs.getString("id_no"));
                     d.setKeyNo(rs.getString("key_no"));
                     d.setKeyType(rs.getString("key_type"));
+                    d.setPurpose(rs.getString("purpose"));
                     d.setDateAdded(rs.getDate("date_added"));
                     d.setRemarks(rs.getString("remarks"));
                     d.setQuantity(rs.getInt("quantity"));
@@ -1494,8 +1498,11 @@ public class MainForm extends JFrame {
                     writer.append("ID Number,").append(escapeCsv(d.getIdNo())).append("\n");
                     writer.append("Key Number,").append(escapeCsv(d.getKeyNo())).append("\n");
                     
-                    String keyFor = d.getKeyType();
-                    writer.append("Key For,").append(escapeCsv(keyFor != null ? keyFor : "N/A")).append("\n");
+                    String keyType = d.getKeyType();
+                    writer.append("Key Type,").append(escapeCsv(keyType != null ? keyType : "N/A")).append("\n");
+                    
+                    String purpose = d.getPurpose();
+                    writer.append("Purpose,").append(escapeCsv(purpose != null ? purpose : "N/A")).append("\n");
                     
                     SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
                     String dateStr = (d.getDateAdded() != null) 

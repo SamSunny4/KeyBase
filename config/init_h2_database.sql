@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS duplicator (
     vehicle_no VARCHAR(50),
     key_no VARCHAR(50),
     key_type VARCHAR(50),
+    purpose VARCHAR(50),
     date_added DATE,
     remarks VARCHAR(500),
     quantity INT DEFAULT 1,
