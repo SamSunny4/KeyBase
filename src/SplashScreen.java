@@ -64,12 +64,12 @@ public class SplashScreen extends JWindow {
         statusLabel.setFont(new Font("Arial", Font.PLAIN, 14)); // Larger font
         statusLabel.setForeground(new Color(60, 62, 128)); // #3C3E80
         statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        statusLabel.setBorder(BorderFactory.createEmptyBorder(15, 30, 10, 30));
+        statusLabel.setBorder(BorderFactory.createEmptyBorder(15, 30, 3, 30));
         
         // Progress bar - larger and more prominent
         JPanel progressPanel = new JPanel(new BorderLayout());
         progressPanel.setBackground(Color.WHITE);
-        progressPanel.setBorder(BorderFactory.createEmptyBorder(10, 30, 30, 30));
+        progressPanel.setBorder(BorderFactory.createEmptyBorder(3, 30, 30, 30));
         
         progressBar = new JProgressBar();
         progressBar.setIndeterminate(true);
@@ -87,7 +87,7 @@ public class SplashScreen extends JWindow {
         content.add(progressPanel, BorderLayout.SOUTH);
         
         setContentPane(content);
-        setSize(550, 480); // Larger window size
+        setSize(650, 400); // Larger window size
         setLocationRelativeTo(null);
     }
     

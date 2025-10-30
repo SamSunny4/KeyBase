@@ -225,15 +225,15 @@ public class JDateChooser extends JPanel {
             if (day == today.get(Calendar.DAY_OF_MONTH) && 
                 month == today.get(Calendar.MONTH) && 
                 year == today.get(Calendar.YEAR)) {
-                dayButton.setBackground(CYAN);
-                dayButton.setForeground(Color.WHITE);
-                dayButton.setFont(new Font("Arial", Font.BOLD, 12));
+                dayButton.setBackground(Color.RED);
+                dayButton.setForeground(Color.BLACK);
+                dayButton.setFont(new Font("Arial", Font.BOLD, 13));
             }
             
             dayButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    if (!dayButton.getBackground().equals(CYAN)) {
+                    if (!dayButton.getBackground().equals(DARK_PURPLE)) {
                         dayButton.setBackground(new Color(109, 193, 210, 100));
                     }
                 }
@@ -271,7 +271,7 @@ public class JDateChooser extends JPanel {
     public void setDate(Date date) {
         selectedDate = date;
         if (date != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
             dateField.setText(sdf.format(date));
         } else {
             dateField.setText("");

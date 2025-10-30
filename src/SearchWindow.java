@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.AbstractAction;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
@@ -86,6 +85,10 @@ public class SearchWindow extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         cmbSearchField = new JComboBox<>(new String[] {"All Fields", "Name", "Phone Number", "Vehicle Number", "ID Number", "Key Number", "Remarks"});
         cmbSearchField.setPreferredSize(new Dimension(150, 30));
+        cmbSearchField.setBackground(new Color(250, 250, 250));
+        cmbSearchField.setForeground(new Color(60, 62, 128));
+        cmbSearchField.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbSearchField.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         cmbSearchField.setToolTipText("Field to search in");
         searchPanel.add(cmbSearchField, gbc);
         
@@ -96,7 +99,13 @@ public class SearchWindow extends JFrame {
         gbc.weightx = 1.0;
         txtSearch = new JTextField(25);
         txtSearch.setPreferredSize(new Dimension(300, 30));
+        txtSearch.setBackground(new Color(250, 250, 250));
+        txtSearch.setForeground(new Color(60, 62, 128));
         txtSearch.setFont(new Font("Arial", Font.PLAIN, 12));
+        txtSearch.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5)
+        ));
         txtSearch.setToolTipText("Enter search text and press Enter to search");
         searchPanel.add(txtSearch, gbc);
         
@@ -139,6 +148,10 @@ public class SearchWindow extends JFrame {
         gbc.gridy = 1;
         cmbKeyType = new JComboBox<>(new String[] {"Any", "Personal", "Commercial", "Department", "Suspicious"});
         cmbKeyType.setPreferredSize(new Dimension(150, 30));
+        cmbKeyType.setBackground(new Color(250, 250, 250));
+        cmbKeyType.setForeground(new Color(60, 62, 128));
+        cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         cmbKeyType.setToolTipText("Filter by key purpose");
         searchPanel.add(cmbKeyType, gbc);
         
@@ -153,6 +166,10 @@ public class SearchWindow extends JFrame {
         gbc.gridy = 1;
         cmbVehicleKeyType = new JComboBox<>(new String[] {"Any", "2 Wheeler", "4 Wheeler", "Other"});
         cmbVehicleKeyType.setPreferredSize(new Dimension(150, 30));
+        cmbVehicleKeyType.setBackground(new Color(250, 250, 250));
+        cmbVehicleKeyType.setForeground(new Color(60, 62, 128));
+        cmbVehicleKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbVehicleKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         cmbVehicleKeyType.setToolTipText("Filter by vehicle key type");
         searchPanel.add(cmbVehicleKeyType, gbc);
         
@@ -167,6 +184,9 @@ public class SearchWindow extends JFrame {
         gbc.gridy = 2;
         dateFromChooser = new JDateChooser();
         dateFromChooser.setPreferredSize(new Dimension(150, 30));
+        dateFromChooser.setBackground(new Color(250, 250, 250));
+        dateFromChooser.setForeground(new Color(60, 62, 128));
+        dateFromChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         dateFromChooser.setToolTipText("Start date for filtering (yyyy-MM-dd)");
         searchPanel.add(dateFromChooser, gbc);
         
@@ -180,6 +200,9 @@ public class SearchWindow extends JFrame {
         gbc.gridy = 2;
         dateToChooser = new JDateChooser();
         dateToChooser.setPreferredSize(new Dimension(150, 30));
+        dateToChooser.setBackground(new Color(250, 250, 250));
+        dateToChooser.setForeground(new Color(60, 62, 128));
+        dateToChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         dateToChooser.setToolTipText("End date for filtering (yyyy-MM-dd)");
         searchPanel.add(dateToChooser, gbc);
         
@@ -227,9 +250,9 @@ public class SearchWindow extends JFrame {
         tblResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tblResults.setRowHeight(28);
         tblResults.setFont(new Font("Arial", Font.PLAIN, 12));
-        tblResults.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        tblResults.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
         tblResults.getTableHeader().setBackground(new Color(60, 62, 128));
-        tblResults.getTableHeader().setForeground(Color.WHITE);
+        tblResults.getTableHeader().setForeground(Color.BLACK);
         tblResults.getTableHeader().setPreferredSize(new Dimension(tblResults.getTableHeader().getWidth(), 35));
         tblResults.setSelectionBackground(new Color(109, 193, 210, 100));
         tblResults.setSelectionForeground(new Color(60, 62, 128));
