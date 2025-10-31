@@ -10,6 +10,7 @@ import com.github.sarxos.webcam.Webcam;
 public class PreferencesDialog extends JDialog {
     private JComboBox<String> webcamSelector;
     private JTextField imagePathField;
+    private JCheckBox disableCameraCheckBox;
     private boolean settingsChanged = false;
 
     public PreferencesDialog(JFrame parent) {
@@ -39,10 +40,19 @@ public class PreferencesDialog extends JDialog {
             new Color(60, 62, 128)
         ));
 
-        webcamSelector = new JComboBox<>();
-        webcamSelector.setFont(new Font("Arial", Font.PLAIN, 12));
-        loadWebcamDevices();
-        webcamPanel.add(webcamSelector, BorderLayout.CENTER);
+    webcamSelector = new JComboBox<>();
+    webcamSelector.setFont(new Font("Arial", Font.PLAIN, 12));
+    loadWebcamDevices();
+    webcamPanel.add(webcamSelector, BorderLayout.CENTER);
+
+    disableCameraCheckBox = new JCheckBox("Disable camera features");
+    disableCameraCheckBox.setFont(new Font("Arial", Font.PLAIN, 12));
+    disableCameraCheckBox.setBackground(Color.WHITE);
+    disableCameraCheckBox.setForeground(new Color(60, 62, 128));
+    disableCameraCheckBox.setSelected(AppConfig.isCameraDisabled());
+    disableCameraCheckBox.addActionListener(e -> webcamSelector.setEnabled(!disableCameraCheckBox.isSelected()));
+    webcamPanel.add(disableCameraCheckBox, BorderLayout.SOUTH);
+    webcamSelector.setEnabled(!disableCameraCheckBox.isSelected());
 
         // Image Storage Location
         JPanel imagePathPanel = new JPanel(new BorderLayout(5, 0));
@@ -121,7 +131,15 @@ public class PreferencesDialog extends JDialog {
     private void loadWebcamDevices() {
         try {
             java.util.List<Webcam> webcams = Webcam.getWebcams();
-            int selectedIndex = Integer.parseInt(AppConfig.getWebcamDevice());
+            String savedDevice = AppConfig.getWebcamDevice();
+            int selectedIndex = 0;
+            if (savedDevice != null) {
+                try {
+                    selectedIndex = Integer.parseInt(savedDevice);
+                } catch (NumberFormatException ignored) {
+                    selectedIndex = 0;
+                }
+            }
             int i = 0;
             
             for (Webcam webcam : webcams) {
@@ -158,10 +176,12 @@ public class PreferencesDialog extends JDialog {
 
     private void saveSettings() {
         // Save webcam device selection
-        int selectedWebcamIndex = webcamSelector.getSelectedIndex();
-        if (selectedWebcamIndex >= 0) {
-            AppConfig.setWebcamDevice(String.valueOf(selectedWebcamIndex));
-            settingsChanged = true;
+        if (!disableCameraCheckBox.isSelected()) {
+            int selectedWebcamIndex = webcamSelector.getSelectedIndex();
+            if (selectedWebcamIndex >= 0) {
+                AppConfig.setWebcamDevice(String.valueOf(selectedWebcamIndex));
+                settingsChanged = true;
+            }
         }
         
         // Save image directory
@@ -171,6 +191,12 @@ public class PreferencesDialog extends JDialog {
             settingsChanged = true;
         }
         
+        boolean disableCamera = disableCameraCheckBox.isSelected();
+        if (disableCamera != AppConfig.isCameraDisabled()) {
+            AppConfig.setCameraDisabled(disableCamera);
+            settingsChanged = true;
+        }
+
         if (settingsChanged) {
             JOptionPane.showMessageDialog(this, 
                 "Settings saved successfully.", 

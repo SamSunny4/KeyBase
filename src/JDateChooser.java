@@ -16,7 +16,10 @@ public class JDateChooser extends JPanel {
     private static final Color DARK_PURPLE = new Color(60, 62, 128); // #3C3E80
     
     private final JTextField dateField = new JTextField(10);
-    private final JButton calendarButton = new JButton("📅");
+    private final JButton calendarButton = new JButton("📅") {{
+        setFont(getFont().deriveFont(20f));
+        setPreferredSize(new Dimension(40, 30));
+    }};
     private Date selectedDate = null;
     private JDialog calendarDialog;
     
@@ -59,8 +62,14 @@ public class JDateChooser extends JPanel {
         headerPanel.setBackground(DARK_PURPLE);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        JButton prevMonth = new JButton("◀");
-        JButton nextMonth = new JButton("▶");
+        JButton prevMonth = new JButton("◀"){{
+        setFont(getFont().deriveFont(20f));
+        setPreferredSize(new Dimension(40, 30));
+    }};
+        JButton nextMonth = new JButton("▶"){{
+        setFont(getFont().deriveFont(20f));
+        setPreferredSize(new Dimension(40, 30));
+    }};
         
         // Center panel with month and year on two lines
         JPanel centerPanel = new JPanel();

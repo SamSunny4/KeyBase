@@ -3,7 +3,6 @@ package src;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -186,6 +185,7 @@ public class EditRecordDialog extends JDialog {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         dateChooser = new JDateChooser();
+    dateChooser.setPreferredSize(new Dimension(160, 30));
         formPanel.add(dateChooser, gbc);
         row++;
         
@@ -196,13 +196,18 @@ public class EditRecordDialog extends JDialog {
         lblQuantity.setFont(labelFont);
         lblQuantity.setForeground(labelColor);
         formPanel.add(lblQuantity, gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
-        spnQuantity = new JSpinner(spinnerModel);
-        ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField().setFont(new Font("Arial", Font.PLAIN, 12));
-        spnQuantity.setPreferredSize(new Dimension(40, 26));
+    gbc.gridx = 1;
+    gbc.weightx = 0.0;
+    gbc.fill = GridBagConstraints.NONE;
+    SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
+    spnQuantity = new JSpinner(spinnerModel);
+    JSpinner.DefaultEditor quantityEditor = (JSpinner.DefaultEditor) spnQuantity.getEditor();
+    quantityEditor.getTextField().setFont(new Font("Arial", Font.PLAIN, 12));
+    quantityEditor.getTextField().setColumns(3);
+    spnQuantity.setPreferredSize(new Dimension(60, 26));
         formPanel.add(spnQuantity, gbc);
+    gbc.weightx = 1.0;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
         row++;
         
         // Amount
@@ -331,6 +336,8 @@ public class EditRecordDialog extends JDialog {
         
         if (duplicator.getDateAdded() != null) {
             dateChooser.setDate(duplicator.getDateAdded());
+        } else {
+            dateChooser.setDate(new Date());
         }
         
         spnQuantity.setValue(duplicator.getQuantity());
@@ -468,7 +475,11 @@ public class EditRecordDialog extends JDialog {
             duplicator.setPurpose(null);
         }
         
-        duplicator.setDateAdded(dateChooser.getDate());
+        Date selectedDate = dateChooser.getDate();
+        if (selectedDate == null) {
+            selectedDate = new Date();
+        }
+        duplicator.setDateAdded(selectedDate);
         duplicator.setQuantity((Integer) spnQuantity.getValue());
         
         try {
@@ -501,53 +512,5 @@ public class EditRecordDialog extends JDialog {
     
     public boolean isSaved() {
         return saved;
-    }
-    
-    // Inner class for JDateChooser
-    private class JDateChooser extends JPanel {
-        private JTextField dateField;
-        private JButton calendarButton;
-        private Date selectedDate;
-        
-        public JDateChooser() {
-            setLayout(new BorderLayout());
-            dateField = new JTextField(10);
-            dateField.setEditable(false);
-            calendarButton = new JButton("...");
-            
-            add(dateField, BorderLayout.CENTER);
-            add(calendarButton, BorderLayout.EAST);
-            
-            calendarButton.addActionListener(e -> {
-                String dateStr = JOptionPane.showInputDialog(this, 
-                    "Enter date (yyyy-MM-dd):", 
-                    dateField.getText());
-                
-                if (dateStr != null && !dateStr.isEmpty()) {
-                    try {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                        selectedDate = sdf.parse(dateStr);
-                        dateField.setText(sdf.format(selectedDate));
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, 
-                            "Invalid date format. Please use yyyy-MM-dd", 
-                            "Date Format Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            });
-        }
-        
-        public Date getDate() {
-            return selectedDate;
-        }
-        
-        public void setDate(Date date) {
-            this.selectedDate = date;
-            if (date != null) {
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                dateField.setText(sdf.format(date));
-            }
-        }
     }
 }

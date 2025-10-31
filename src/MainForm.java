@@ -41,11 +41,15 @@ public class MainForm extends JFrame {
     private JLabel statusBar;
     private JDateChooser dateChooser;
     private JPanel imageButtonPanel;
+    private JPanel imagePanel;
+    private Image splashImage;
+    private ImageIcon splashPreviewIcon;
     
     private String capturedImagePath = null;
     private String cachedImagePath = null;
     
     public MainForm() {
+        loadSplashImage();
         initComponents();
         initMenuBar();
         initShortcuts();
@@ -66,16 +70,31 @@ public class MainForm extends JFrame {
         });
     }
     
-    private void setAppIcon() {
+    private void loadSplashImage() {
         try {
             File logoFile = new File("resources/splash.png");
+            splashImage = null;
+            splashPreviewIcon = null;
             if (logoFile.exists()) {
-                ImageIcon icon = new ImageIcon(logoFile.getAbsolutePath());
-                setIconImage(icon.getImage());
+                splashImage = ImageIO.read(logoFile);
             }
-        } catch (Exception e) {
-            // Icon not critical, ignore if fails
+        } catch (IOException e) {
+            splashImage = null;
         }
+    }
+
+    private void setAppIcon() {
+        if (splashImage != null) {
+            setIconImage(splashImage);
+        }
+    }
+
+    private ImageIcon getSplashPreviewIcon() {
+        if (splashPreviewIcon == null && splashImage != null) {
+            Image scaledSplash = splashImage.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            splashPreviewIcon = new ImageIcon(scaledSplash);
+        }
+        return splashPreviewIcon;
     }
     
     private void cleanupCache() {
@@ -124,6 +143,26 @@ public class MainForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 exportToCsv();
+            }
+        });
+
+        // Ctrl+S => save record
+        KeyStroke ksSave = KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK);
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksSave, "saveRecord");
+        getRootPane().getActionMap().put("saveRecord", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveRecord();
+            }
+        });
+
+        // Ctrl+P => print today's records
+        KeyStroke ksPrint = KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK);
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksPrint, "printTodayRecords");
+        getRootPane().getActionMap().put("printTodayRecords", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                printTodaysRecords();
             }
         });
     }
@@ -180,6 +219,101 @@ public class MainForm extends JFrame {
                 "Print Error", 
                 JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void printTodaysRecords() {
+        java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
+        String sql = "SELECT duplicator_id, name, phone_number, key_no, key_type, purpose, quantity, amount " +
+                     "FROM duplicator WHERE date_added = ? ORDER BY duplicator_id";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setDate(1, today);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+                Date utilToday = new Date(today.getTime());
+
+                StringBuilder report = new StringBuilder();
+                report.append("KeyBase Records for ").append(df.format(utilToday)).append('\n');
+                report.append("============================================\n\n");
+
+                int count = 0;
+                int totalQuantity = 0;
+                double totalAmount = 0.0;
+
+                while (rs.next()) {
+                    count++;
+
+                    int recordId = rs.getInt("duplicator_id");
+                    String name = valueOrPlaceholder(rs.getString("name"));
+                    String phone = valueOrPlaceholder(rs.getString("phone_number"));
+                    String keyNo = valueOrPlaceholder(rs.getString("key_no"));
+                    String keyType = valueOrPlaceholder(rs.getString("key_type"));
+                    String purpose = valueOrPlaceholder(rs.getString("purpose"));
+                    int quantity = rs.getInt("quantity");
+                    double amount = rs.getDouble("amount");
+
+                    totalQuantity += quantity;
+                    totalAmount += amount;
+
+                    report.append(String.format("%d. Record ID: %d%n", count, recordId));
+                    report.append(String.format("   Name: %s | Phone: %s%n", name, phone));
+                    report.append(String.format("   Key: %s | Type: %s | Purpose: %s%n", keyNo, keyType, purpose));
+                    report.append(String.format("   Quantity: %d | Amount: %.2f%n%n", quantity, amount));
+                }
+
+                if (count == 0) {
+                    JOptionPane.showMessageDialog(this,
+                        "No records found for today (" + df.format(utilToday) + ").",
+                        "Print Records",
+                        JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
+                report.append("Summary\n-------\n");
+                report.append(String.format("Total records: %d%n", count));
+                report.append(String.format("Total quantity: %d%n", totalQuantity));
+                report.append(String.format("Total amount: %.2f%n", totalAmount));
+
+                JTextArea printArea = new JTextArea(report.toString());
+                printArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
+
+                try {
+                    boolean jobStarted = printArea.print();
+                    if (jobStarted) {
+                        JOptionPane.showMessageDialog(this,
+                            "Print job sent successfully.",
+                            "Print Records",
+                            JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this,
+                            "Print job was cancelled.",
+                            "Print Records",
+                            JOptionPane.WARNING_MESSAGE);
+                    }
+                } catch (java.awt.print.PrinterException ex) {
+                    JOptionPane.showMessageDialog(this,
+                        "Error printing records: " + ex.getMessage(),
+                        "Print Error",
+                        JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this,
+                "Error retrieving today's records: " + ex.getMessage(),
+                "Database Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String valueOrPlaceholder(String value) {
+        if (value == null) {
+            return "N/A";
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? "N/A" : trimmed;
     }
     
     private void exportSelectedRecord(int id) {
@@ -271,6 +405,7 @@ public class MainForm extends JFrame {
     private void initComponents() {
         // Main layout
         setLayout(new BorderLayout());
+        getContentPane().setBackground(Color.WHITE);
         
         // Create form panel
         JPanel formPanel = new JPanel(new GridBagLayout());
@@ -692,7 +827,8 @@ public class MainForm extends JFrame {
         gbc.weightx = 0.3;
         gbc.weighty = 1.0;
 
-        JPanel rightPanel = new JPanel(new GridBagLayout());
+    JPanel rightPanel = new JPanel(new GridBagLayout());
+    rightPanel.setBackground(Color.WHITE);
         GridBagConstraints rightGbc = new GridBagConstraints();
         rightGbc.insets = new Insets(5, 5, 5, 5);
         rightGbc.gridx = 0;
@@ -752,7 +888,7 @@ public class MainForm extends JFrame {
         rightGbc.weighty = 1.0;
         rightGbc.fill = GridBagConstraints.BOTH;
 
-        JPanel imagePanel = new JPanel(new BorderLayout());
+        imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBorder(BorderFactory.createTitledBorder(
             BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
             "Image",
@@ -761,7 +897,8 @@ public class MainForm extends JFrame {
             new Font("Arial", Font.BOLD, 12),
             new Color(60, 62, 128)
         ));
-        imagePanel.setBackground(Color.WHITE);
+    imagePanel.setBackground(Color.WHITE);
+    imagePanel.setOpaque(true);
 
         lblImagePreview = new JLabel();
         lblImagePreview.setPreferredSize(new Dimension(200, 200));
@@ -773,7 +910,7 @@ public class MainForm extends JFrame {
         lblImagePreview.setForeground(new Color(60, 62, 128));
         lblImagePreview.setText("No Image");
 
-        imagePanel.add(lblImagePreview, BorderLayout.CENTER);
+    imagePanel.add(lblImagePreview, BorderLayout.CENTER);
 
         // Button panel for capture and delete
         imageButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 5));
@@ -833,8 +970,8 @@ public class MainForm extends JFrame {
         imageButtonPanel.add(btnCaptureImage);
         imageButtonPanel.add(btnDeleteImage);
         
-        imagePanel.add(imageButtonPanel, BorderLayout.SOUTH);
-        rightPanel.add(imagePanel, rightGbc);
+    imagePanel.add(imageButtonPanel, BorderLayout.SOUTH);
+    rightPanel.add(imagePanel, rightGbc);
 
         formPanel.add(rightPanel, gbc);
         
@@ -850,14 +987,13 @@ public class MainForm extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         buttonPanel.setBackground(Color.WHITE);
         
-        btnSave = new JButton("Save");
-        btnSave.setPreferredSize(new Dimension(120, 35));
-        btnSave.setBackground(new Color(109, 193, 210));
-        btnSave.setForeground(new Color(60, 62, 128));
-        btnSave.setFont(new Font("Arial", Font.BOLD, 14));
-        btnSave.setFocusPainted(false);
-        btnSave.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 2));
-        btnSave.setMnemonic(KeyEvent.VK_S);
+    btnSave = new JButton("Save");
+    btnSave.setPreferredSize(new Dimension(120, 35));
+    btnSave.setBackground(new Color(109, 193, 210));
+    btnSave.setForeground(new Color(60, 62, 128));
+    btnSave.setFont(new Font("Arial", Font.BOLD, 14));
+    btnSave.setFocusPainted(false);
+    btnSave.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 2));
         btnSave.setToolTipText("Save current record (Alt+S)");
         btnSave.addActionListener(new ActionListener() {
             @Override
@@ -947,6 +1083,7 @@ public class MainForm extends JFrame {
         
         // Load initial data
         loadKeyEntries();
+        applyCameraPreferences();
         // UI tweaks for table
         tblKeyEntries.setFont(new Font("Arial", Font.PLAIN, 12));
         tblKeyEntries.setRowHeight(28);
@@ -1160,7 +1297,84 @@ public class MainForm extends JFrame {
         setJMenuBar(menuBar);
     }
     
+    private void applyCameraPreferences() {
+        boolean cameraDisabled = AppConfig.isCameraDisabled();
+
+        if (cameraDisabled) {
+            discardCachedImageSilently();
+        }
+
+        if (imageButtonPanel != null) {
+            imageButtonPanel.setVisible(!cameraDisabled);
+            imageButtonPanel.revalidate();
+            imageButtonPanel.repaint();
+        }
+
+        if (btnCaptureImage != null) {
+            btnCaptureImage.setEnabled(!cameraDisabled);
+        }
+
+        if (btnDeleteImage != null) {
+            btnDeleteImage.setVisible(!cameraDisabled && capturedImagePath != null);
+        }
+
+        if (lblImagePreview != null) {
+            lblImagePreview.setOpaque(true);
+            lblImagePreview.setBackground(Color.WHITE);
+            if (cameraDisabled) {
+                ImageIcon splashIcon = getSplashPreviewIcon();
+                if (splashIcon != null) {
+                    lblImagePreview.setIcon(splashIcon);
+                    lblImagePreview.setText("");
+                } else {
+                    lblImagePreview.setIcon(null);
+                    lblImagePreview.setText("Camera Disabled");
+                }
+            } else {
+                if (capturedImagePath == null) {
+                    lblImagePreview.setIcon(null);
+                    lblImagePreview.setText("No Image");
+                }
+            }
+        }
+
+        if (imagePanel != null) {
+            imagePanel.setVisible(true);
+            Container parent = imagePanel.getParent();
+            if (parent != null) {
+                parent.revalidate();
+                parent.repaint();
+            }
+            imagePanel.revalidate();
+            imagePanel.repaint();
+        }
+    }
+
+    private void discardCachedImageSilently() {
+        if (cachedImagePath != null) {
+            try {
+                File cachedFile = new File(cachedImagePath);
+                if (cachedFile.exists()) {
+                    cachedFile.delete();
+                }
+            } catch (Exception e) {
+                // Ignore cache cleanup errors
+            }
+        }
+
+        cachedImagePath = null;
+        capturedImagePath = null;
+    }
+
     private void captureImage() {
+        if (AppConfig.isCameraDisabled()) {
+            JOptionPane.showMessageDialog(this,
+                "Camera features are disabled in Preferences.",
+                "Camera Disabled",
+                JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
         WebcamCapture captureDialog = new WebcamCapture(this);
         captureDialog.setVisible(true);
         
@@ -1188,6 +1402,8 @@ public class MainForm extends JFrame {
                     "Image Error",
                     JOptionPane.ERROR_MESSAGE);
             }
+
+            applyCameraPreferences();
         }
     }
     
@@ -1223,6 +1439,7 @@ public class MainForm extends JFrame {
             btnDeleteImage.setVisible(false);
             
             setStatus("Image deleted");
+            applyCameraPreferences();
         }
     }
     
@@ -1379,24 +1596,14 @@ public class MainForm extends JFrame {
         txtRemarks.setText("");
         txtQuantity.setText("1");
         txtAmount.setText("");
+        discardCachedImageSilently();
         lblImagePreview.setIcon(null);
-        lblImagePreview.setText("No Image");
-        capturedImagePath = null;
-        
-        // Clean up cached image if exists
-        if (cachedImagePath != null) {
-            File cachedFile = new File(cachedImagePath);
-            if (cachedFile.exists()) {
-                cachedFile.delete();
-            }
-            cachedImagePath = null;
-        }
-        
-        // Hide delete button
         btnDeleteImage.setVisible(false);
         
         // Update vehicle number visibility
         updateVehicleNoVisibility();
+        
+        applyCameraPreferences();
         
         // Set focus to the first field
         txtName.requestFocus();
@@ -1469,6 +1676,9 @@ public class MainForm extends JFrame {
     private void showPreferencesDialog() {
         PreferencesDialog prefsDialog = new PreferencesDialog(this);
         prefsDialog.setVisible(true);
+        if (prefsDialog.isSettingsChanged()) {
+            applyCameraPreferences();
+        }
     }
     
     private void showReadmeDialog() {

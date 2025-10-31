@@ -11,6 +11,7 @@ public class AppConfig {
         properties = new Properties();
         try (FileInputStream fis = new FileInputStream(CONFIG_FILE)) {
             properties.load(fis);
+            ensurePropertyDefaults();
         } catch (IOException e) {
             // If file doesn't exist, create with default values
             setDefaultProperties();
@@ -28,6 +29,37 @@ public class AppConfig {
         
         // Create the directory if it doesn't exist
         new File(properties.getProperty("images.directory")).mkdirs();
+
+        // Camera enabled by default
+        properties.setProperty("camera.disabled", "false");
+    }
+
+    private static void ensurePropertyDefaults() {
+        boolean changed = false;
+
+        if (!properties.containsKey("webcam.device")) {
+            properties.setProperty("webcam.device", "0");
+            changed = true;
+        }
+
+        if (!properties.containsKey("images.directory")) {
+            String userHome = System.getProperty("user.home");
+            String defaultDir = userHome + File.separator + "KeyBase" + File.separator + "images";
+            properties.setProperty("images.directory", defaultDir);
+            new File(defaultDir).mkdirs();
+            changed = true;
+        } else {
+            new File(properties.getProperty("images.directory")).mkdirs();
+        }
+
+        if (!properties.containsKey("camera.disabled")) {
+            properties.setProperty("camera.disabled", "false");
+            changed = true;
+        }
+
+        if (changed) {
+            saveProperties();
+        }
     }
 
     public static String getWebcamDevice() {
@@ -49,6 +81,15 @@ public class AppConfig {
         // Create the directory if it doesn't exist
         new File(directory).mkdirs();
         
+        saveProperties();
+    }
+
+    public static boolean isCameraDisabled() {
+        return Boolean.parseBoolean(properties.getProperty("camera.disabled", "false"));
+    }
+
+    public static void setCameraDisabled(boolean disabled) {
+        properties.setProperty("camera.disabled", Boolean.toString(disabled));
         saveProperties();
     }
 
