@@ -249,6 +249,7 @@ public class Duplicator {
                 duplicator.setVehicleNo(rs.getString("vehicle_no"));
                 duplicator.setKeyNo(rs.getString("key_no"));
                 duplicator.setKeyType(rs.getString("key_type"));
+                duplicator.setPurpose(rs.getString("purpose"));
                 duplicator.setDateAdded(rs.getDate("date_added"));
                 duplicator.setRemarks(rs.getString("remarks"));
                 duplicator.setQuantity(rs.getInt("quantity"));

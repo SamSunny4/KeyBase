@@ -394,8 +394,8 @@ public class SearchWindow extends JFrame {
         
         String searchText = txtSearch.getText().trim();
         String searchField = (String) cmbSearchField.getSelectedItem();
-        String keyType = (String) cmbKeyType.getSelectedItem();
-        String vehicleKeyType = (String) cmbVehicleKeyType.getSelectedItem();
+    String purposeFilter = (String) cmbKeyType.getSelectedItem();
+    String keyTypeFilter = (String) cmbVehicleKeyType.getSelectedItem();
         java.util.Date dateFrom = dateFromChooser.getDate();
         java.util.Date dateTo = dateToChooser.getDate();
         
@@ -428,9 +428,11 @@ public class SearchWindow extends JFrame {
             }
         }
         
-        if (!keyType.equals("Any")) {
-            queryBuilder.append("AND key_type = ? ");
-        } else if (!vehicleKeyType.equals("Any")) {
+        if (!"Any".equals(purposeFilter)) {
+            queryBuilder.append("AND purpose = ? ");
+        }
+
+        if (!"Any".equals(keyTypeFilter)) {
             queryBuilder.append("AND key_type = ? ");
         }
         
@@ -464,10 +466,12 @@ public class SearchWindow extends JFrame {
                 }
             }
             
-            if (!keyType.equals("Any")) {
-                pstmt.setString(paramIndex++, keyType);
-            } else if (!vehicleKeyType.equals("Any")) {
-                pstmt.setString(paramIndex++, vehicleKeyType);
+            if (!"Any".equals(purposeFilter)) {
+                pstmt.setString(paramIndex++, purposeFilter);
+            }
+
+            if (!"Any".equals(keyTypeFilter)) {
+                pstmt.setString(paramIndex++, keyTypeFilter);
             }
             
             if (dateFrom != null) {

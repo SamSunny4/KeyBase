@@ -19,6 +19,9 @@ KeyBase is a comprehensive Java Swing application designed to manage key duplica
 - **Record Management**: View, edit, print, and delete record data
 - **Enhanced Details View**: Professional dialog showing all record information with image preview
 - **Quantity & Amount Tracking**: Track multiple key copies and pricing
+- **Purpose-aware Filtering**: Dedicated dropdown cleanly filters records by stored purpose values.
+- **Daily Print Shortcut**: Press Ctrl+P to print a formatted report of today's records directly from the main form.
+- **Smart Placeholder Images**: Missing customer photos automatically swap to themed placeholders, including a special "no results" graphic in the search window.
 
 ### User Experience
 - **Keyboard Navigation**: Full Enter key navigation through all form fields
@@ -26,6 +29,7 @@ KeyBase is a comprehensive Java Swing application designed to manage key duplica
 - **Smart Visibility**: Vehicle number field shows/hides based on vehicle type selection
 - **Status Bar**: Real-time feedback on application actions
 - **Context Menus**: Right-click options for quick actions on records
+- **Camera Toggle**: Preferences now include a disable-camera option that swaps the capture pane for a splash placeholder when live video is not desired.
 
 ## Requirements
 
@@ -81,7 +85,7 @@ If you prefer manual compilation:
    - **Remarks**: Additional notes
 3. **Capture Image**: Click "Capture" button (Alt+C) to take customer photo
 4. **Delete Image** (if needed): After capturing, "Delete" button appears to remove image
-5. **Save Record**: Click "Save" (Alt+S) to store in database
+5. **Save Record**: Click "Save" or press Ctrl+S to store in database
 6. **Reset Form**: Click "Reset" (Alt+R) to clear for next entry
 
 ### Viewing Records
@@ -135,13 +139,15 @@ Available in both Main Form and Search Window tables:
 ### Main Form
 - **Ctrl+F**: Open Search window
 - **Ctrl+E**: Export all records to CSV
+- **Ctrl+S**: Save the current record
+- **Ctrl+P**: Print today's records summary
 - **Alt+C**: Capture image
-- **Alt+S**: Save record
 - **Alt+R**: Reset form
 - **Enter**: Navigate to next field
 
 ### Search Window
 - **Ctrl+E**: Export filtered results to CSV
+- **Purpose Dropdown**: Narrow results to Personal, Commercial, Department, or Suspicious entries.
 - **Double-click**: View record details
 - **Right-click**: Show context menu
 
@@ -174,9 +180,10 @@ Available in both Main Form and Search Window tables:
 - **Substring Matching**: Finds partial matches (e.g., "john" finds "Johnson")
 - **Multiple Fields**: Search across all fields simultaneously
 - **Date Filtering**: Filter records by date range
-- **Type Filtering**: Filter by vehicle type and key purpose
+- **Type Filtering**: Filter by vehicle type
+- **Purpose Filtering**: Use the dedicated dropdown to match personal, commercial, department, or suspicious records
 - **Result Count**: Shows number of matching records in title
-- **Image Preview**: See customer photos in results
+- **Image Preview**: See customer photos in results, with automatic fallback placeholders when no photo is available
 
 ### Searchable Fields
 1. All Fields (searches across all text fields)
@@ -215,6 +222,7 @@ Available in both Main Form and Search Window tables:
   - All record fields
   - Print timestamp in footer
   - Standard printer dialog for selection
+- Use Ctrl+P from the main form to print a daily summary of records created today.
 
 ## Image Management
 
@@ -242,6 +250,7 @@ Configure in `config/app.properties`:
 ```properties
 webcam.device=0
 images.directory=images
+camera.disabled=false
 ```
 
 ### Configuration Options
@@ -249,6 +258,7 @@ images.directory=images
 - **images.directory**: Directory for storing captured photos
   - Relative path: `images` (in application directory)
   - Absolute path: `C:/KeyBase/images` or `/home/user/keybase/images`
+- **camera.disabled**: Set to `true` to disable all live camera features and show splash placeholders instead
 
 ## Database Configuration
 
