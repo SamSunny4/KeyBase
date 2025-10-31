@@ -3,10 +3,12 @@ package src;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.EnumMap;
+import java.util.Map;
 import javax.swing.*;
-import src.qrcodegen.QrCode;
 
 /**
  * License Manager for KeyBase Application
@@ -451,14 +453,67 @@ public class LicenseManager {
      * Generate a scannable QR Code for the given text using QrCode library
      */
     private BufferedImage generateQRCode(String text, int size) throws Exception {
-        // Generate QR code using the QrCode library
-        QrCode qr = QrCode.encodeText(text, QrCode.Ecc.MEDIUM);
-        
-        // Convert to BufferedImage with specified size
-        int scale = size / qr.size;
-        int border = 2; // Quiet zone
-        
-        return qr.toImage(scale, border);
+        try {
+            return generateQRCodeWithZXing(text, size);
+        } catch (ClassNotFoundException | NoClassDefFoundError missingDependency) {
+            throw new IllegalStateException(
+                "ZXing library not found on classpath. Please add zxing-core and zxing-javase JARs to the lib directory.",
+                missingDependency
+            );
+        } catch (Exception reflectiveFailure) {
+            throw reflectiveFailure;
+        }
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private BufferedImage generateQRCodeWithZXing(String text, int size) throws Exception {
+        Class<?> writerClass = Class.forName("com.google.zxing.qrcode.QRCodeWriter");
+        Object writerInstance = writerClass.getDeclaredConstructor().newInstance();
+
+        Class<?> barcodeFormatClass = Class.forName("com.google.zxing.BarcodeFormat");
+        Class<?> encodeHintTypeClass = Class.forName("com.google.zxing.EncodeHintType");
+        Class<?> errorCorrectionLevelClass = Class.forName("com.google.zxing.qrcode.decoder.ErrorCorrectionLevel");
+        Class<?> bitMatrixClass = Class.forName("com.google.zxing.common.BitMatrix");
+
+        Map hints = new EnumMap((Class) encodeHintTypeClass);
+        Object charsetHint = Enum.valueOf((Class<Enum>) encodeHintTypeClass, "CHARACTER_SET");
+        Object marginHint = Enum.valueOf((Class<Enum>) encodeHintTypeClass, "MARGIN");
+        Object errorCorrectionHint = Enum.valueOf((Class<Enum>) encodeHintTypeClass, "ERROR_CORRECTION");
+        Object errorCorrectionLevel = Enum.valueOf((Class<Enum>) errorCorrectionLevelClass, "M");
+        hints.put(charsetHint, "UTF-8");
+    hints.put(marginHint, 1);
+        hints.put(errorCorrectionHint, errorCorrectionLevel);
+
+        Method encodeMethod = writerClass.getMethod(
+            "encode",
+            String.class,
+            barcodeFormatClass,
+            int.class,
+            int.class,
+            Map.class
+        );
+
+        Object qrCodeFormat = Enum.valueOf((Class<Enum>) barcodeFormatClass, "QR_CODE");
+        Object bitMatrix = encodeMethod.invoke(writerInstance, text, qrCodeFormat, size, size, hints);
+
+        Method getWidthMethod = bitMatrixClass.getMethod("getWidth");
+        Method getHeightMethod = bitMatrixClass.getMethod("getHeight");
+        Method getMethod = bitMatrixClass.getMethod("get", int.class, int.class);
+
+        int width = (int) getWidthMethod.invoke(bitMatrix);
+        int height = (int) getHeightMethod.invoke(bitMatrix);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        int onColor = Color.BLACK.getRGB();
+        int offColor = Color.WHITE.getRGB();
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                boolean pixelOn = (boolean) getMethod.invoke(bitMatrix, x, y);
+                image.setRGB(x, y, pixelOn ? onColor : offColor);
+            }
+        }
+
+        return image;
     }
     
     /**

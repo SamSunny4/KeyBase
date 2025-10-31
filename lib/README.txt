@@ -17,4 +17,10 @@ This directory should contain the following JAR files:
 5. bridj-0.7.0.jar - Required by webcam-capture
    Download from: https://mvnrepository.com/artifact/com.nativelibs4java/bridj/0.7.0
 
+6. zxing-core-3.5.3.jar - ZXing core library for QR code generation
+   Download from: https://repo1.maven.org/maven2/com/google/zxing/core/3.5.3/core-3.5.3.jar
+
+7. zxing-javase-3.5.3.jar - ZXing helper utilities for BufferedImage output
+   Download from: https://repo1.maven.org/maven2/com/google/zxing/javase/3.5.3/javase-3.5.3.jar
+
 Please download these libraries and place them in this directory before building the application.

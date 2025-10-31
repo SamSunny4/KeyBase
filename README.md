@@ -25,7 +25,7 @@ KeyBase is a comprehensive Java Swing application designed to manage key duplica
 
 ### User Experience
 - **Keyboard Navigation**: Full Enter key navigation through all form fields
-- **Combo Box Integration**: Smooth navigation with keyboard shortcuts (Alt+C, Alt+R, Alt+S, Alt+E)
+- **Combo Box Integration**: Smooth navigation with keyboard shortcuts (Ctrl+S, Ctrl+P, Alt+C, Alt+R, Ctrl+E)
 - **Smart Visibility**: Vehicle number field shows/hides based on vehicle type selection
 - **Status Bar**: Real-time feedback on application actions
 - **Context Menus**: Right-click options for quick actions on records
@@ -48,6 +48,8 @@ Place the following JAR files in the `lib` directory:
 - `slf4j-api-1.7.36.jar` - Required by webcam-capture
 - `slf4j-simple-1.7.36.jar` - Simple SLF4J implementation
 - `bridj-0.7.0.jar` - Required by webcam-capture
+- `zxing-core-3.5.3.jar` - ZXing core library for QR code generation
+- `zxing-javase-3.5.3.jar` - ZXing Java SE helpers (BufferedImage conversion)
 
 ## Build and Run
 
@@ -111,7 +113,7 @@ If you prefer manual compilation:
    - **Key For Filter**: Filter by key purpose
    - **Date Range**: Set From/To dates
 3. **Click Search**: Results shown in table with count in title
-4. **View Images**: Select record to preview customer photo
+4. **View Images**: Select record to preview the customer photo or an automatic placeholder when no image is stored
 5. **Export Results**: Click "Export Results to CSV" or press Ctrl+E (exports only filtered results)
 
 ### Context Menu Actions (Right-click)
@@ -127,7 +129,7 @@ Available in both Main Form and Search Window tables:
 - **View Key Entries** (Ctrl+V) - Refresh table with latest records
 - **Search Records** (Ctrl+F) - Open advanced search window
 - **Export to CSV** (Ctrl+E) - Export all records to CSV file
-- **Preferences** - Configure webcam device and image storage location
+- **Preferences** - Configure webcam device, image storage location, or disable camera features
 - **Exit** - Close application
 
 ### Help Menu
@@ -239,6 +241,7 @@ Available in both Main Form and Search Window tables:
 - Configurable in: `config/app.properties`
 - Format: JPEG
 - Naming: Auto-generated timestamp-based names
+- Fallback placeholders automatically display when no photo is available, retaining layout consistency in search and detail views.
 
 ### Deleting Images
 - **Before Save**: Click "Delete" button next to "Capture"
@@ -355,7 +358,15 @@ The application uses **H2 embedded database**:
 
 ## Version History
 
-### Version 2.0 (Current)
+### Version 2.1 (Current)
+- Purpose dropdown in the search window now filters by stored record purpose
+- Added Ctrl+S shortcut to save records and Ctrl+P to print today's entries
+- Randomized placeholder artwork appears when photos are missing, including a dedicated "no results" image in the search panel
+- Preferences dialog gained a camera disable switch with splash fallback support
+- Edit Record dialog preserves the previously saved purpose selection
+- QR code generation now uses the ZXing library for higher compatibility with mobile scanners
+
+### Version 2.0
 - Added Edit Record functionality
 - Enhanced Record Details dialog with image display
 - Added Print Record feature
