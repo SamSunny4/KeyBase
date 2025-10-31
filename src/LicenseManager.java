@@ -1,10 +1,12 @@
 package src;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import javax.swing.*;
+import src.qrcodegen.QrCode;
 
 /**
  * License Manager for KeyBase Application
@@ -253,7 +255,7 @@ public class LicenseManager {
         
         JLabel messageLabel = new JLabel("<html><b>License Key Required</b><br><br>" +
             "Please enter your license key to activate KeyBase:<br>" +
-            "<i>(Contact your administrator if you don't have a key)</i></html>");
+            "<i>(Click 'Get License' to generate QR code for your administrator)</i></html>");
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
@@ -270,19 +272,15 @@ public class LicenseManager {
         gbc.weightx = 1.0;
         panel.add(keyField, gbc);
         
-        // Hardware ID display (for support purposes)
-        JLabel hwIdLabel = new JLabel("Hardware ID:");
+        // Get License button (generates QR code with hardware ID)
+        JButton getLicenseButton = new JButton("Get License");
         gbc.gridx = 0;
         gbc.gridy = 2;
+        gbc.gridwidth = 2;
         gbc.weightx = 0.0;
-        panel.add(hwIdLabel, gbc);
-        
-        JTextField hwIdField = new JTextField(hardwareId.substring(0, 16) + "...");
-        hwIdField.setEditable(false);
-        hwIdField.setFont(new Font("Monospaced", Font.PLAIN, 10));
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        panel.add(hwIdField, gbc);
+        gbc.insets = new Insets(10, 5, 5, 5);
+        getLicenseButton.addActionListener(e -> showQRCodeDialog(parent));
+        panel.add(getLicenseButton, gbc);
         
         while (true) {
             int result = JOptionPane.showConfirmDialog(
@@ -323,6 +321,144 @@ public class LicenseManager {
                 return false;
             }
         }
+    }
+    
+    /**
+     * Show QR code dialog with hardware ID
+     */
+    private void showQRCodeDialog(JFrame parent) {
+        JDialog qrDialog = new JDialog(parent, "Get License - Hardware ID", true);
+        qrDialog.setLayout(new BorderLayout(10, 10));
+        qrDialog.setSize(700, 450);
+        qrDialog.setLocationRelativeTo(parent);
+        
+        // Header panel
+        JPanel headerPanel = new JPanel();
+        headerPanel.setBackground(new Color(60, 62, 128));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        
+        JLabel headerLabel = new JLabel("<html><b style='font-size:14px;'>Send this QR Code to your Administrator</b></html>");
+        headerLabel.setForeground(Color.WHITE);
+        headerPanel.add(headerLabel);
+        
+        qrDialog.add(headerPanel, BorderLayout.NORTH);
+        
+        // Main panel with horizontal split
+        JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        mainPanel.setBackground(Color.WHITE);
+        
+        // Left panel - Instructions and Hardware ID
+        JPanel leftPanel = new JPanel(new BorderLayout(10, 10));
+        leftPanel.setBackground(Color.WHITE);
+        
+        // Instructions
+        JTextArea instructions = new JTextArea(
+            "1. Take a screenshot of the QR code on the right\n\n" +
+            "2. Send it to your system administrator\n\n" +
+            "3. They will generate a license key for you\n\n" +
+            "4. Enter the license key in the activation dialog"
+        );
+        instructions.setEditable(false);
+        instructions.setBackground(new Color(255, 255, 220));
+        instructions.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 150)),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        instructions.setFont(new Font("Arial", Font.PLAIN, 12));
+        instructions.setLineWrap(true);
+        instructions.setWrapStyleWord(true);
+        leftPanel.add(instructions, BorderLayout.NORTH);
+        
+        // Hardware ID text (fallback)
+        JPanel idPanel = new JPanel(new BorderLayout(5, 5));
+        idPanel.setBackground(Color.WHITE);
+        idPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        
+        JLabel idLabel = new JLabel("Hardware ID (if QR code fails):");
+        idLabel.setFont(new Font("Arial", Font.BOLD, 11));
+        idPanel.add(idLabel, BorderLayout.NORTH);
+        
+        JTextArea idField = new JTextArea(hardwareId);
+        idField.setEditable(false);
+        idField.setFont(new Font("Monospaced", Font.PLAIN, 10));
+        idField.setLineWrap(true);
+        idField.setWrapStyleWord(true);
+        idField.setBackground(new Color(240, 240, 240));
+        idField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.GRAY),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        JScrollPane scrollPane = new JScrollPane(idField);
+        scrollPane.setPreferredSize(new Dimension(300, 80));
+        idPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        // Copy button
+        JButton copyButton = new JButton("Copy Hardware ID");
+        copyButton.addActionListener(e -> {
+            java.awt.datatransfer.StringSelection stringSelection = 
+                new java.awt.datatransfer.StringSelection(hardwareId);
+            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, null);
+            JOptionPane.showMessageDialog(qrDialog, "Hardware ID copied to clipboard!", 
+                "Copied", JOptionPane.INFORMATION_MESSAGE);
+        });
+        idPanel.add(copyButton, BorderLayout.SOUTH);
+        
+        leftPanel.add(idPanel, BorderLayout.CENTER);
+        
+        mainPanel.add(leftPanel, BorderLayout.CENTER);
+        
+        // Right panel - QR Code (200x200)
+        JPanel qrPanel = new JPanel(new BorderLayout());
+        qrPanel.setBackground(Color.WHITE);
+        qrPanel.setPreferredSize(new Dimension(220, 220));
+        
+        JPanel qrContainer = new JPanel();
+        qrContainer.setBackground(Color.WHITE);
+        qrContainer.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.BLACK, 2),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        ));
+        
+        try {
+            BufferedImage qrImage = generateQRCode(hardwareId, 200);
+            JLabel qrLabel = new JLabel(new ImageIcon(qrImage));
+            qrContainer.add(qrLabel);
+        } catch (Exception e) {
+            JLabel errorLabel = new JLabel("<html><center>QR Code generation failed<br>Please use Hardware ID</center></html>");
+            errorLabel.setForeground(Color.RED);
+            qrContainer.add(errorLabel);
+        }
+        
+        qrPanel.add(qrContainer, BorderLayout.CENTER);
+        
+        mainPanel.add(qrPanel, BorderLayout.EAST);
+        
+        qrDialog.add(mainPanel, BorderLayout.CENTER);
+        
+        // Close button
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(Color.WHITE);
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> qrDialog.dispose());
+        buttonPanel.add(closeButton);
+        qrDialog.add(buttonPanel, BorderLayout.SOUTH);
+        
+        qrDialog.setVisible(true);
+    }
+    
+    /**
+     * Generate a scannable QR Code for the given text using QrCode library
+     */
+    private BufferedImage generateQRCode(String text, int size) throws Exception {
+        // Generate QR code using the QrCode library
+        QrCode qr = QrCode.encodeText(text, QrCode.Ecc.MEDIUM);
+        
+        // Convert to BufferedImage with specified size
+        int scale = size / qr.size;
+        int border = 2; // Quiet zone
+        
+        return qr.toImage(scale, border);
     }
     
     /**

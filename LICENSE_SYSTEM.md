@@ -25,10 +25,12 @@ KeyBase now includes a hardware-based license protection system that prevents un
 
 ### First Run
 1. When you run KeyBase for the first time, you'll see a license activation dialog
-2. The dialog shows your computer's Hardware ID
-3. Contact your administrator and provide them with the Hardware ID
-4. Enter the license key provided by your administrator
-5. Click OK to activate
+2. Click the **"Get License"** button to view your Hardware ID QR code
+3. Take a screenshot of the QR code or copy the Hardware ID text
+4. Send the QR code/Hardware ID to your administrator
+5. Wait for your administrator to send you a license key
+6. Enter the license key in the activation dialog
+7. Click OK to activate
 
 ### License File Location
 - License file: `keybase.lic` (stored in the application root directory)
@@ -41,10 +43,13 @@ KeyBase now includes a hardware-based license protection system that prevents un
 #### Method 1: Using the License Key Generator GUI
 1. Run `generate_license.bat`
 2. The License Key Generator window will open
-3. Get the Hardware ID from the client computer
+3. Get the Hardware ID from the client (via QR code or text)
+   - If they sent a QR code, scan it to get the Hardware ID
+   - Or copy the Hardware ID text they provided
 4. Enter the Hardware ID in the "Hardware ID" field
 5. Click "Generate License Key"
-6. Copy the generated key and send it to the client
+6. Copy the generated key (format: XXXX-XXXX-XXXX-XX)
+7. Send the 14-character license key to the client
 
 #### Method 2: Test Current Machine
 1. In the License Key Generator, click "Test Current Machine"
