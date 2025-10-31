@@ -209,6 +209,9 @@ public class RecordDetailsDialog extends JDialog implements Printable {
     }
     
     private void loadImage() {
+        lblImagePreview.setIcon(null);
+        lblImagePreview.setText("");
+
         String imagePath = duplicator.getImagePath();
         if (imagePath != null && !imagePath.trim().isEmpty()) {
             try {
@@ -217,13 +220,16 @@ public class RecordDetailsDialog extends JDialog implements Printable {
                     BufferedImage img = ImageIO.read(imageFile);
                     Image scaledImg = img.getScaledInstance(240, 240, Image.SCALE_SMOOTH);
                     lblImagePreview.setIcon(new ImageIcon(scaledImg));
-                    lblImagePreview.setText("");
-                } else {
-                    lblImagePreview.setText("<html><center>Image file<br>not found</center></html>");
+                    return;
                 }
             } catch (Exception e) {
-                lblImagePreview.setText("<html><center>Error loading<br>image</center></html>");
+                // Fall through to placeholder
             }
+        }
+
+        ImageIcon placeholder = ImagePlaceholderHelper.loadRandomPlaceholder(240, 240);
+        if (placeholder != null) {
+            lblImagePreview.setIcon(placeholder);
         } else {
             lblImagePreview.setText("<html><center>No image<br>available</center></html>");
         }

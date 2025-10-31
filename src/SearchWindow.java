@@ -25,6 +25,7 @@ public class SearchWindow extends JFrame {
     private DefaultTableModel tableModel;
     private JDateChooser dateFromChooser;
     private JDateChooser dateToChooser;
+    private static final int IMAGE_PREVIEW_SIZE = 250;
     
     public SearchWindow() {
         setTitle("Search Key Records");
@@ -366,6 +367,8 @@ public class SearchWindow extends JFrame {
         exportPanel.add(btnExport);
         imagePanel.add(exportPanel, BorderLayout.SOUTH);
 
+    showNoResultsImage();
+
         // Keyboard shortcut for export (Ctrl+E)
         KeyStroke ksExport = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksExport, "exportResults");
@@ -510,6 +513,7 @@ public class SearchWindow extends JFrame {
                     "No records found matching your criteria.", 
                     "Search Results", 
                     JOptionPane.INFORMATION_MESSAGE);
+                showNoResultsImage();
             }
             
         } catch (SQLException e) {
@@ -540,30 +544,49 @@ public class SearchWindow extends JFrame {
             
             try {
                 Duplicator duplicator = Duplicator.findById(id);
-                if (duplicator != null && duplicator.getImagePath() != null) {
-                    try {
-                        File imageFile = new File(duplicator.getImagePath());
-                        if (imageFile.exists()) {
-                            BufferedImage img = ImageIO.read(imageFile);
-                            Image scaledImg = img.getScaledInstance(250, 250, Image.SCALE_SMOOTH);
-                            lblImagePreview.setIcon(new ImageIcon(scaledImg));
-                            lblImagePreview.setText("");
-                        } else {
-                            lblImagePreview.setIcon(null);
-                            lblImagePreview.setText("Image file not found");
+                if (duplicator != null) {
+                    String imagePath = duplicator.getImagePath();
+                    if (imagePath != null && !imagePath.trim().isEmpty()) {
+                        try {
+                            File imageFile = new File(imagePath);
+                            if (imageFile.exists()) {
+                                BufferedImage img = ImageIO.read(imageFile);
+                                Image scaledImg = img.getScaledInstance(IMAGE_PREVIEW_SIZE, IMAGE_PREVIEW_SIZE, Image.SCALE_SMOOTH);
+                                lblImagePreview.setIcon(new ImageIcon(scaledImg));
+                                lblImagePreview.setText("");
+                                return;
+                            }
+                        } catch (Exception e) {
+                            // Fall through and display placeholder image
                         }
-                    } catch (Exception e) {
-                        lblImagePreview.setIcon(null);
-                        lblImagePreview.setText("Error loading image");
                     }
-                } else {
-                    lblImagePreview.setIcon(null);
-                    lblImagePreview.setText("No image available");
                 }
+                showRandomPlaceholderImage();
             } catch (Exception e) {
-                lblImagePreview.setIcon(null);
-                lblImagePreview.setText("Error loading image data");
+                showRandomPlaceholderImage();
             }
+        }
+    }
+
+    private void showRandomPlaceholderImage() {
+        ImageIcon placeholderIcon = ImagePlaceholderHelper.loadRandomPlaceholder(IMAGE_PREVIEW_SIZE, IMAGE_PREVIEW_SIZE);
+        if (placeholderIcon != null) {
+            lblImagePreview.setIcon(placeholderIcon);
+            lblImagePreview.setText("");
+        } else {
+            lblImagePreview.setIcon(null);
+            lblImagePreview.setText("No image available");
+        }
+    }
+
+    private void showNoResultsImage() {
+        ImageIcon placeholderIcon = ImagePlaceholderHelper.loadNoResultsPlaceholder(IMAGE_PREVIEW_SIZE, IMAGE_PREVIEW_SIZE);
+        if (placeholderIcon != null) {
+            lblImagePreview.setIcon(placeholderIcon);
+            lblImagePreview.setText("");
+        } else {
+            lblImagePreview.setIcon(null);
+            lblImagePreview.setText("No image available");
         }
     }
     
