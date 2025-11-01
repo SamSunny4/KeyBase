@@ -136,18 +136,15 @@ public class AppConfig {
             for (String part : parts) {
                 String trimmed = part.trim();
                 if (!trimmed.isEmpty()) {
-                    result.add(trimmed.toUpperCase(Locale.ROOT));
+                    String normalized = trimmed.toUpperCase(Locale.ROOT);
+                    if (ExportField.fromKey(normalized) != null && !result.contains(normalized)) {
+                        result.add(normalized);
+                    }
                 }
             }
         }
         if (result.isEmpty()) {
             result.addAll(ExportField.defaultKeys());
-        } else {
-            for (String key : ExportField.defaultKeys()) {
-                if (!result.contains(key)) {
-                    result.add(key);
-                }
-            }
         }
         return result;
     }

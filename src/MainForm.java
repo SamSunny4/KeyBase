@@ -15,7 +15,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1685,6 +1684,15 @@ public class MainForm extends JFrame {
     }
     
     private void exportToExcel() {
+        ExportDateRangeDialog rangeDialog = new ExportDateRangeDialog(this);
+        rangeDialog.setVisible(true);
+        if (!rangeDialog.isConfirmed()) {
+            return;
+        }
+
+        java.sql.Date startDate = rangeDialog.getStartDate();
+        java.sql.Date endDate = rangeDialog.getEndDate();
+
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Export to Excel");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1709,45 +1717,52 @@ public class MainForm extends JFrame {
             List<List<Object>> rows = new ArrayList<>();
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
+            String sql =
+                "SELECT duplicator_id, name, phone_number, id_no, key_no, key_type, purpose, vehicle_no, date_added, remarks, quantity, amount " +
+                "FROM duplicator WHERE date_added BETWEEN ? AND ? ORDER BY duplicator_id DESC";
             try (Connection conn = DatabaseConnection.getConnection();
-                 Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery(
-                     "SELECT duplicator_id, name, phone_number, id_no, key_no, key_type, purpose, vehicle_no, date_added, remarks, quantity, amount " +
-                     "FROM duplicator ORDER BY duplicator_id DESC")) {
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                while (rs.next()) {
-                    int id = rs.getInt("duplicator_id");
-                    String name = blankIfNull(rs.getString("name"));
-                    String phone = blankIfNull(rs.getString("phone_number"));
-                    String idNo = blankIfNull(rs.getString("id_no"));
-                    String keyNo = blankIfNull(rs.getString("key_no"));
-                    String keyType = blankIfNull(rs.getString("key_type"));
-                    String purpose = blankIfNull(rs.getString("purpose"));
-                    String vehicleNo = blankIfNull(rs.getString("vehicle_no"));
-                    java.sql.Date dateAdded = rs.getDate("date_added");
-                    String dateStr = dateAdded != null ? dateFormat.format(dateAdded) : "";
-                    String remarks = blankIfNull(rs.getString("remarks"));
-                    int quantity = rs.getInt("quantity");
-                    BigDecimal amount = BigDecimal.valueOf(rs.getDouble("amount")).setScale(2, RoundingMode.HALF_UP);
+                stmt.setDate(1, startDate);
+                stmt.setDate(2, endDate);
 
-                    List<Object> row = new ArrayList<>(selectedFields.size());
-                    for (ExportField field : selectedFields) {
-                        switch (field) {
-                            case ID -> row.add(id);
-                            case NAME -> row.add(name);
-                            case PHONE -> row.add(phone);
-                            case ID_NO -> row.add(idNo);
-                            case KEY_NO -> row.add(keyNo);
-                            case KEY_TYPE -> row.add(keyType);
-                            case PURPOSE -> row.add(purpose);
-                            case VEHICLE_NO -> row.add(vehicleNo);
-                            case DATE -> row.add(dateStr);
-                            case REMARKS -> row.add(remarks);
-                            case QUANTITY -> row.add(quantity);
-                            case AMOUNT -> row.add(amount);
+                try (ResultSet rs = stmt.executeQuery()) {
+
+                    while (rs.next()) {
+                        int id = rs.getInt("duplicator_id");
+                        String name = blankIfNull(rs.getString("name"));
+                        String phone = blankIfNull(rs.getString("phone_number"));
+                        String idNo = blankIfNull(rs.getString("id_no"));
+                        String keyNo = blankIfNull(rs.getString("key_no"));
+                        String keyType = blankIfNull(rs.getString("key_type"));
+                        String purpose = blankIfNull(rs.getString("purpose"));
+                        String vehicleNo = blankIfNull(rs.getString("vehicle_no"));
+                        java.sql.Date dateAdded = rs.getDate("date_added");
+                        String dateStr = dateAdded != null ? dateFormat.format(dateAdded) : "";
+                        String remarks = blankIfNull(rs.getString("remarks"));
+                        int quantity = rs.getInt("quantity");
+                        BigDecimal amount = BigDecimal.valueOf(rs.getDouble("amount")).setScale(2, RoundingMode.HALF_UP);
+
+                        List<Object> row = new ArrayList<>(selectedFields.size());
+                        for (ExportField field : selectedFields) {
+                            switch (field) {
+                                case ID -> row.add(id);
+                                case NAME -> row.add(name);
+                                case PHONE -> row.add(phone);
+                                case ID_NO -> row.add(idNo);
+                                case KEY_NO -> row.add(keyNo);
+                                case KEY_TYPE -> row.add(keyType);
+                                case PURPOSE -> row.add(purpose);
+                                case VEHICLE_NO -> row.add(vehicleNo);
+                                case DATE -> row.add(dateStr);
+                                case REMARKS -> row.add(remarks);
+                                case QUANTITY -> row.add(quantity);
+                                case AMOUNT -> row.add(amount);
+                            }
                         }
+                        rows.add(row);
                     }
-                    rows.add(row);
+
                 }
 
             } catch (SQLException ex) {
