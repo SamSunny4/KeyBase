@@ -277,7 +277,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         
         // Title
         g2d.setFont(titleFont);
-        g2d.drawString("MODERN AUTOMOBILES - Customer Record", labelX, y);
+        g2d.drawString("Customer Records", labelX, y);
         y += 30;
         
         // Draw line
