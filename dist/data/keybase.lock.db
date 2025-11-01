@@ -1,0 +1,6 @@
+#FileLock
+#Sat Nov 01 17:42:18 IST 2025
+hostName=192.168.1.19
+id=19a3f552e0486da282006c71672d7b1d4d806e7da07
+method=file
+server=192.168.1.19\:62742

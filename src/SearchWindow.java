@@ -4,14 +4,22 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -241,9 +249,22 @@ public class SearchWindow extends JFrame {
         // Table for results
         String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
         tableModel = new DefaultTableModel(columnNames, 0) {
+            private final Class<?>[] columnTypes = new Class<?>[] {
+                Integer.class, String.class, String.class, String.class, String.class, String.class,
+                String.class, String.class, String.class, String.class, Integer.class, String.class
+            };
+
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Make table non-editable
+            }
+
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex >= 0 && columnIndex < columnTypes.length) {
+                    return columnTypes[columnIndex];
+                }
+                return Object.class;
             }
         };
         
@@ -348,18 +369,18 @@ public class SearchWindow extends JFrame {
         
         imagePanel.add(lblImagePreview, BorderLayout.CENTER);
         
-        JButton btnExport = new JButton("Export Results to CSV");
+        JButton btnExport = new JButton("Export Results to Excel");
         btnExport.setPreferredSize(new Dimension(200, 35));
         btnExport.setBackground(new Color(109, 193, 210));
         btnExport.setForeground(new Color(60, 62, 128));
         btnExport.setFont(new Font("Arial", Font.BOLD, 12));
         btnExport.setFocusPainted(false);
-        btnExport.setToolTipText("Export current search results to CSV (Ctrl+E)");
+        btnExport.setToolTipText("Export current search results to Excel (Ctrl+E)");
         btnExport.setMnemonic(KeyEvent.VK_E);
         btnExport.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                exportResultsToCsv();
+                exportResultsToExcel();
             }
         });
         JPanel exportPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -375,7 +396,7 @@ public class SearchWindow extends JFrame {
         getRootPane().getActionMap().put("exportResults", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                exportResultsToCsv();
+                exportResultsToExcel();
             }
         });
 
@@ -594,79 +615,133 @@ public class SearchWindow extends JFrame {
         }
     }
     
-    private void exportResultsToCsv() {
-        if (tableModel.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, 
-                "No data to export.", 
-                "Export Error", 
+    private void exportResultsToExcel() {
+        int visibleRowCount = tblResults.getRowCount();
+        if (visibleRowCount == 0) {
+            JOptionPane.showMessageDialog(this,
+                "No data to export.",
+                "Export Error",
                 JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Export Filtered Results to CSV");
+        fileChooser.setDialogTitle("Export Filtered Results to Excel");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setSelectedFile(new File("search_results.csv"));
-        
+        fileChooser.setSelectedFile(new File("search_results.xlsx"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Workbook (*.xlsx)", "xlsx"));
+
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            String filePath = file.getAbsolutePath();
-            
-            // Add .csv extension if not present
-            if (!filePath.toLowerCase().endsWith(".csv")) {
-                filePath += ".csv";
+            String filePath = ensureXlsxExtension(file.getAbsolutePath());
+
+            List<String> fieldKeys = AppConfig.getExportFields();
+            List<ExportField> selectedFields = ExportField.resolve(fieldKeys);
+            if (selectedFields.isEmpty()) {
+                selectedFields = new ArrayList<>(Arrays.asList(ExportField.values()));
             }
-            
-            // Export only the filtered/visible results from the table
-            try (java.io.FileWriter writer = new java.io.FileWriter(filePath)) {
-                // Write header
-                writer.append("ID,Name,Phone Number,Key Type,Vehicle No,ID Number,Key Number,Purpose,Date Added,Remarks,Quantity,Amount\n");
-                
-                // Write each row from the current table view
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                for (int i = 0; i < tableModel.getRowCount(); i++) {
-                    for (int j = 0; j < tableModel.getColumnCount(); j++) {
-                        Object value = tableModel.getValueAt(i, j);
-                        String valueStr = "";
-                        
-                        if (value != null) {
-                            if (value instanceof java.util.Date) {
-                                valueStr = dateFormat.format((java.util.Date) value);
-                            } else if (value instanceof Double) {
-                                valueStr = String.format("%.2f", (Double) value);
-                            } else {
-                                valueStr = value.toString();
-                            }
-                        }
-                        
-                        // Escape CSV special characters
-                        if (valueStr.contains(",") || valueStr.contains("\"") || valueStr.contains("\n")) {
-                            valueStr = "\"" + valueStr.replace("\"", "\"\"") + "\"";
-                        }
-                        
-                        writer.append(valueStr);
-                        if (j < tableModel.getColumnCount() - 1) {
-                            writer.append(",");
-                        }
-                    }
-                    writer.append("\n");
+
+            List<SimpleXlsxExporter.ColumnSpec> columns = new ArrayList<>(selectedFields.size());
+            for (ExportField field : selectedFields) {
+                columns.add(new SimpleXlsxExporter.ColumnSpec(field.getHeader(), field.getWidth(), field.getCellType()));
+            }
+
+            List<List<Object>> rows = new ArrayList<>(visibleRowCount);
+            for (int viewRow = 0; viewRow < visibleRowCount; viewRow++) {
+                int modelRow = tblResults.convertRowIndexToModel(viewRow);
+                List<Object> row = new ArrayList<>(selectedFields.size());
+                for (ExportField field : selectedFields) {
+                    row.add(resolveTableValue(field, modelRow));
                 }
-                
-                writer.flush();
-                
-                JOptionPane.showMessageDialog(this, 
-                    "Filtered results exported successfully!\n" + 
-                    tableModel.getRowCount() + " records exported to:\n" + filePath, 
-                    "Export Successful", 
+                rows.add(row);
+            }
+
+            SimpleXlsxExporter.Orientation orientation = SimpleXlsxExporter.parseOrientation(AppConfig.getExportOrientation());
+
+            try {
+                SimpleXlsxExporter.export(filePath, "Search Results", columns, rows, orientation);
+                JOptionPane.showMessageDialog(this,
+                    "Filtered results exported successfully!\n" +
+                    visibleRowCount + " record(s) exported to:\n" + filePath,
+                    "Export Successful",
                     JOptionPane.INFORMATION_MESSAGE);
-                    
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, 
-                    "Error exporting data: " + e.getMessage(), 
-                    "Export Error", 
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error exporting data: " + ex.getMessage(),
+                    "Export Error",
                     JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private String ensureXlsxExtension(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return "export.xlsx";
+        }
+        if (path.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+            return path;
+        }
+        return path + ".xlsx";
+    }
+
+    private String safeString(Object value) {
+        return value == null ? "" : value.toString();
+    }
+
+    private BigDecimal toAmount(Object value) {
+        if (value instanceof BigDecimal) {
+            return ((BigDecimal) value).setScale(2, RoundingMode.HALF_UP);
+        }
+        if (value instanceof Number) {
+            BigDecimal decimal = BigDecimal.valueOf(((Number) value).doubleValue());
+            return decimal.setScale(2, RoundingMode.HALF_UP);
+        }
+        if (value instanceof String) {
+            String sanitized = ((String) value).replace(",", "").trim();
+            if (sanitized.isEmpty()) {
+                return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            }
+            try {
+                BigDecimal decimal = new BigDecimal(sanitized);
+                return decimal.setScale(2, RoundingMode.HALF_UP);
+            } catch (NumberFormatException ex) {
+                return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            }
+        }
+        return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private Object resolveTableValue(ExportField field, int modelRow) {
+        return switch (field) {
+            case ID -> tableModel.getValueAt(modelRow, 0);
+            case NAME -> safeString(tableModel.getValueAt(modelRow, 1));
+            case PHONE -> safeString(tableModel.getValueAt(modelRow, 2));
+            case KEY_NO -> safeString(tableModel.getValueAt(modelRow, 4));
+            case VEHICLE_NO -> safeString(tableModel.getValueAt(modelRow, 3));
+            case KEY_TYPE -> safeString(tableModel.getValueAt(modelRow, 5));
+            case PURPOSE -> safeString(tableModel.getValueAt(modelRow, 6));
+            case DATE -> safeString(tableModel.getValueAt(modelRow, 8));
+            case ID_NO -> safeString(tableModel.getValueAt(modelRow, 7));
+            case REMARKS -> safeString(tableModel.getValueAt(modelRow, 9));
+            case QUANTITY -> {
+                Object value = tableModel.getValueAt(modelRow, 10);
+                if (value instanceof Number number) {
+                    yield number.intValue();
+                }
+                if (value instanceof String text) {
+                    try {
+                        yield Integer.parseInt(text.trim());
+                    } catch (NumberFormatException ignored) {
+                        yield 0;
+                    }
+                }
+                yield 0;
+            }
+            case AMOUNT -> {
+                Object value = tableModel.getValueAt(modelRow, 11);
+                yield toAmount(value);
+            }
+        };
     }
     
     private void showRecordDetails(int id) {

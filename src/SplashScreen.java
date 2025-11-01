@@ -1,7 +1,7 @@
 package src;
 
 import java.awt.*;
-import java.io.File;
+import java.awt.image.BufferedImage;
 import javax.swing.*;
 
 public class SplashScreen extends JWindow {
@@ -33,25 +33,15 @@ public class SplashScreen extends JWindow {
         logoLabel = new JLabel();
         logoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
-        try {
-            // Try to load splash.png from resources folder
-            File logoFile = new File("resources/splash.png");
-            if (logoFile.exists()) {
-                ImageIcon icon = new ImageIcon(logoFile.getAbsolutePath());
-                appIcon = icon; // Store for title bar use
-                
-                // Scale the square logo larger
-                Image img = icon.getImage();
-                Image scaledImg = img.getScaledInstance(200, 200, Image.SCALE_SMOOTH); // Larger square logo
-                logoLabel.setIcon(new ImageIcon(scaledImg));
-            } else {
-                // Fallback text if image not found
-                logoLabel.setText("KeyBase");
-                logoLabel.setFont(new Font("Arial", Font.BOLD, 48));
-                logoLabel.setForeground(new Color(109, 193, 210)); // #6DC1D2
-            }
-        } catch (Exception e) {
-            // Fallback text if image loading fails
+        BufferedImage logoImage = ResourceHelper.loadImage("resources/splash.png");
+        if (logoImage != null) {
+            ImageIcon icon = new ImageIcon(logoImage);
+            appIcon = icon; // Store for title bar use
+
+            Image scaledImg = logoImage.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+            logoLabel.setIcon(new ImageIcon(scaledImg));
+        } else {
+            // Fallback text if image not found
             logoLabel.setText("KeyBase");
             logoLabel.setFont(new Font("Arial", Font.BOLD, 48));
             logoLabel.setForeground(new Color(109, 193, 210)); // #6DC1D2

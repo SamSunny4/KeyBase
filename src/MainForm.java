@@ -8,16 +8,22 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 import javax.imageio.ImageIO;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainForm extends JFrame {
     // Form components
@@ -71,16 +77,8 @@ public class MainForm extends JFrame {
     }
     
     private void loadSplashImage() {
-        try {
-            File logoFile = new File("resources/splash.png");
-            splashImage = null;
-            splashPreviewIcon = null;
-            if (logoFile.exists()) {
-                splashImage = ImageIO.read(logoFile);
-            }
-        } catch (IOException e) {
-            splashImage = null;
-        }
+        splashPreviewIcon = null;
+        splashImage = ResourceHelper.loadImageAsImage("resources/splash.png");
     }
 
     private void setAppIcon() {
@@ -136,13 +134,13 @@ public class MainForm extends JFrame {
             }
         });
 
-        // Ctrl+E => export CSV
+        // Ctrl+E => export Excel
         KeyStroke ksExport = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
-        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksExport, "exportCsv");
-        getRootPane().getActionMap().put("exportCsv", new AbstractAction() {
+        getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(ksExport, "exportExcel");
+        getRootPane().getActionMap().put("exportExcel", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                exportToCsv();
+                exportToExcel();
             }
         });
 
@@ -1218,14 +1216,14 @@ public class MainForm extends JFrame {
             }
         });
         
-    JMenuItem exportItem = new JMenuItem("Export to CSV");
-    exportItem.setToolTipText("Export all records to a CSV file (Ctrl+E)");
+    JMenuItem exportItem = new JMenuItem("Export to Excel");
+    exportItem.setToolTipText("Export all records to an Excel workbook (Ctrl+E)");
     exportItem.setMnemonic(KeyEvent.VK_E);
     exportItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
         exportItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                exportToCsv();
+                exportToExcel();
             }
         });
         
@@ -1282,7 +1280,7 @@ public class MainForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(MainForm.this,
-                    "KeyBase - Key Management System\nVersion 1.0\n© 2025",
+                    "KeyBase - Key Management System\nVersion 2.0\n© 2025",
                     "About KeyBase",
                     JOptionPane.INFORMATION_MESSAGE);
             }
@@ -1686,86 +1684,113 @@ public class MainForm extends JFrame {
         readmeDialog.setVisible(true);
     }
     
-    private void exportToCsv() {
+    private void exportToExcel() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Export to CSV");
+        fileChooser.setDialogTitle("Export to Excel");
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        fileChooser.setSelectedFile(new File("keybase_export.csv"));
-        
+        fileChooser.setSelectedFile(new File("keybase_export.xlsx"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Workbook (*.xlsx)", "xlsx"));
+
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            String filePath = file.getAbsolutePath();
-            
-            // Add .csv extension if not present
-            if (!filePath.toLowerCase().endsWith(".csv")) {
-                filePath += ".csv";
+            String filePath = ensureXlsxExtension(file.getAbsolutePath());
+
+            List<String> fieldKeys = AppConfig.getExportFields();
+            List<ExportField> selectedFields = ExportField.resolve(fieldKeys);
+            if (selectedFields.isEmpty()) {
+                selectedFields = new ArrayList<>(Arrays.asList(ExportField.values()));
             }
-            
-            // Export all records using the single record export loop
+
+            List<SimpleXlsxExporter.ColumnSpec> columns = new ArrayList<>(selectedFields.size());
+            for (ExportField field : selectedFields) {
+                columns.add(new SimpleXlsxExporter.ColumnSpec(field.getHeader(), field.getWidth(), field.getCellType()));
+            }
+
+            List<List<Object>> rows = new ArrayList<>();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+
             try (Connection conn = DatabaseConnection.getConnection();
                  Statement stmt = conn.createStatement();
-                 ResultSet rs = stmt.executeQuery("SELECT * FROM duplicator ORDER BY duplicator_id DESC")) {
-                
-                FileWriter writer = new FileWriter(filePath);
-                int recordCount = 0;
-                
+                 ResultSet rs = stmt.executeQuery(
+                     "SELECT duplicator_id, name, phone_number, id_no, key_no, key_type, purpose, vehicle_no, date_added, remarks, quantity, amount " +
+                     "FROM duplicator ORDER BY duplicator_id DESC")) {
+
                 while (rs.next()) {
-                    Duplicator d = new Duplicator();
-                    d.setDuplicatorId(rs.getInt("duplicator_id"));
-                    d.setName(rs.getString("name"));
-                    d.setPhoneNumber(rs.getString("phone_number"));
-                    d.setIdNo(rs.getString("id_no"));
-                    d.setKeyNo(rs.getString("key_no"));
-                    d.setKeyType(rs.getString("key_type"));
-                    d.setPurpose(rs.getString("purpose"));
-                    d.setDateAdded(rs.getDate("date_added"));
-                    d.setRemarks(rs.getString("remarks"));
-                    d.setQuantity(rs.getInt("quantity"));
-                    d.setAmount(rs.getDouble("amount"));
-                    d.setImagePath(rs.getString("image_path"));
-                    
-                    // Write data
-                    writer.append("Record ID,").append(String.valueOf(d.getDuplicatorId())).append("\n");
-                    writer.append("Name,").append(escapeCsv(d.getName())).append("\n");
-                    writer.append("Phone Number,").append(escapeCsv(d.getPhoneNumber())).append("\n");
-                    writer.append("ID Number,").append(escapeCsv(d.getIdNo())).append("\n");
-                    writer.append("Key Number,").append(escapeCsv(d.getKeyNo())).append("\n");
-                    
-                    String keyType = d.getKeyType();
-                    writer.append("Key Type,").append(escapeCsv(keyType != null ? keyType : "N/A")).append("\n");
-                    
-                    String purpose = d.getPurpose();
-                    writer.append("Purpose,").append(escapeCsv(purpose != null ? purpose : "N/A")).append("\n");
-                    
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                    String dateStr = (d.getDateAdded() != null) 
-                        ? dateFormat.format(d.getDateAdded()) : "N/A";
-                    writer.append("Date Added,").append(dateStr).append("\n");
-                    
-                    writer.append("Quantity,").append(String.valueOf(d.getQuantity())).append("\n");
-                    writer.append("Amount,").append(String.format("%.2f", d.getAmount())).append("\n");
-                    
-                    String remarks = d.getRemarks();
-                    writer.append("Remarks,").append(escapeCsv(remarks != null ? remarks : "N/A")).append("\n");
-                    writer.append("\n"); // Empty line between records
-                    
-                    recordCount++;
+                    int id = rs.getInt("duplicator_id");
+                    String name = blankIfNull(rs.getString("name"));
+                    String phone = blankIfNull(rs.getString("phone_number"));
+                    String idNo = blankIfNull(rs.getString("id_no"));
+                    String keyNo = blankIfNull(rs.getString("key_no"));
+                    String keyType = blankIfNull(rs.getString("key_type"));
+                    String purpose = blankIfNull(rs.getString("purpose"));
+                    String vehicleNo = blankIfNull(rs.getString("vehicle_no"));
+                    java.sql.Date dateAdded = rs.getDate("date_added");
+                    String dateStr = dateAdded != null ? dateFormat.format(dateAdded) : "";
+                    String remarks = blankIfNull(rs.getString("remarks"));
+                    int quantity = rs.getInt("quantity");
+                    BigDecimal amount = BigDecimal.valueOf(rs.getDouble("amount")).setScale(2, RoundingMode.HALF_UP);
+
+                    List<Object> row = new ArrayList<>(selectedFields.size());
+                    for (ExportField field : selectedFields) {
+                        switch (field) {
+                            case ID -> row.add(id);
+                            case NAME -> row.add(name);
+                            case PHONE -> row.add(phone);
+                            case ID_NO -> row.add(idNo);
+                            case KEY_NO -> row.add(keyNo);
+                            case KEY_TYPE -> row.add(keyType);
+                            case PURPOSE -> row.add(purpose);
+                            case VEHICLE_NO -> row.add(vehicleNo);
+                            case DATE -> row.add(dateStr);
+                            case REMARKS -> row.add(remarks);
+                            case QUANTITY -> row.add(quantity);
+                            case AMOUNT -> row.add(amount);
+                        }
+                    }
+                    rows.add(row);
                 }
-                
-                writer.close();
-                
-                JOptionPane.showMessageDialog(this, 
-                    recordCount + " records exported successfully to " + filePath, 
-                    "Export Successful", 
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error retrieving records: " + ex.getMessage(),
+                    "Export Error",
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            SimpleXlsxExporter.Orientation orientation = SimpleXlsxExporter.parseOrientation(AppConfig.getExportOrientation());
+
+            try {
+                SimpleXlsxExporter.export(filePath, "Key Records", columns, rows, orientation);
+                JOptionPane.showMessageDialog(this,
+                    rows.size() + " record(s) exported to:\n" + filePath,
+                    "Export Successful",
                     JOptionPane.INFORMATION_MESSAGE);
-                
-            } catch (SQLException | IOException e) {
-                JOptionPane.showMessageDialog(this, 
-                    "Error during export: " + e.getMessage(), 
-                    "Export Error", 
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error exporting data: " + ex.getMessage(),
+                    "Export Error",
                     JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private String ensureXlsxExtension(String path) {
+        if (path == null || path.trim().isEmpty()) {
+            return "export.xlsx";
+        }
+        if (path.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
+            return path;
+        }
+        return path + ".xlsx";
+    }
+
+    private String blankIfNull(String value) {
+        if (value == null) {
+            return "";
+        }
+        String trimmed = value.trim();
+        return trimmed;
     }
     
     public static void main(String[] args) {

@@ -1,49 +1,104 @@
+pause
 @echo off
-echo KeyBase - Key Management System
-echo ================================
+setlocal
 
-REM Check if lib directory exists
-if not exist lib (
-  echo ERROR: lib directory not found. Please make sure all required JAR files are in the lib folder.
-  pause
-  exit /b 1
-)
+rem -----------------------------------------------------------------
+rem  KeyBase launcher for packaged installations
+rem  - Prefers bundled JRE (./jre)
+rem  - Falls back to system Java if needed
+rem  - Works with KeyBase.jar or unpacked classes under app\classes
+rem -----------------------------------------------------------------
 
-REM Always compile to ensure latest changes are included
-echo Compiling application...
+set "SCRIPT_DIR=%~dp0"
+set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 
-REM Create build directory if it doesn't exist
-if not exist build mkdir build
-if not exist build\classes mkdir build\classes
+rem Locate Java runtime (prefer bundled JRE)
+set "JAVA_EXE=%SCRIPT_DIR%\jre\bin\javaw.exe"
+if exist "%JAVA_EXE%" goto :detectClasspath
 
-REM Create sources list
-dir /s /b src\*.java > build\sources.txt
+set "JAVA_EXE=%SCRIPT_DIR%\jre\bin\java.exe"
+if exist "%JAVA_EXE%" goto :detectClasspath
 
-javac -encoding UTF-8 -cp "lib/*" -d build\classes @build\sources.txt
-
-if %ERRORLEVEL% NEQ 0 (
-  echo ERROR: Compilation failed.
-  pause
-  exit /b 1
-)
-echo Compilation successful.
-
-REM Ensure data directory exists
-if not exist data mkdir data
-
-REM Check if database exists, if not initialize it
-if not exist data\keybase.mv.db (
-  echo Initializing database for the first time...
-  java -cp "lib/*;build\classes" src.DatabaseInitializer
-  
-  if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Database initialization failed.
-    pause
-    exit /b 1
+for %%J in (javaw.exe java.exe) do (
+  where %%J >nul 2>&1
+  if not errorlevel 1 (
+    set "JAVA_EXE=%%J"
+    goto :detectClasspath
   )
 )
 
-echo Starting KeyBase application...
-java -cp "lib/*;build\classes" src.KeyBase
-
+echo.
+echo ERROR: A compatible Java Runtime Environment was not found.
+echo Please install Java 11 or newer, or bundle a JRE under %%SCRIPT_DIR%%\jre.
 pause
+exit /b 1
+
+:detectClasspath
+set "APP_CLASSPATH="
+
+if exist "%SCRIPT_DIR%\KeyBase.jar" set "APP_CLASSPATH=%SCRIPT_DIR%\KeyBase.jar"
+if exist "%SCRIPT_DIR%\app\KeyBase.jar" set "APP_CLASSPATH=%SCRIPT_DIR%\app\KeyBase.jar"
+
+if exist "%SCRIPT_DIR%\app\classes" (
+  if defined APP_CLASSPATH (
+    set "APP_CLASSPATH=%APP_CLASSPATH%;%SCRIPT_DIR%\app\classes"
+  ) else (
+    set "APP_CLASSPATH=%SCRIPT_DIR%\app\classes"
+  )
+)
+
+if exist "%SCRIPT_DIR%\src" (
+  if defined APP_CLASSPATH (
+    set "APP_CLASSPATH=%APP_CLASSPATH%;%SCRIPT_DIR%\src"
+  ) else (
+    set "APP_CLASSPATH=%SCRIPT_DIR%\src"
+  )
+)
+
+if exist "%SCRIPT_DIR%\lib" (
+  if defined APP_CLASSPATH (
+    set "APP_CLASSPATH=%APP_CLASSPATH%;%SCRIPT_DIR%\lib\*"
+  ) else (
+    set "APP_CLASSPATH=%SCRIPT_DIR%\lib\*"
+  )
+)
+
+if not defined APP_CLASSPATH (
+  echo.
+  echo ERROR: Unable to locate application binaries (KeyBase.jar or app\classes).
+  pause
+  exit /b 1
+)
+
+rem Ensure data directory exists within installation root
+if not exist "%SCRIPT_DIR%\data" mkdir "%SCRIPT_DIR%\data"
+
+pushd "%SCRIPT_DIR%"
+"%JAVA_EXE%" -cp "%APP_CLASSPATH%" -Dfile.encoding=UTF-8 src.KeyBase
+set "EXIT_CODE=%ERRORLEVEL%"
+popd
+
+if "%EXIT_CODE%"=="0" exit /b 0
+
+rem If javaw failed, retry with console java for error output
+if /i not "%JAVA_EXE%"=="java.exe" (
+  for %%J in (java.exe) do (
+    where %%J >nul 2>&1
+    if not errorlevel 1 (
+      pushd "%SCRIPT_DIR%"
+      "%%J" -cp "%APP_CLASSPATH%" -Dfile.encoding=UTF-8 src.KeyBase
+      set "EXIT_CODE=%ERRORLEVEL%"
+      popd
+      goto :finish
+    )
+  )
+)
+
+:finish
+if not "%EXIT_CODE%"=="0" (
+  echo.
+  echo KeyBase exited with code %EXIT_CODE%.
+  pause
+)
+
+exit /b %EXIT_CODE%

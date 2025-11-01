@@ -2,12 +2,9 @@ package src;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 
 /**
@@ -28,11 +25,11 @@ public final class ImagePlaceholderHelper {
     }
 
     public static ImageIcon loadRandomPlaceholder(int width, int height) {
-        List<File> availableImages = new ArrayList<>();
+        List<BufferedImage> availableImages = new ArrayList<>();
         for (String imagePath : FALLBACK_IMAGES) {
-            File candidate = new File(imagePath);
-            if (candidate.exists()) {
-                availableImages.add(candidate);
+            BufferedImage image = ResourceHelper.loadImage(imagePath);
+            if (image != null) {
+                availableImages.add(image);
             }
         }
 
@@ -40,28 +37,23 @@ public final class ImagePlaceholderHelper {
             return null;
         }
 
-        File selected = availableImages.get(ThreadLocalRandom.current().nextInt(availableImages.size()));
+        BufferedImage selected = availableImages.get(ThreadLocalRandom.current().nextInt(availableImages.size()));
         return loadScaledImage(selected, width, height);
     }
 
     public static ImageIcon loadNoResultsPlaceholder(int width, int height) {
-        File placeholder = new File(NO_RESULTS_IMAGE);
-        if (!placeholder.exists()) {
+        BufferedImage placeholder = ResourceHelper.loadImage(NO_RESULTS_IMAGE);
+        if (placeholder == null) {
             return null;
         }
         return loadScaledImage(placeholder, width, height);
     }
 
-    private static ImageIcon loadScaledImage(File source, int width, int height) {
-        try {
-            BufferedImage image = ImageIO.read(source);
-            if (image == null) {
-                return null;
-            }
-            Image scaled = image.getScaledInstance(width, height, Image.SCALE_SMOOTH);
-            return new ImageIcon(scaled);
-        } catch (IOException ex) {
+    private static ImageIcon loadScaledImage(BufferedImage source, int width, int height) {
+        if (source == null) {
             return null;
         }
+        Image scaled = source.getScaledInstance(width, height, Image.SCALE_SMOOTH);
+        return new ImageIcon(scaled);
     }
 }

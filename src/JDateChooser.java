@@ -242,7 +242,7 @@ public class JDateChooser extends JPanel {
                 year == today.get(Calendar.YEAR)) {
                 dayButton.setBackground(Color.RED);
                 dayButton.setForeground(Color.BLACK);
-                dayButton.setFont(new Font("Arial", Font.BOLD, 13));
+                dayButton.setFont(new Font("Eras Bold ITC", Font.BOLD, 13));
             }
             
             dayButton.addMouseListener(new MouseAdapter() {

@@ -5,6 +5,9 @@ import java.util.*;
 
 public class AppConfig {
     private static final String CONFIG_FILE = "config/app.properties";
+    private static final String EXPORT_ORIENTATION_KEY = "export.orientation";
+    private static final String EXPORT_FIELDS_KEY = "export.fields";
+    private static final String CUSTOM_DB_PATH_KEY = "database.customPath";
     private static Properties properties;
 
     static {
@@ -32,6 +35,10 @@ public class AppConfig {
 
         // Camera enabled by default
         properties.setProperty("camera.disabled", "false");
+
+        properties.setProperty(EXPORT_ORIENTATION_KEY, "AUTO");
+        properties.setProperty(EXPORT_FIELDS_KEY, String.join(",", ExportField.defaultKeys()));
+    properties.setProperty(CUSTOM_DB_PATH_KEY, "");
     }
 
     private static void ensurePropertyDefaults() {
@@ -54,6 +61,21 @@ public class AppConfig {
 
         if (!properties.containsKey("camera.disabled")) {
             properties.setProperty("camera.disabled", "false");
+            changed = true;
+        }
+
+        if (!properties.containsKey(EXPORT_ORIENTATION_KEY)) {
+            properties.setProperty(EXPORT_ORIENTATION_KEY, "AUTO");
+            changed = true;
+        }
+
+        if (!properties.containsKey(EXPORT_FIELDS_KEY)) {
+            properties.setProperty(EXPORT_FIELDS_KEY, String.join(",", ExportField.defaultKeys()));
+            changed = true;
+        }
+
+        if (!properties.containsKey(CUSTOM_DB_PATH_KEY)) {
+            properties.setProperty(CUSTOM_DB_PATH_KEY, "");
             changed = true;
         }
 
@@ -91,6 +113,107 @@ public class AppConfig {
     public static void setCameraDisabled(boolean disabled) {
         properties.setProperty("camera.disabled", Boolean.toString(disabled));
         saveProperties();
+    }
+
+    public static String getExportOrientation() {
+        return properties.getProperty(EXPORT_ORIENTATION_KEY, "AUTO");
+    }
+
+    public static void setExportOrientation(String orientation) {
+        String sanitized = orientation == null ? "AUTO" : orientation.trim().toUpperCase(Locale.ROOT);
+        if (!"AUTO".equals(sanitized) && !"PORTRAIT".equals(sanitized) && !"LANDSCAPE".equals(sanitized)) {
+            sanitized = "AUTO";
+        }
+        properties.setProperty(EXPORT_ORIENTATION_KEY, sanitized);
+        saveProperties();
+    }
+
+    public static List<String> getExportFields() {
+        String value = properties.getProperty(EXPORT_FIELDS_KEY, String.join(",", ExportField.defaultKeys()));
+        List<String> result = new ArrayList<>();
+        if (value != null) {
+            String[] parts = value.split(",");
+            for (String part : parts) {
+                String trimmed = part.trim();
+                if (!trimmed.isEmpty()) {
+                    result.add(trimmed.toUpperCase(Locale.ROOT));
+                }
+            }
+        }
+        if (result.isEmpty()) {
+            result.addAll(ExportField.defaultKeys());
+        } else {
+            for (String key : ExportField.defaultKeys()) {
+                if (!result.contains(key)) {
+                    result.add(key);
+                }
+            }
+        }
+        return result;
+    }
+
+    public static void setExportFields(List<String> fields) {
+        if (fields == null || fields.isEmpty()) {
+            return;
+        }
+        List<String> sanitized = new ArrayList<>(fields.size());
+        for (String field : fields) {
+            if (field != null) {
+                String trimmed = field.trim();
+                if (!trimmed.isEmpty()) {
+                    String normalized = trimmed.toUpperCase(Locale.ROOT);
+                    if (ExportField.fromKey(normalized) != null && !sanitized.contains(normalized)) {
+                        sanitized.add(normalized);
+                    }
+                }
+            }
+        }
+        if (sanitized.isEmpty()) {
+            sanitized.addAll(ExportField.defaultKeys());
+        }
+        properties.setProperty(EXPORT_FIELDS_KEY, String.join(",", sanitized));
+        saveProperties();
+    }
+
+    public static String getCustomDatabasePath() {
+        return properties.getProperty(CUSTOM_DB_PATH_KEY, "").trim();
+    }
+
+    public static void setCustomDatabasePath(String path) {
+        String normalized = normalizeDatabasePath(path);
+        properties.setProperty(CUSTOM_DB_PATH_KEY, normalized);
+        saveProperties();
+    }
+
+    public static String normalizeDatabasePath(String input) {
+        if (input == null) {
+            return "";
+        }
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+        if (trimmed.startsWith("jdbc:h2:")) {
+            trimmed = trimmed.substring("jdbc:h2:".length());
+        }
+        if (trimmed.startsWith("file:")) {
+            trimmed = trimmed.substring("file:".length());
+        }
+        int semicolonIndex = trimmed.indexOf(';');
+        if (semicolonIndex >= 0) {
+            trimmed = trimmed.substring(0, semicolonIndex);
+        }
+        File base = new File(trimmed);
+        String absolute = base.getAbsolutePath();
+        String lower = absolute.toLowerCase(Locale.ROOT);
+        final String MV_SUFFIX = ".mv.db";
+        final String TRACE_SUFFIX = ".trace.db";
+        if (lower.endsWith(MV_SUFFIX)) {
+            absolute = absolute.substring(0, absolute.length() - MV_SUFFIX.length());
+        } else if (lower.endsWith(TRACE_SUFFIX)) {
+            absolute = absolute.substring(0, absolute.length() - TRACE_SUFFIX.length());
+        }
+        return absolute;
     }
 
     private static void saveProperties() {
