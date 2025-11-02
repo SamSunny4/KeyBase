@@ -1,8 +1,8 @@
 #define ProjectRoot "E:\\KeyBase"
-#define StageRoot   "E:\\KeyBase\\dist"
+#define StageRoot   "E:\\KeyBase\\dist\\KeyBase"
 #define MyAppName "KeyBase"
-#define MyAppVersion "1.0.0"
-#define MyCompany "YourCompany"
+#define MyAppVersion "2.1.0"
+#define MyCompany "KeyBase.sam"
 #define InstallDirName "KeyBase"
 #define JreInstaller "E:\\KeyBase\\installer\\packages\\jre-8u471-windows-x64.exe"
 
@@ -26,14 +26,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
 ; Core launcher / optional executable
-Source: "{#ProjectRoot}\run.bat"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#StageRoot}\run.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#StageRoot}\KeyBase.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{#StageRoot}\KeyBase.exe'))
 
-; Application binaries (prefer jar, fallback to compiled classes)
-Source: "{#StageRoot}\KeyBase.jar"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{#StageRoot}\KeyBase.jar'))
-Source: "{#StageRoot}\app\KeyBase.jar"; DestDir: "{app}\app"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{#StageRoot}\app\KeyBase.jar'))
-Source: "{#StageRoot}\app\classes\*"; DestDir: "{app}\app\classes"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\app\classes'))
-Source: "{#StageRoot}\src\*"; DestDir: "{app}\src"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\src'))
+; Application binaries (compiled classes only, exclude license key generator)
+Source: "{#StageRoot}\app\classes\*"; DestDir: "{app}\app\classes"; Excludes: "LicenseKeyGenerator.class"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\app\classes'))
 
 ; Runtime dependencies
 Source: "{#StageRoot}\lib\*"; DestDir: "{app}\lib"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\lib'))
@@ -42,7 +39,6 @@ Source: "{#StageRoot}\resources\*"; DestDir: "{app}\resources"; Flags: recursesu
 ; Configuration and seed data
 Source: "{#StageRoot}\config\*"; DestDir: "{app}\config"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\config'))
 Source: "{#StageRoot}\data\*"; DestDir: "{app}\data"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\data'))
-Source: "{#StageRoot}\images\*"; DestDir: "{app}\images"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\images'))
 
 ; Optional bundled JRE
 Source: "{#StageRoot}\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\jre'))
@@ -69,9 +65,8 @@ Filename: "{app}\run.bat"; Description: "Launch KeyBase"; Flags: nowait postinst
 [Code]
 function HasJre(): Boolean;
 begin
-  Result :=
-    ExpandConstant('{app}\jre\bin\javaw.exe') <> '' and
-    FileExists(ExpandConstant('{app}\jre\bin\javaw.exe')) or
-    RegKeyExists(HKLM64, 'SOFTWARE\JavaSoft\JRE') or
-    RegKeyExists(HKLM, 'SOFTWARE\JavaSoft\JRE');
+  { Minimal check for presence of a bundled or system JRE. }
+  Result := FileExists(ExpandConstant('{app}\jre\bin\javaw.exe')) or
+            RegKeyExists(HKLM64, 'SOFTWARE\JavaSoft\JRE') or
+            RegKeyExists(HKLM, 'SOFTWARE\JavaSoft\JRE');
 end;

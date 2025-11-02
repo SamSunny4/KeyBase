@@ -13,6 +13,7 @@ $buildRoot   = Join-Path $projectRoot "build"
 $classesDir  = Join-Path $buildRoot "classes"
 $distRoot    = Join-Path $projectRoot "dist"
 $stageRoot   = Join-Path $distRoot "KeyBase"
+$launch4jConfig = Join-Path $projectRoot "installer\launch4j.xml"
 
 Write-Stage "Project root: $projectRoot"
 
@@ -107,6 +108,50 @@ Copy-Item (Join-Path $projectRoot "run.bat") (Join-Path $stageRoot "run.bat") -F
 
 if (Test-Path (Join-Path $projectRoot "jre")) {
     Copy-Tree (Join-Path $projectRoot "jre") (Join-Path $stageRoot "jre") @()
+} else {
+    # Ensure the staged jre folder exists so Inno Setup wildcards don't fail at compile time
+    $stagedJre = Join-Path $stageRoot "jre"
+    if (-not (Test-Path $stagedJre)) {
+        Write-Stage "Creating empty staged jre folder (no bundled runtime)"
+        New-Item -ItemType Directory -Path $stagedJre -Force | Out-Null
+        # Add a small placeholder file so wildcard patterns like "jre\*" match something
+        New-Item -ItemType File -Path (Join-Path $stagedJre ".placeholder") -Force | Out-Null
+    }
+}
+
+if (Test-Path $launch4jConfig) {
+    $launch4jExe = $null
+    $candidatePaths = @()
+
+    $programFilesX86 = ${env:ProgramFiles(x86)}
+    if ($env:LAUNCH4J_HOME) {
+        $candidatePaths += (Join-Path $env:LAUNCH4J_HOME "launch4jc.exe")
+    }
+    if ($programFilesX86) {
+        $candidatePaths += (Join-Path $programFilesX86 "Launch4j\launch4jc.exe")
+    }
+    if ($env:ProgramFiles) {
+        $candidatePaths += (Join-Path $env:ProgramFiles "Launch4j\launch4jc.exe")
+    }
+
+    foreach ($candidate in $candidatePaths) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate) -and (Test-Path $candidate)) {
+            $launch4jExe = $candidate
+            break
+        }
+    }
+
+    if ($launch4jExe) {
+        Write-Stage "Packaging Windows executable via Launch4j"
+        & $launch4jExe $launch4jConfig | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Launch4j failed with exit code $LASTEXITCODE"
+        }
+    } else {
+        Write-Stage "Launch4j executable not found; skipping KeyBase.exe generation."
+    }
+} else {
+    Write-Stage "Launch4j configuration not found; skipping KeyBase.exe generation."
 }
 
 Write-Stage "Staging complete: $stageRoot"

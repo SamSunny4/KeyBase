@@ -1,8 +1,8 @@
 <launch4jConfig>
   <dontWrapJar>false</dontWrapJar>
   <headerType>gui</headerType>
-  <jar>..\dist\KeyBase.jar</jar>
-  <outfile>..\dist\KeyBase.exe</outfile>
+  <jar>..\dist\KeyBase\KeyBase.jar</jar>
+  <outfile>..\dist\KeyBase\KeyBase.exe</outfile>
   <errTitle>KeyBase</errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
@@ -14,7 +14,7 @@
   <icon>..\resources\splash.ico</icon>
   <classPath>
     <mainClass>src.KeyBase</mainClass>
-  <cp>..\dist\lib\*</cp>
+  <cp>lib\*</cp>
   </classPath>
   <jre>
     <bundledJre64Bit>false</bundledJre64Bit>

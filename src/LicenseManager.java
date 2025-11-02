@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.EnumMap;
@@ -16,11 +17,76 @@ import javax.swing.*;
  */
 public class LicenseManager {
     
-    private static final String LICENSE_FILE = "keybase.lic";
+    private static final String LICENSE_FILENAME = "keybase.lic";
     private static final String ENCRYPTION_KEY_BASE = "KeyBase2025SecureApp";
     
     private String hardwareId;
     private String encryptionPin;
+    
+    /**
+     * Get the full path to the license file
+     * Stores in AppData to avoid permission issues in Program Files
+     */
+    private String getLicenseFilePath() {
+        String appDir;
+        
+        try {
+            // Use LOCALAPPDATA for user-writable storage (avoids Program Files permission issues)
+            String localAppData = System.getenv("LOCALAPPDATA");
+            if (localAppData != null && !localAppData.isEmpty()) {
+                File keybaseDir = new File(localAppData, "KeyBase");
+                if (!keybaseDir.exists()) {
+                    keybaseDir.mkdirs();
+                }
+                appDir = keybaseDir.getAbsolutePath();
+                System.out.println("[License] Using LocalAppData directory: " + appDir);
+            } else {
+                // Fallback: try to get the directory where the JAR/class files are located
+                File location = new File(LicenseManager.class.getProtectionDomain()
+                    .getCodeSource().getLocation().toURI());
+                
+                // If location is a file (JAR), get its parent directory
+                File jarDir = location.isFile() ? location.getParentFile() : location;
+                
+                System.out.println("[License] Code location: " + location.getAbsolutePath());
+                System.out.println("[License] Directory: " + (jarDir != null ? jarDir.getAbsolutePath() : "null"));
+                
+                // If we're in app/classes/src, go up to the app root
+                if (jarDir != null && jarDir.getName().equals("src")) {
+                    jarDir = jarDir.getParentFile(); // go to classes
+                    if (jarDir != null && jarDir.getName().equals("classes")) {
+                        jarDir = jarDir.getParentFile(); // go to app
+                        if (jarDir != null && jarDir.getName().equals("app")) {
+                            jarDir = jarDir.getParentFile(); // go to root
+                        }
+                    }
+                }
+                // If we're in app/classes, go up to the app root
+                else if (jarDir != null && jarDir.getName().equals("classes")) {
+                    jarDir = jarDir.getParentFile(); // go to app
+                    if (jarDir != null && jarDir.getName().equals("app")) {
+                        jarDir = jarDir.getParentFile(); // go to root
+                    }
+                }
+                // If we're in app, go up to root
+                else if (jarDir != null && jarDir.getName().equals("app")) {
+                    jarDir = jarDir.getParentFile();
+                }
+                
+                appDir = jarDir != null ? jarDir.getAbsolutePath() : System.getProperty("user.dir");
+                System.out.println("[License] Using app directory: " + appDir);
+            }
+        } catch (Exception e) {
+            // Fallback to current working directory
+            appDir = System.getProperty("user.dir");
+            System.err.println("[License] Error detecting path, using fallback: " + appDir);
+            e.printStackTrace();
+        }
+        
+        String licensePath = new File(appDir, LICENSE_FILENAME).getAbsolutePath();
+        System.out.println("[License] License file path: " + licensePath);
+        return licensePath;
+    }
     
     public LicenseManager() {
         this.hardwareId = generateHardwareId();
@@ -142,7 +208,7 @@ public class LicenseManager {
      * Check if license file exists and is valid
      */
     public boolean isLicenseValid() {
-        File licenseFile = new File(LICENSE_FILE);
+        File licenseFile = new File(getLicenseFilePath());
         
         if (!licenseFile.exists()) {
             return false;
@@ -231,9 +297,12 @@ public class LicenseManager {
      * Read license from file
      */
     private String readLicenseFile() throws IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(LICENSE_FILE));
+        String path = getLicenseFilePath();
+        System.out.println("[License] Reading license from: " + path);
+        BufferedReader reader = new BufferedReader(new FileReader(path));
         String license = reader.readLine();
         reader.close();
+        System.out.println("[License] Successfully read license");
         return license;
     }
     
@@ -241,9 +310,12 @@ public class LicenseManager {
      * Write license to file
      */
     private void writeLicenseFile(String license) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(LICENSE_FILE));
+        String path = getLicenseFilePath();
+        System.out.println("[License] Writing license to: " + path);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(path));
         writer.write(license);
         writer.close();
+        System.out.println("[License] Successfully wrote license");
     }
     
     /**

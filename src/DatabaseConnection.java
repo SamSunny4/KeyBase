@@ -9,7 +9,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -60,7 +59,7 @@ public class DatabaseConnection {
         if (!loaded) {
             System.err.println("Could not find database.properties file. Using default H2 settings.");
             // Use default settings for H2 database
-            url = "jdbc:h2:./data/keybase;AUTO_SERVER=TRUE";
+            url = "jdbc:h2:./data/keybase";
             username = "sa";
             password = "";
             driverClassName = "org.h2.Driver";
@@ -75,11 +74,6 @@ public class DatabaseConnection {
         if (customDbPath != null && !customDbPath.isEmpty()) {
             String normalized = customDbPath.replace('\\', '/');
             String candidateUrl = normalized.startsWith("jdbc:h2:") ? normalized : "jdbc:h2:" + normalized;
-            if (!candidateUrl.contains(";")) {
-                candidateUrl = candidateUrl + ";AUTO_SERVER=TRUE";
-            } else if (!candidateUrl.toUpperCase(Locale.ROOT).contains("AUTO_SERVER")) {
-                candidateUrl = candidateUrl + ";AUTO_SERVER=TRUE";
-            }
             url = candidateUrl;
             if (username == null || username.trim().isEmpty()) {
                 username = "sa";
