@@ -3,7 +3,7 @@
 KeyBase is a comprehensive Java Swing application designed to manage key duplicator records with an embedded H2 database. It provides a complete solution for key shops to track customer information, key details, and maintain visual records through webcam integration.
 
 ## Features
-
+Java JDK 17 (LTS) or newer — the project is built to target Java 17. The installer can bundle a portable JRE so end users don't need a system Java.
 ### Core Functionality
 - **Customer Management**: Store detailed customer information including name, phone number, vehicle type, vehicle number, and ID number
 - **Key Tracking**: Track key details with key type, purpose (Home, Office, Locker, Department, Suspicious), date, quantity, and amount
@@ -15,17 +15,27 @@ KeyBase is a comprehensive Java Swing application designed to manage key duplica
 - **Smart Search**: Multi-criteria search with case-insensitive substring matching across all fields
 - **Date Range Filtering**: Search records within specific date ranges
 - **Image Preview**: View customer photos in search results and record details
+Application defaults are provided in `config/app.properties` which is packaged with the installer. At runtime the application writes per-user overrides to:
+
+- Windows: `%LOCALAPPDATA%\KeyBase\app.properties`
+
+Configure defaults in `config/app.properties` (these are copied/merged into the per-user file on first run):
 - **CSV Export**: Export all records or filtered search results to CSV format
 - **Record Management**: View, edit, print, and delete record data
 - **Enhanced Details View**: Professional dialog showing all record information with image preview
-- **Quantity & Amount Tracking**: Track multiple key copies and pricing
-- **Purpose-aware Filtering**: Dedicated dropdown cleanly filters records by stored purpose values.
 - **Daily Print Shortcut**: Press Ctrl+P to print a formatted report of today's records directly from the main form.
 - **Smart Placeholder Images**: Missing customer photos automatically swap to themed placeholders, including a special "no results" graphic in the search window.
 
 ### User Experience
 - **Keyboard Navigation**: Full Enter key navigation through all form fields
 - **Combo Box Integration**: Smooth navigation with keyboard shortcuts (Ctrl+S, Ctrl+P, Alt+C, Alt+R, Ctrl+E)
+Packaging notes (for maintainers):
+
+- The staging script is `installer/prepare-dist.ps1`. It builds the jar, copies resources into `dist\KeyBase`, and optionally includes a portable JRE if placed under `installer/packages/jre-portable/` (or as `installer/packages/portable-jre.zip`).
+- The Inno Setup script `installer/keybase.iss` builds the Windows installer and will include everything under `dist\KeyBase`.
+- If you need to bundle a specific JRE version, extract it under `installer/packages/jre-portable/` before running the staging script.
+
+If you'd like a reproducible build or CI integration, open an issue and I can add a simple build script or GitHub Actions workflow later.
 - **Smart Visibility**: Vehicle number field shows/hides based on vehicle type selection
 - **Status Bar**: Real-time feedback on application actions
 - **Context Menus**: Right-click options for quick actions on records

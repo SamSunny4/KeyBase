@@ -33,7 +33,7 @@ $sourceList = Join-Path $buildRoot "sources.txt"
 Get-ChildItem (Join-Path $projectRoot "src") -Recurse -Filter *.java | Select-Object -ExpandProperty FullName | Out-File -FilePath $sourceList -Encoding ascii
 
 $libPath = Join-Path $projectRoot "lib\*"
-$javacArgs = @('-encoding', 'UTF-8', '-cp', $libPath, '--release', '8', '-d', $classesDir, "@$sourceList")
+$javacArgs = @('-encoding', 'UTF-8', '-cp', $libPath, '--release', '17', '-d', $classesDir, "@$sourceList")
 Write-Stage "Compiling sources"
 & javac @javacArgs
 if ($LASTEXITCODE -ne 0) {

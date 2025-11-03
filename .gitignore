@@ -39,3 +39,24 @@ replay_pid*
 
 # Application-specific
 /images/
+
+# Distribution / packaging
+/dist/
+/installer/Output/
+
+# H2 DB files
+*.mv.db
+*.trace.db
+
+# Portable JRE artifacts (do not commit large runtimes)
+installer/packages/portable-jre.zip
+installer/packages/jre-portable/
+
+# User per-machine config (don't commit)
+/KeyBase.appdata
+%LOCALAPPDATA%/KeyBase/
+
+# Temporary and backup files
+*.tmp
+*.bak
+*.swp
