@@ -52,6 +52,9 @@ replay_pid*
 installer/packages/portable-jre.zip
 installer/packages/jre-portable/
 
+# License generator batch (do not push the generator script to public repo)
+tools/license/generate_license.bat
+
 # User per-machine config (don't commit)
 /KeyBase.appdata
 %LOCALAPPDATA%/KeyBase/
