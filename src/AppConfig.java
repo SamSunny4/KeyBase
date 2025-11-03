@@ -5,6 +5,8 @@ import java.util.*;
 
 public class AppConfig {
     private static final String CONFIG_FILE = "config/app.properties";
+    // Per-user writable config under %LOCALAPPDATA%\KeyBase\app.properties
+    private static final String USER_CONFIG_FILE;
     private static final String EXPORT_ORIENTATION_KEY = "export.orientation";
     private static final String EXPORT_FIELDS_KEY = "export.fields";
     private static final String CUSTOM_DB_PATH_KEY = "database.customPath";
@@ -12,11 +14,34 @@ public class AppConfig {
 
     static {
         properties = new Properties();
+        String localAppData = System.getenv("LOCALAPPDATA");
+        if (localAppData == null || localAppData.trim().isEmpty()) {
+            USER_CONFIG_FILE = CONFIG_FILE; // fallback to packaged config
+        } else {
+            USER_CONFIG_FILE = localAppData + File.separator + "KeyBase" + File.separator + "app.properties";
+        }
+
+        // Load packaged defaults first (if present)
         try (FileInputStream fis = new FileInputStream(CONFIG_FILE)) {
             properties.load(fis);
-            ensurePropertyDefaults();
-        } catch (IOException e) {
-            // If file doesn't exist, create with default values
+        } catch (IOException ignored) {
+            // no packaged defaults; we'll populate defaults below
+        }
+
+        // Then load/override with user-specific config if present
+        File userCfg = new File(USER_CONFIG_FILE);
+        if (userCfg.exists()) {
+            try (FileInputStream uis = new FileInputStream(userCfg)) {
+                properties.load(uis);
+            } catch (IOException ignored) {
+                // ignore and proceed with whatever we have
+            }
+        }
+
+        // Ensure all required properties exist and persist per-user config if needed
+        ensurePropertyDefaults();
+        // If user config didn't exist, ensure it's created so subsequent saves succeed
+        if (!userCfg.exists()) {
             setDefaultProperties();
             saveProperties();
         }
@@ -214,8 +239,15 @@ public class AppConfig {
     }
 
     private static void saveProperties() {
-        try (FileOutputStream fos = new FileOutputStream(CONFIG_FILE)) {
-            properties.store(fos, "KeyBase Application Settings");
+        File out = new File(USER_CONFIG_FILE != null ? USER_CONFIG_FILE : CONFIG_FILE);
+        try {
+            File parent = out.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+            try (FileOutputStream fos = new FileOutputStream(out)) {
+                properties.store(fos, "KeyBase Application Settings");
+            }
         } catch (IOException e) {
             System.err.println("Error saving application properties: " + e.getMessage());
         }

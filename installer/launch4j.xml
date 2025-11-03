@@ -7,7 +7,7 @@
   <cmdLine></cmdLine>
   <chdir>.</chdir>
   <priority>normal</priority>
-  <downloadUrl>https://adoptium.net/</downloadUrl>
+  <downloadUrl>https://www.java.com/en/download/manual.jsp</downloadUrl>
   <supportUrl>https://github.com/SamSunny4/KeyBase</supportUrl>
   <stayAlive>false</stayAlive>
   <restartOnCrash>false</restartOnCrash>
@@ -17,10 +17,10 @@
   <cp>lib\*</cp>
   </classPath>
   <jre>
-    <bundledJre64Bit>false</bundledJre64Bit>
-    <minVersion>11</minVersion>
+    <bundledJre64Bit>true</bundledJre64Bit>
+    <minVersion>1.8.0</minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
-    <runtimeBits>64/32</runtimeBits>
+    <runtimeBits>64</runtimeBits>
   </jre>
 </launch4jConfig>

@@ -33,7 +33,7 @@ $sourceList = Join-Path $buildRoot "sources.txt"
 Get-ChildItem (Join-Path $projectRoot "src") -Recurse -Filter *.java | Select-Object -ExpandProperty FullName | Out-File -FilePath $sourceList -Encoding ascii
 
 $libPath = Join-Path $projectRoot "lib\*"
-$javacArgs = @('-encoding', 'UTF-8', '-cp', $libPath, '-d', $classesDir, "@$sourceList")
+$javacArgs = @('-encoding', 'UTF-8', '-cp', $libPath, '--release', '8', '-d', $classesDir, "@$sourceList")
 Write-Stage "Compiling sources"
 & javac @javacArgs
 if ($LASTEXITCODE -ne 0) {
@@ -96,7 +96,16 @@ Copy-Tree (Join-Path $projectRoot "config")    (Join-Path $stageRoot "config")  
 Copy-Tree (Join-Path $projectRoot "lib")       (Join-Path $stageRoot "lib")       @()
 Copy-Tree (Join-Path $projectRoot "resources") (Join-Path $stageRoot "resources") @()
 Copy-Tree (Join-Path $projectRoot "images")    (Join-Path $stageRoot "images")    @()
-Copy-Tree (Join-Path $projectRoot "data")      (Join-Path $stageRoot "data")      @("*.trace.db")
+Copy-Tree (Join-Path $projectRoot "data")      (Join-Path $stageRoot "data")      @("*.trace.db","*.mv.db")
+# Ensure staged data folder exists and has at least one file so Inno Setup wildcards don't fail
+$stagedData = Join-Path $stageRoot "data"
+if (-not (Test-Path $stagedData)) {
+    New-Item -ItemType Directory -Path $stagedData -Force | Out-Null
+}
+$dataFiles = Get-ChildItem -Path $stagedData -File -Recurse -ErrorAction SilentlyContinue
+if (-not $dataFiles -or $dataFiles.Count -eq 0) {
+    New-Item -ItemType File -Path (Join-Path $stagedData ".placeholder") -Force | Out-Null
+}
 
 $stageClasses = Join-Path $stageRoot "app\classes"
 Copy-Tree $classesDir $stageClasses @()
@@ -106,15 +115,54 @@ if (Test-Path $toolsDir) { Remove-Item $toolsDir -Recurse -Force }
 
 Copy-Item (Join-Path $projectRoot "run.bat") (Join-Path $stageRoot "run.bat") -Force
 
-if (Test-Path (Join-Path $projectRoot "jre")) {
-    Copy-Tree (Join-Path $projectRoot "jre") (Join-Path $stageRoot "jre") @()
+## Support bundling a portable JRE for systems without a system JVM.
+# Place either a folder at installer/packages/jre-portable/ (already-extracted JRE)
+# or a ZIP at installer/packages/portable-jre.zip (will be expanded). If neither is
+# present, we create a placeholder so Inno Setup wildcards don't fail.
+$stagedJre = Join-Path $stageRoot "jre"
+$portableJreFolder = Join-Path $projectRoot "installer\packages\jre-portable"
+$portableJreZip = Join-Path $projectRoot "installer\packages\portable-jre.zip"
+
+if (Test-Path $portableJreFolder) {
+    Write-Stage "Copying portable JRE folder from installer/packages/jre-portable"
+    Copy-Tree $portableJreFolder $stagedJre @()
+} elseif (Test-Path $portableJreZip) {
+    Write-Stage "Expanding portable JRE zip installer/packages/portable-jre.zip to staged jre"
+    if (Test-Path $stagedJre) { Remove-Item $stagedJre -Recurse -Force }
+    New-Item -ItemType Directory -Path $stagedJre | Out-Null
+    try {
+        Expand-Archive -Path $portableJreZip -DestinationPath $stagedJre -Force
+    } catch {
+        Write-Stage "Expand-Archive failed: $_. Exception. Falling back to copying zip into installer packages."
+        Copy-Item $portableJreZip (Join-Path $stageRoot "jre" ) -Force
+    }
+    # If the zip expanded into a single top-level folder (common), flatten it so jre\bin exists at staged jre
+    $children = Get-ChildItem -Path $stagedJre -Force | Where-Object { $_.Name -ne '.' -and $_.Name -ne '..' }
+    if ($children.Count -eq 1 -and $children[0].PSIsContainer) {
+        $inner = $children[0].FullName
+        $innerBin = Join-Path $inner 'bin'
+        $stagedBin = Join-Path $stagedJre 'bin'
+        if (-not (Test-Path $stagedBin) -and (Test-Path $innerBin)) {
+            Write-Stage "Flattening extracted JRE: moving contents of $inner up to $stagedJre"
+            Get-ChildItem -Path $inner -Force | ForEach-Object {
+                $dest = Join-Path $stagedJre $_.Name
+                Move-Item -Path $_.FullName -Destination $dest -Force
+            }
+            # Remove the now-empty inner folder
+            Remove-Item -Path $inner -Recurse -Force
+        }
+    }
+} elseif (Test-Path (Join-Path $projectRoot "jre")) {
+    Write-Stage "Copying local project jre folder into staged jre"
+    Copy-Tree (Join-Path $projectRoot "jre") $stagedJre @()
 } else {
     # Ensure the staged jre folder exists so Inno Setup wildcards don't fail at compile time
-    $stagedJre = Join-Path $stageRoot "jre"
     if (-not (Test-Path $stagedJre)) {
         Write-Stage "Creating empty staged jre folder (no bundled runtime)"
         New-Item -ItemType Directory -Path $stagedJre -Force | Out-Null
-        # Add a small placeholder file so wildcard patterns like "jre\*" match something
+    }
+    # Add a small placeholder file so wildcard patterns like "jre\*" match something
+    if (-not (Test-Path (Join-Path $stagedJre ".placeholder"))) {
         New-Item -ItemType File -Path (Join-Path $stagedJre ".placeholder") -Force | Out-Null
     }
 }

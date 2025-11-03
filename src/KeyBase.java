@@ -1,8 +1,17 @@
 package src;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.swing.*;
 
 public class KeyBase {
@@ -87,6 +96,8 @@ public class KeyBase {
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 splash.close();
+            } catch (Throwable t) {
+                handleFatalStartupError(t, splash);
             }
         }).start();
     }
@@ -126,6 +137,54 @@ public class KeyBase {
                 MainForm mainForm = new MainForm();
                 mainForm.setVisible(true);
             });
+        }
+    }
+
+    private static void handleFatalStartupError(Throwable throwable, SplashScreen splash) {
+        String logPath = logFatalError(throwable);
+        SwingUtilities.invokeLater(() -> {
+            if (splash != null) {
+                splash.close();
+            }
+            StringBuilder message = new StringBuilder();
+            message.append("KeyBase encountered a fatal error during startup.\n\n");
+            message.append(throwable.getClass().getSimpleName()).append(": ").append(throwable.getMessage()).append("\n\n");
+            if (logPath != null) {
+                message.append("A detailed log was written to:\n").append(logPath);
+            } else {
+                message.append("Unable to write diagnostic log. Please contact support.");
+            }
+            JOptionPane.showMessageDialog(null, message.toString(), "Startup Error", JOptionPane.ERROR_MESSAGE);
+        });
+    }
+
+    private static String logFatalError(Throwable throwable) {
+        String localAppData = System.getenv("LOCALAPPDATA");
+        Path logDirectory;
+
+        if (localAppData != null && !localAppData.trim().isEmpty()) {
+            logDirectory = Paths.get(localAppData, "KeyBase");
+        } else {
+            logDirectory = Paths.get(System.getProperty("user.home", "."), "KeyBaseLogs");
+        }
+
+        try {
+            Files.createDirectories(logDirectory);
+            Path logFile = logDirectory.resolve("keybase-startup-error.log");
+            try (PrintWriter writer = new PrintWriter(new FileWriter(logFile.toFile(), true))) {
+                writer.println("==== KeyBase startup failure ====");
+                writer.println(DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()));
+                writer.println();
+                throwable.printStackTrace(writer);
+                writer.println();
+            }
+            return logFile.toAbsolutePath().toString();
+        } catch (IOException ioException) {
+            System.err.println("Unable to write fatal error log: " + ioException.getMessage());
+            StringWriter stackWriter = new StringWriter();
+            throwable.printStackTrace(new PrintWriter(stackWriter));
+            System.err.println(stackWriter.toString());
+            return null;
         }
     }
 }

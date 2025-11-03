@@ -14,16 +14,19 @@ public class DatabaseInitializer {
 
     public static void main(String[] args) {
         System.out.println("Starting database initialization...");
-        
+
         try {
-            // Ensure database connection is properly set up
+            // Ensure database driver is available
             Class.forName("org.h2.Driver");
-            
-            // Initialize the database
-            initializeDatabase();
-            
-            System.out.println("Database initialization completed successfully.");
-            
+
+            // Initialize the database (best-effort)
+            boolean ok = initializeDatabase();
+            if (ok) {
+                System.out.println("Database initialization completed successfully.");
+            } else {
+                System.err.println("Database initialization did not run (no init script found or errors).\n");
+            }
+
         } catch (Exception e) {
             System.err.println("Error initializing database: " + e.getMessage());
             e.printStackTrace();
@@ -34,7 +37,10 @@ public class DatabaseInitializer {
     /**
      * Initialize the database using the SQL script
      */
-    private static void initializeDatabase() {
+    /**
+     * Initialize the database using the SQL script. Returns true if initialization ran.
+     */
+    public static boolean initializeDatabase() {
         // Try multiple possible locations for the SQL file
         String[] possiblePaths = {
             "config/init_h2_database.sql",
@@ -53,11 +59,11 @@ public class DatabaseInitializer {
         }
         
         if (sqlFile == null) {
-            System.err.println("SQL initialization file not found. Tried paths:");
+            System.err.println("SQL initialization file not found. Skipping DB initialization. Tried paths:");
             for (String path : possiblePaths) {
                 System.err.println("  - " + new File(path).getAbsolutePath());
             }
-            System.exit(1);
+            return false;
         }
         
         try (Connection conn = DatabaseConnection.getConnection();
@@ -155,10 +161,11 @@ public class DatabaseInitializer {
                 }
             }
             
+            return true;
         } catch (Exception e) {
             System.err.println("Error initializing database from SQL file: " + e.getMessage());
             e.printStackTrace();
-            System.exit(1);
+            return false;
         }
     }
 }

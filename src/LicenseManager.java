@@ -6,6 +6,9 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.EnumMap;
 import java.util.Map;
@@ -19,6 +22,9 @@ public class LicenseManager {
     
     private static final String LICENSE_FILENAME = "keybase.lic";
     private static final String ENCRYPTION_KEY_BASE = "KeyBase2025SecureApp";
+    private static final Object WMIC_LOCK = new Object();
+    private static boolean wmicChecked = false;
+    private static String wmicExecutable = null;
     
     private String hardwareId;
     private String encryptionPin;
@@ -80,7 +86,6 @@ public class LicenseManager {
             // Fallback to current working directory
             appDir = System.getProperty("user.dir");
             System.err.println("[License] Error detecting path, using fallback: " + appDir);
-            e.printStackTrace();
         }
         
         String licensePath = new File(appDir, LICENSE_FILENAME).getAbsolutePath();
@@ -89,8 +94,15 @@ public class LicenseManager {
     }
     
     public LicenseManager() {
-        this.hardwareId = generateHardwareId();
-        this.encryptionPin = generateEncryptionPin(hardwareId);
+        try {
+            this.hardwareId = generateHardwareId();
+            this.encryptionPin = generateEncryptionPin(hardwareId);
+        } catch (Exception e) {
+            System.err.println("Error initializing LicenseManager: " + e.getMessage());
+            // Use fallback values
+            this.hardwareId = "FALLBACK-" + System.getProperty("user.name", "unknown");
+            this.encryptionPin = generateEncryptionPin(hardwareId);
+        }
     }
     
     /**
@@ -118,32 +130,71 @@ public class LicenseManager {
         return hashString(hwId.toString());
     }
     
+    private String resolveWmicExecutable() {
+        synchronized (WMIC_LOCK) {
+            if (!wmicChecked) {
+                wmicChecked = true;
+                String windir = System.getenv("WINDIR");
+                if (windir != null && !windir.trim().isEmpty()) {
+                    Path system32 = Paths.get(windir, "System32", "wbem", "WMIC.exe");
+                    if (Files.isRegularFile(system32)) {
+                        wmicExecutable = system32.toString();
+                    } else {
+                        Path syswow64 = Paths.get(windir, "SysWOW64", "wbem", "WMIC.exe");
+                        if (Files.isRegularFile(syswow64)) {
+                            wmicExecutable = syswow64.toString();
+                        }
+                    }
+                }
+                if (wmicExecutable == null) {
+                    System.out.println("[License] WMIC not found; using fallback identifiers.");
+                }
+            }
+            return wmicExecutable;
+        }
+    }
+    
+    private String queryWmicValue(String header, String... arguments) {
+        String executable = resolveWmicExecutable();
+        if (executable == null) {
+            return "";
+        }
+
+        String[] command = new String[arguments.length + 1];
+        command[0] = executable;
+        System.arraycopy(arguments, 0, command, 1, arguments.length);
+
+        try {
+            ProcessBuilder builder = new ProcessBuilder(command);
+            builder.redirectErrorStream(true);
+            Process process = builder.start();
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                process.waitFor();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim();
+                    if (!line.isEmpty() && !line.equalsIgnoreCase(header)) {
+                        return line;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: WMIC query failed (" + header + "): " + e.getMessage());
+        }
+
+        return "";
+    }
+    
     /**
      * Get CPU Identifier
      */
     private String getCPUId() {
-        String cpuId = "";
-        try {
-            Process process = Runtime.getRuntime().exec(
-                new String[]{"wmic", "cpu", "get", "ProcessorId"}
-            );
-            
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream())
-            );
-            
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (!line.isEmpty() && !line.equalsIgnoreCase("ProcessorId")) {
-                    cpuId = line;
-                    break;
-                }
-            }
-            reader.close();
-        } catch (Exception e) {
-            System.err.println("Error getting CPU ID: " + e.getMessage());
+        String cpuId = queryWmicValue("ProcessorId", "cpu", "get", "ProcessorId");
+
+        if (cpuId == null || cpuId.trim().isEmpty()) {
+            cpuId = System.getProperty("os.arch", "unknown");
         }
+        
         return cpuId;
     }
     
@@ -151,28 +202,12 @@ public class LicenseManager {
      * Get Motherboard Serial Number
      */
     private String getMotherboardId() {
-        String motherboardId = "";
-        try {
-            Process process = Runtime.getRuntime().exec(
-                new String[]{"wmic", "baseboard", "get", "SerialNumber"}
-            );
-            
-            BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream())
-            );
-            
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (!line.isEmpty() && !line.equalsIgnoreCase("SerialNumber")) {
-                    motherboardId = line;
-                    break;
-                }
-            }
-            reader.close();
-        } catch (Exception e) {
-            System.err.println("Error getting Motherboard ID: " + e.getMessage());
+        String motherboardId = queryWmicValue("SerialNumber", "baseboard", "get", "SerialNumber");
+
+        if (motherboardId == null || motherboardId.trim().isEmpty()) {
+            motherboardId = System.getProperty("user.name", "unknown");
         }
+        
         return motherboardId;
     }
     

@@ -20,6 +20,8 @@ ArchitecturesInstallIn64BitMode=x64
 ; bundle prerequisites by inflating size limit if needed
 DisableDirPage=no
 DisableProgramGroupPage=no
+PrivilegesRequired=admin
+SetupLogging=yes
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -27,21 +29,22 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Files]
 ; Core launcher / optional executable
 Source: "{#StageRoot}\run.bat"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#StageRoot}\KeyBase.exe"; DestDir: "{app}"; Flags: ignoreversion; Check: FileExists(ExpandConstant('{#StageRoot}\KeyBase.exe'))
+Source: "{#StageRoot}\KeyBase.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#StageRoot}\KeyBase.jar"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Application binaries (compiled classes only, exclude license key generator)
-Source: "{#StageRoot}\app\classes\*"; DestDir: "{app}\app\classes"; Excludes: "LicenseKeyGenerator.class"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\app\classes'))
+Source: "{#StageRoot}\app\classes\*"; DestDir: "{app}\app\classes"; Excludes: "LicenseKeyGenerator.class"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 ; Runtime dependencies
-Source: "{#StageRoot}\lib\*"; DestDir: "{app}\lib"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\lib'))
-Source: "{#StageRoot}\resources\*"; DestDir: "{app}\resources"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\resources'))
+Source: "{#StageRoot}\lib\*"; DestDir: "{app}\lib"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "{#StageRoot}\resources\*"; DestDir: "{app}\resources"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 ; Configuration and seed data
-Source: "{#StageRoot}\config\*"; DestDir: "{app}\config"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\config'))
-Source: "{#StageRoot}\data\*"; DestDir: "{app}\data"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\data'))
+Source: "{#StageRoot}\config\*"; DestDir: "{app}\config"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "{#StageRoot}\data\*"; DestDir: "{app}\data"; Flags: recursesubdirs createallsubdirs ignoreversion
 
-; Optional bundled JRE
-Source: "{#StageRoot}\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs createallsubdirs ignoreversion; Check: DirExists(ExpandConstant('{#StageRoot}\jre'))
+; Optional bundled JRE (only the placeholder currently)
+Source: "{#StageRoot}\jre\*"; DestDir: "{app}\jre"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 ; External JRE installer (copied only when needed)
 Source: "{#JreInstaller}"; DestDir: "{tmp}"; Flags: deleteafterinstall; Check: not HasJre()

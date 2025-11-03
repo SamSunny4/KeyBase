@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -58,8 +61,7 @@ public class DatabaseConnection {
         
         if (!loaded) {
             System.err.println("Could not find database.properties file. Using default H2 settings.");
-            // Use default settings for H2 database
-            url = "jdbc:h2:./data/keybase";
+            url = null;
             username = "sa";
             password = "";
             driverClassName = "org.h2.Driver";
@@ -70,9 +72,12 @@ public class DatabaseConnection {
             driverClassName = props.getProperty("db.driverClassName");
         }
 
+        url = resolveJdbcUrl(url);
+        ensureDataDirectory(url);
+
         String customDbPath = AppConfig.getCustomDatabasePath();
         if (customDbPath != null && !customDbPath.isEmpty()) {
-            String normalized = customDbPath.replace('\\', '/');
+            String normalized = AppConfig.normalizeDatabasePath(customDbPath).replace('\\', '/');
             String candidateUrl = normalized.startsWith("jdbc:h2:") ? normalized : "jdbc:h2:" + normalized;
             url = candidateUrl;
             if (username == null || username.trim().isEmpty()) {
@@ -85,20 +90,111 @@ public class DatabaseConnection {
                 driverClassName = "org.h2.Driver";
             }
             System.out.println("Using custom database path: " + normalized);
+            ensureDataDirectory(url);
         }
-    lastAppliedCustomPath = AppConfig.getCustomDatabasePath();
-    schemaChecked = false;
-        
-        // Create data directory for H2 database file (handle both relative paths)
-        if (url.contains("jdbc:h2:")) {
-            new java.io.File("data").mkdirs();
-            new java.io.File("./data").mkdirs();
-        }
+        lastAppliedCustomPath = AppConfig.getCustomDatabasePath();
+        schemaChecked = false;
+
+        System.out.println("Effective database URL: " + url);
         
         try {
             Class.forName(driverClassName);
         } catch (ClassNotFoundException e) {
             System.err.println("Database driver not found: " + e.getMessage());
+        }
+    }
+
+    private static String resolveJdbcUrl(String rawUrl) {
+        String candidate = rawUrl == null ? "" : rawUrl.trim();
+        candidate = expandDatabaseTokens(candidate);
+
+        if (candidate.isEmpty() || candidate.equalsIgnoreCase("./data/keybase") || candidate.equalsIgnoreCase(".\\data\\keybase")) {
+            candidate = defaultDatabaseLocation();
+        }
+
+        if (!candidate.startsWith("jdbc:h2:")) {
+            candidate = "jdbc:h2:" + candidate;
+        }
+
+        return candidate;
+    }
+
+    private static String expandDatabaseTokens(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String localApp = normalizePath(System.getenv("LOCALAPPDATA"));
+        String userHome = normalizePath(System.getProperty("user.home", "."));
+
+        String expanded = value;
+        if (!localApp.isEmpty()) {
+            expanded = expanded.replace("${LOCALAPPDATA}", localApp);
+        }
+        expanded = expanded.replace("${USER_HOME}", userHome);
+        return expanded;
+    }
+
+    private static String normalizePath(String path) {
+        if (path == null) {
+            return "";
+        }
+        return path.replace('\\', '/');
+    }
+
+    private static String defaultDatabaseLocation() {
+        Path dbPath;
+        String localApp = System.getenv("LOCALAPPDATA");
+        if (localApp != null && !localApp.trim().isEmpty()) {
+            dbPath = Paths.get(localApp, "KeyBase", "data", "keybase");
+        } else {
+            String userHome = System.getProperty("user.home", ".");
+            dbPath = Paths.get(userHome, "KeyBase", "data", "keybase");
+        }
+
+        try {
+            Path parent = dbPath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+        } catch (IOException e) {
+            System.err.println("Unable to prepare default database directory: " + e.getMessage());
+        }
+
+        return dbPath.toString().replace('\\', '/');
+    }
+
+    private static void ensureDataDirectory(String jdbcUrl) {
+        if (jdbcUrl == null || !jdbcUrl.startsWith("jdbc:h2:")) {
+            return;
+        }
+
+        String remainder = jdbcUrl.substring("jdbc:h2:".length());
+        int paramIndex = remainder.indexOf(';');
+        if (paramIndex >= 0) {
+            remainder = remainder.substring(0, paramIndex);
+        }
+
+        if (remainder.startsWith("mem:")) {
+            return; // nothing to create for in-memory database
+        }
+
+        if (remainder.startsWith("file:")) {
+            remainder = remainder.substring("file:".length());
+        }
+
+        if (remainder.trim().isEmpty()) {
+            remainder = defaultDatabaseLocation();
+        }
+
+        try {
+            Path dbPath = Paths.get(remainder);
+            Path directory = dbPath.toAbsolutePath().getParent();
+            if (directory != null) {
+                Files.createDirectories(directory);
+            }
+        } catch (Exception e) {
+            System.err.println("Unable to ensure database directory for URL '" + jdbcUrl + "': " + e.getMessage());
         }
     }
     
@@ -158,7 +254,26 @@ public class DatabaseConnection {
             java.sql.DatabaseMetaData meta = conn.getMetaData();
             try (java.sql.ResultSet tables = meta.getTables(null, null, "DUPLICATOR", null)) {
                 if (tables == null || !tables.next()) {
-                    return; // Table not present yet; retry later
+                    // Table not present yet: attempt to initialize schema using bundled SQL
+                    System.out.println("DUPLICATOR table not found; attempting DB initialization...");
+                    try {
+                        boolean ok = DatabaseInitializer.initializeDatabase();
+                        if (ok) {
+                            // attempt to re-check existence
+                            try (java.sql.ResultSet after = meta.getTables(null, null, "DUPLICATOR", null)) {
+                                if (after != null && after.next()) {
+                                    System.out.println("DUPLICATOR table created by initializer.");
+                                } else {
+                                    System.out.println("DUPLICATOR table still missing after initializer.");
+                                }
+                            } catch (SQLException ex) {
+                                // ignore
+                            }
+                        }
+                    } catch (Throwable t) {
+                        System.out.println("Database initialization attempt failed: " + t.getMessage());
+                    }
+                    return;
                 }
             }
         } catch (SQLException e) {
