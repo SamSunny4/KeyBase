@@ -29,6 +29,7 @@ public class SearchWindow extends JFrame {
     private JComboBox<String> cmbVehicleKeyType;
     private JComboBox<String> cmbKeyType;
     private JComboBox<String> cmbServiceType;
+    private JComboBox<String> cmbPayment;
     private JTable tblResults;
     private JLabel lblImagePreview;
     private DefaultTableModel tableModel;
@@ -218,7 +219,7 @@ public class SearchWindow extends JFrame {
     gbc.fill = GridBagConstraints.HORIZONTAL;
     gbc.weightx = 1.0;
         
-        // Date range filter
+    // Date range filter
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel lblDateFrom = new JLabel("Date From:");
@@ -250,6 +251,32 @@ public class SearchWindow extends JFrame {
         dateToChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         dateToChooser.setToolTipText("End date for filtering (yyyy-MM-dd)");
         searchPanel.add(dateToChooser, gbc);
+
+    // Payment filter (placed on the same row as Service Type)
+    gbc.gridx = 6;
+    gbc.gridy = 1;
+    JLabel lblPayment = new JLabel("Payment:");
+    lblPayment.setFont(new Font("Arial", Font.BOLD, 12));
+    searchPanel.add(lblPayment, gbc);
+
+    gbc.gridx = 7;
+    gbc.gridy = 1;
+    cmbPayment = new JComboBox<>(new String[] {"Any", "Cash", "UPI"});
+    // Match size and style of other small combo boxes
+    cmbPayment.setPreferredSize(new Dimension(150, 30));
+    cmbPayment.setMaximumSize(cmbPayment.getPreferredSize());
+    cmbPayment.setBackground(new Color(250, 250, 250));
+    cmbPayment.setForeground(new Color(60, 62, 128));
+    cmbPayment.setFont(new Font("Arial", Font.PLAIN, 12));
+    cmbPayment.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
+    cmbPayment.setToolTipText("Filter by payment method");
+    // Prevent stretching
+    gbc.fill = GridBagConstraints.NONE;
+    gbc.weightx = 0.0;
+    searchPanel.add(cmbPayment, gbc);
+    // Restore for later
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.weightx = 1.0;
         
     // Clear filters button (placed on same row as Search)
     gbc.gridx = 5;
@@ -454,6 +481,7 @@ public class SearchWindow extends JFrame {
     String purposeFilter = (String) cmbKeyType.getSelectedItem();
     String keyTypeFilter = (String) cmbVehicleKeyType.getSelectedItem();
     String serviceTypeFilter = (String) cmbServiceType.getSelectedItem();
+    String paymentFilter = cmbPayment != null ? (String) cmbPayment.getSelectedItem() : "Any";
         java.util.Date dateFrom = dateFromChooser.getDate();
         java.util.Date dateTo = dateToChooser.getDate();
         
@@ -516,6 +544,16 @@ public class SearchWindow extends JFrame {
             }
         }
         
+        if ("UPI".equals(paymentFilter)) {
+            queryBuilder.append("AND LOWER(remarks) LIKE '%")
+                .append(ServiceTypeHelper.UPI_KEYWORD)
+                .append("%' ");
+        } else if ("Cash".equals(paymentFilter)) {
+            queryBuilder.append("AND (remarks IS NULL OR remarks = '' OR LOWER(remarks) NOT LIKE '%")
+                .append(ServiceTypeHelper.UPI_KEYWORD)
+                .append("%') ");
+        }
+
         if (dateFrom != null) {
             queryBuilder.append("AND date_added >= ? ");
         }
@@ -614,6 +652,7 @@ public class SearchWindow extends JFrame {
         cmbKeyType.setSelectedIndex(0);
         cmbVehicleKeyType.setSelectedIndex(0);
         cmbServiceType.setSelectedIndex(0);
+        if (cmbPayment != null) cmbPayment.setSelectedIndex(0);
         dateFromChooser.setDate(null);
         dateToChooser.setDate(null);
     }

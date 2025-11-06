@@ -80,9 +80,13 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         addDetailRow(detailsPanel, gbc, row++, "Purpose:", 
             (purpose != null && !purpose.trim().isEmpty()) ? purpose : "N/A");
 
-        // Service Type
-        ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
-        addDetailRow(detailsPanel, gbc, row++, "Service Type:", serviceType.getDisplayName());
+    // Service Type
+    ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
+    addDetailRow(detailsPanel, gbc, row++, "Service Type:", serviceType.getDisplayName());
+
+    // Payment
+    String paymentType = ServiceTypeHelper.hasUpi(duplicator.getRemarks()) ? "UPI" : "Cash";
+    addDetailRow(detailsPanel, gbc, row++, "Payment:", paymentType);
         
         // Date
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
@@ -99,6 +103,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         
         // Remarks
         String remarks = ServiceTypeHelper.stripServiceSuffix(duplicator.getRemarks());
+        remarks = ServiceTypeHelper.stripPaymentSuffix(remarks);
         addDetailRow(detailsPanel, gbc, row++, "Remarks:", 
             (remarks != null && !remarks.trim().isEmpty()) ? remarks : "No remarks");
         

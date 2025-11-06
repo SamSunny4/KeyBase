@@ -81,4 +81,35 @@ public final class ServiceTypeHelper {
         }
         return remarks + " - " + suffix;
     }
+
+    // Payment helpers: currently only a UPI flag is supported and stored as a simple " - UPI" suffix
+    public static final String UPI_KEYWORD = "upi";
+    public static boolean hasUpi(String remarks) {
+        if (remarks == null || remarks.trim().isEmpty()) return false;
+        return remarks.toLowerCase(Locale.ROOT).contains(UPI_KEYWORD);
+    }
+
+    public static String stripPaymentSuffix(String remarks) {
+        if (remarks == null || remarks.trim().isEmpty()) return "";
+        String trimmed = remarks.trim();
+        String lower = trimmed.toLowerCase(Locale.ROOT);
+        int upiIndex = lower.lastIndexOf(UPI_KEYWORD);
+        if (upiIndex >= 0) {
+            // remove trailing "- UPI" or any trailing token containing UPI
+            String before = trimmed.substring(0, upiIndex).trim();
+            // strip trailing hyphens/spaces
+            while (before.endsWith("-")) {
+                before = before.substring(0, before.length() - 1).trim();
+            }
+            return before;
+        }
+        return trimmed;
+    }
+
+    public static String applyPaymentSuffix(String baseRemarks, boolean upi) {
+        String remarks = baseRemarks == null ? "" : baseRemarks.trim();
+        if (!upi) return remarks;
+        if (remarks.isEmpty()) return "UPI";
+        return remarks + " - UPI";
+    }
 }

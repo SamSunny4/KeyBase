@@ -24,6 +24,9 @@ public class EditRecordDialog extends JDialog {
     private JRadioButton rbInShop;
     private JRadioButton rbOnSite;
     private ButtonGroup serviceTypeGroup;
+    private JRadioButton rbPaymentCash;
+    private JRadioButton rbPaymentUpi;
+    private ButtonGroup paymentTypeGroup;
     private JLabel lblImagePreview;
     private JButton btnDeleteImage;
     private JDateChooser dateChooser;
@@ -253,6 +256,34 @@ public class EditRecordDialog extends JDialog {
 
         formPanel.add(serviceTypePanel, gbc);
         row++;
+
+    // Payment
+    gbc.gridx = 0; gbc.gridy = row;
+    gbc.weightx = 0.0;
+    JLabel lblPayment = new JLabel("Payment:");
+    lblPayment.setFont(labelFont);
+    lblPayment.setForeground(labelColor);
+    formPanel.add(lblPayment, gbc);
+
+    gbc.gridx = 1;
+    gbc.weightx = 1.0;
+    JPanel paymentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+    paymentPanel.setBackground(Color.WHITE);
+
+    paymentTypeGroup = new ButtonGroup();
+    rbPaymentCash = new JRadioButton("Cash");
+    rbPaymentCash.setBackground(Color.WHITE);
+    rbPaymentCash.setFont(new Font("Arial", Font.PLAIN, 12));
+    rbPaymentUpi = new JRadioButton("UPI");
+    rbPaymentUpi.setBackground(Color.WHITE);
+    rbPaymentUpi.setFont(new Font("Arial", Font.PLAIN, 12));
+    paymentTypeGroup.add(rbPaymentCash);
+    paymentTypeGroup.add(rbPaymentUpi);
+    rbPaymentCash.setSelected(true);
+    paymentPanel.add(rbPaymentCash);
+    paymentPanel.add(rbPaymentUpi);
+    formPanel.add(paymentPanel, gbc);
+    row++;
         
         // Amount
         gbc.gridx = 0; gbc.gridy = row;
@@ -387,18 +418,26 @@ public class EditRecordDialog extends JDialog {
         txtAmount.setText(String.format("%.2f", duplicator.getAmount()));
 
         ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
-        switch (serviceType) {
-            case IN_SHOP:
-                rbInShop.setSelected(true);
-                break;
-            case ON_SITE:
-                rbOnSite.setSelected(true);
-                break;
-            default:
-                rbDuplicate.setSelected(true);
-                break;
+        if (serviceType == ServiceTypeHelper.ServiceType.IN_SHOP) {
+            rbInShop.setSelected(true);
+        } else if (serviceType == ServiceTypeHelper.ServiceType.ON_SITE) {
+            rbOnSite.setSelected(true);
+        } else {
+            rbDuplicate.setSelected(true);
         }
-        txtRemarks.setText(ServiceTypeHelper.stripServiceSuffix(duplicator.getRemarks()));
+
+        // Detect payment (UPI) and preselect
+        boolean hasUpi = ServiceTypeHelper.hasUpi(duplicator.getRemarks());
+        if (hasUpi) {
+            rbPaymentUpi.setSelected(true);
+        } else {
+            rbPaymentCash.setSelected(true);
+        }
+
+        // Show remarks without service/payment suffixes
+        String withoutService = ServiceTypeHelper.stripServiceSuffix(duplicator.getRemarks());
+        String withoutPayment = ServiceTypeHelper.stripPaymentSuffix(withoutService);
+        txtRemarks.setText(withoutPayment);
         
         // Load image
         if (imagePath != null && !imagePath.trim().isEmpty()) {
@@ -559,7 +598,12 @@ public class EditRecordDialog extends JDialog {
         } else {
             selectedServiceType = ServiceTypeHelper.ServiceType.DUPLICATE;
         }
-        String finalRemarks = ServiceTypeHelper.applyServiceType(txtRemarks.getText().trim(), selectedServiceType);
+        String base = txtRemarks.getText().trim();
+        String finalRemarks = ServiceTypeHelper.applyServiceType(base, selectedServiceType);
+        // apply payment suffix if needed
+        if (rbPaymentUpi.isSelected()) {
+            finalRemarks = ServiceTypeHelper.applyPaymentSuffix(finalRemarks, true);
+        }
         duplicator.setRemarks(finalRemarks);
         
         // Update image path (in case it was deleted)

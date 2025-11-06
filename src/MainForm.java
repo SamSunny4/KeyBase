@@ -51,6 +51,9 @@ public class MainForm extends JFrame {
     private JRadioButton rbInShop;
     private JRadioButton rbOnSite;
     private ButtonGroup serviceTypeGroup;
+    private JRadioButton rbPaymentCash;
+    private JRadioButton rbPaymentUpi;
+    private ButtonGroup paymentGroup;
     
     private String capturedImagePath = null;
     private String cachedImagePath = null;
@@ -90,7 +93,7 @@ public class MainForm extends JFrame {
 
     private ImageIcon getSplashPreviewIcon() {
         if (splashPreviewIcon == null && splashImage != null) {
-            Image scaledSplash = splashImage.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+            Image scaledSplash = splashImage.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
             splashPreviewIcon = new ImageIcon(scaledSplash);
         }
         return splashPreviewIcon;
@@ -436,8 +439,8 @@ public class MainForm extends JFrame {
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        txtName = new JTextField(20);
-        txtName.setPreferredSize(new Dimension(200, 30));
+    txtName = new JTextField(20);
+    txtName.setPreferredSize(new Dimension(125, 30));
         txtName.setBackground(new Color(250, 250, 250));
         txtName.setForeground(new Color(60, 62, 128));
         txtName.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -469,8 +472,8 @@ public class MainForm extends JFrame {
         gbc.gridy = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        txtPhoneNumber = new JTextField(20);
-        txtPhoneNumber.setPreferredSize(new Dimension(200, 30));
+    txtPhoneNumber = new JTextField(20);
+    txtPhoneNumber.setPreferredSize(new Dimension(125, 30));
         txtPhoneNumber.setBackground(new Color(252, 252, 252));
         txtPhoneNumber.setForeground(new Color(60, 62, 128));
         txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -514,9 +517,9 @@ public class MainForm extends JFrame {
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        cmbVehicleType = new JComboBox<>(new String[] {"SELECT", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
+    cmbVehicleType = new JComboBox<>(new String[] {"SELECT", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
         cmbVehicleType.setSelectedIndex(0); // Default to SELECT
-        cmbVehicleType.setPreferredSize(new Dimension(200, 30));
+    cmbVehicleType.setPreferredSize(new Dimension(125, 30));
         cmbVehicleType.setBackground(new Color(252, 252, 252));
         cmbVehicleType.setForeground(new Color(60, 62, 128));
         cmbVehicleType.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -578,8 +581,8 @@ public class MainForm extends JFrame {
         gbc.gridy = 3;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        txtVehicleNo = new JTextField(20);
-        txtVehicleNo.setPreferredSize(new Dimension(200, 30));
+    txtVehicleNo = new JTextField(20);
+    txtVehicleNo.setPreferredSize(new Dimension(125, 30));
         txtVehicleNo.setBackground(new Color(250, 250, 250));
         txtVehicleNo.setForeground(new Color(60, 62, 128));
         txtVehicleNo.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -611,8 +614,8 @@ public class MainForm extends JFrame {
         gbc.gridy = 4;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        txtIdNo = new JTextField(20);
-        txtIdNo.setPreferredSize(new Dimension(200, 30));
+    txtIdNo = new JTextField(20);
+    txtIdNo.setPreferredSize(new Dimension(125, 30));
         txtIdNo.setBackground(new Color(252, 252, 252));
         txtIdNo.setForeground(new Color(60, 62, 128));
         txtIdNo.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -644,8 +647,8 @@ public class MainForm extends JFrame {
         gbc.gridy = 5;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        txtKeyNo = new JTextField(20);
-        txtKeyNo.setPreferredSize(new Dimension(200, 30));
+    txtKeyNo = new JTextField(20);
+    txtKeyNo.setPreferredSize(new Dimension(125, 30));
         txtKeyNo.setBackground(new Color(250, 250, 250));
         txtKeyNo.setForeground(new Color(60, 62, 128));
         txtKeyNo.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -679,7 +682,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     cmbKeyType = new JComboBox<>(new String[] {"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
     cmbKeyType.setSelectedItem("Personal"); // Default to Personal
-        cmbKeyType.setPreferredSize(new Dimension(200, 30));
+        cmbKeyType.setPreferredSize(new Dimension(125, 30));
         cmbKeyType.setBackground(new Color(252, 252, 252));
         cmbKeyType.setForeground(new Color(60, 62, 128));
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -726,8 +729,8 @@ public class MainForm extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         gbc.weighty = 0.0;
-        txtRemarks = new JTextField(20);
-        txtRemarks.setPreferredSize(new Dimension(200, 30));
+    txtRemarks = new JTextField(20);
+    txtRemarks.setPreferredSize(new Dimension(125, 30));
         txtRemarks.setBackground(new Color(252, 252, 252));
         txtRemarks.setForeground(new Color(60, 62, 128));
         txtRemarks.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -787,7 +790,7 @@ public class MainForm extends JFrame {
         // Quantity spinner
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
         JSpinner spnQuantity = new JSpinner(spinnerModel);
-        spnQuantity.setPreferredSize(new Dimension(100, 30));
+        spnQuantity.setPreferredSize(new Dimension(75, 30));
         spnQuantity.setToolTipText("Number of keys (use arrow keys to increment/decrement)");
         ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField().setColumns(5);
 
@@ -820,29 +823,29 @@ public class MainForm extends JFrame {
         // Remove inner editor border so the spinner shows the outer border cleanly
         spinnerTextField.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-    // Combined panel to hold quantity spinner on the left and service type on the right
+    // Combined panel to hold quantity spinner and service type to the left
     gbc.gridx = 1;
     gbc.gridy = 8;
     gbc.fill = GridBagConstraints.HORIZONTAL;
     gbc.weightx = 1.0;
-    JPanel qtyAndServicePanel = new JPanel(new BorderLayout());
+    JPanel qtyAndServicePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     qtyAndServicePanel.setBackground(Color.WHITE);
 
     // Left side: quantity spinner (keeps original look)
     JPanel qtyHolder = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     qtyHolder.setBackground(Color.WHITE);
     qtyHolder.add(spnQuantity);
-    qtyAndServicePanel.add(qtyHolder, BorderLayout.WEST);
+    qtyAndServicePanel.add(qtyHolder);
 
-    // Right side: service label + radio buttons, aligned to the right
-    JPanel serviceHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+    // Immediately to the right of the spinner: service label + radio buttons
+    JPanel serviceHolder = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
     serviceHolder.setBackground(Color.WHITE);
     JLabel lblServiceInline = new JLabel("Service Type:");
     lblServiceInline.setFont(new Font("Arial", Font.BOLD, 12));
     lblServiceInline.setForeground(new Color(60, 62, 128));
     serviceHolder.add(lblServiceInline);
     serviceHolder.add(serviceTypePanel);
-    qtyAndServicePanel.add(serviceHolder, BorderLayout.EAST);
+    qtyAndServicePanel.add(serviceHolder);
 
     formPanel.add(qtyAndServicePanel, gbc);
         
@@ -857,10 +860,19 @@ public class MainForm extends JFrame {
         
     gbc.gridx = 1;
     gbc.gridy = 9;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0;
-        txtAmount = new JTextField(10);
-        txtAmount.setPreferredSize(new Dimension(120, 30));
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        // Amount + Payment on same line
+    // Keep same spacing/alignment as other inline controls
+    JPanel amountAndPaymentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    amountAndPaymentPanel.setBackground(Color.WHITE);
+    amountAndPaymentPanel.setBorder(null);
+
+    txtAmount = new JTextField();
+    Dimension amtSize = new Dimension(75, 30);
+    txtAmount.setPreferredSize(amtSize);
+    txtAmount.setMinimumSize(amtSize);
+    txtAmount.setMaximumSize(amtSize);
         txtAmount.setBackground(new Color(250, 250, 250));
         txtAmount.setForeground(new Color(60, 62, 128));
         txtAmount.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -878,7 +890,36 @@ public class MainForm extends JFrame {
                 }
             }
         });
-        formPanel.add(txtAmount, gbc);
+    // Align components on the same baseline/vertical center
+    txtAmount.setAlignmentY(Component.CENTER_ALIGNMENT);
+    amountAndPaymentPanel.add(txtAmount);
+
+        // Build a payment holder similar to serviceHolder for consistent styling
+        JPanel paymentHolder = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        paymentHolder.setBackground(Color.WHITE);
+        JLabel lblPaymentInline = new JLabel("Payment:");
+        lblPaymentInline.setFont(new Font("Arial", Font.BOLD, 12));
+        lblPaymentInline.setForeground(new Color(60, 62, 128));
+        lblPaymentInline.setAlignmentY(Component.CENTER_ALIGNMENT);
+        paymentHolder.add(lblPaymentInline);
+
+        paymentGroup = new ButtonGroup();
+        rbPaymentCash = new JRadioButton("Cash", true);
+        rbPaymentCash.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbPaymentCash.setBackground(Color.WHITE);
+        rbPaymentUpi = new JRadioButton("UPI");
+        rbPaymentUpi.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbPaymentUpi.setBackground(Color.WHITE);
+        paymentGroup.add(rbPaymentCash);
+        paymentGroup.add(rbPaymentUpi);
+        rbPaymentCash.setAlignmentY(Component.CENTER_ALIGNMENT);
+        rbPaymentUpi.setAlignmentY(Component.CENTER_ALIGNMENT);
+        paymentHolder.add(rbPaymentCash);
+        paymentHolder.add(rbPaymentUpi);
+
+        amountAndPaymentPanel.add(paymentHolder);
+
+    formPanel.add(amountAndPaymentPanel, gbc);
         
         // Right side panel for Date and Image
         gbc.gridx = 2;
@@ -895,9 +936,10 @@ public class MainForm extends JFrame {
         rightGbc.gridx = 0;
         rightGbc.weightx = 1.0;
 
-        // Date field in right panel
-        rightGbc.gridy = 0;
-        rightGbc.weighty = 0.0;
+    // Date field in right panel (anchor to top)
+    rightGbc.gridy = 0;
+    rightGbc.weighty = 0.0;
+    rightGbc.anchor = GridBagConstraints.NORTH;
         rightGbc.fill = GridBagConstraints.HORIZONTAL;
         rightGbc.anchor = GridBagConstraints.NORTHWEST;
         JPanel datePanel = new JPanel(new GridBagLayout());
@@ -915,8 +957,8 @@ public class MainForm extends JFrame {
         datePanelGbc.fill = GridBagConstraints.HORIZONTAL;
         datePanelGbc.weightx = 1.0;
 
-        dateChooser = new JDateChooser();
-        dateChooser.setPreferredSize(new Dimension(150, 30));
+    dateChooser = new JDateChooser();
+    dateChooser.setPreferredSize(new Dimension(75, 30));
         dateChooser.setBackground(new Color(252, 252, 252));
         dateChooser.setForeground(new Color(60, 62, 128));
         dateChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -945,9 +987,10 @@ public class MainForm extends JFrame {
         rightPanel.add(datePanel, rightGbc);
 
         // Image preview in right panel
-        rightGbc.gridy = 1;
-        rightGbc.weighty = 1.0;
-        rightGbc.fill = GridBagConstraints.BOTH;
+    rightGbc.gridy = 1;
+    // Allow the image panel to grow and occupy remaining vertical space (previous behavior)
+    rightGbc.weighty = 1.0;
+    rightGbc.fill = GridBagConstraints.BOTH;
 
         imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBorder(BorderFactory.createTitledBorder(
@@ -961,8 +1004,9 @@ public class MainForm extends JFrame {
     imagePanel.setBackground(Color.WHITE);
     imagePanel.setOpaque(true);
 
-        lblImagePreview = new JLabel();
-        lblImagePreview.setPreferredSize(new Dimension(200, 200));
+    lblImagePreview = new JLabel();
+    // Keep the preview square and increase size
+    lblImagePreview.setPreferredSize(new Dimension(300, 300));
         lblImagePreview.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 2));
         lblImagePreview.setHorizontalAlignment(JLabel.CENTER);
         lblImagePreview.setBackground(Color.WHITE);
@@ -971,6 +1015,7 @@ public class MainForm extends JFrame {
         lblImagePreview.setForeground(new Color(60, 62, 128));
         lblImagePreview.setText("No Image");
 
+    // Add the preview label directly (revert wrapper)
     imagePanel.add(lblImagePreview, BorderLayout.CENTER);
 
         // Button panel for capture and delete
@@ -1036,16 +1081,10 @@ public class MainForm extends JFrame {
 
         formPanel.add(rightPanel, gbc);
         
-        // Button panel
-        gbc.gridx = 0;
-        gbc.gridy = 9;
-        gbc.gridwidth = 3;
-        gbc.gridheight = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.weighty = 0.0;
-        
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+        // Button panel (embedded on the same row as Amount/Payment)
+        // add some spacing before buttons if needed
+        amountAndPaymentPanel.add(Box.createHorizontalStrut(0));
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         buttonPanel.setBackground(Color.WHITE);
         
     btnSave = new JButton("Save");
@@ -1097,10 +1136,10 @@ public class MainForm extends JFrame {
             }
         });
         
-        buttonPanel.add(btnSave);
-        buttonPanel.add(btnReset);
-        
-        formPanel.add(buttonPanel, gbc);
+    buttonPanel.add(btnSave);
+    buttonPanel.add(btnReset);
+    // Add buttons to the same row container
+    amountAndPaymentPanel.add(buttonPanel);
         
         // Add form panel to the top
         add(formPanel, BorderLayout.NORTH);
@@ -1446,8 +1485,8 @@ public class MainForm extends JFrame {
                 // Load and display the captured image
                 BufferedImage img = ImageIO.read(new File(cachedImagePath));
                 
-                // Resize image to fit in the label
-                Image scaledImg = img.getScaledInstance(150, 150, Image.SCALE_SMOOTH);
+                // Resize image to fit the larger preview label
+                Image scaledImg = img.getScaledInstance(300, 300, Image.SCALE_SMOOTH);
                 lblImagePreview.setIcon(new ImageIcon(scaledImg));
                 lblImagePreview.setText("");
                 
@@ -1570,6 +1609,10 @@ public class MainForm extends JFrame {
             serviceType = ServiceTypeHelper.ServiceType.ON_SITE;
         }
         String remarks = ServiceTypeHelper.applyServiceType(txtRemarks.getText().trim(), serviceType);
+        // Apply payment marker if UPI selected
+        if (rbPaymentUpi != null && rbPaymentUpi.isSelected()) {
+            remarks = ServiceTypeHelper.applyPaymentSuffix(remarks, true);
+        }
             
         Duplicator duplicator = new Duplicator(
             txtName.getText().trim(),
@@ -1667,6 +1710,7 @@ public class MainForm extends JFrame {
         txtQuantity.setText("1");
         txtAmount.setText("");
         rbDuplicate.setSelected(true);
+    if (rbPaymentCash != null) rbPaymentCash.setSelected(true);
         discardCachedImageSilently();
         lblImagePreview.setIcon(null);
         btnDeleteImage.setVisible(false);
