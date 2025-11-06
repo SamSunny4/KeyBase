@@ -101,9 +101,9 @@ public class ReadmeDialog extends JDialog {
             "1. ADDING A NEW RECORD\n" +
             "   • Enter customer Name (required)\n" +
             "   • Enter Phone Number - exactly 10 digits (required)\n" +
-            "   • Select Key Type (2 Wheeler, 4 Wheeler, Other)\n" +
+            "   • Select Key Type (Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi)\n" +
             "   • Enter Vehicle No (shown only for vehicles)\n" +
-            "   • Enter ID Number and Key Number\n" +
+            "   • Enter ID Number and Key No/Model\n" +
             "   • Select Key For purpose (Home, Office, Locker, Department, Suspicious)\n" +
             "   • Enter Quantity (use arrow keys to adjust)\n" +
             "   • Enter Amount charged\n" +
@@ -241,10 +241,10 @@ public class ReadmeDialog extends JDialog {
             "─────────────────────────────────────────────────────────────\n" +
             "1. Name: Customer's full name (required)\n" +
             "2. Phone Number: Exactly 10 digits, validated automatically\n" +
-            "3. Key Type: SELECT, 2 Wheeler, 4 Wheeler, or Other\n" +
-            "   • Vehicle No field appears for 2/4 Wheeler\n" +
+            "3. Key Type: SELECT, Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi\n" +
+            "   • Vehicle No field appears for Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi\n" +
             "4. ID Number: Customer identification (license, Aadhar, etc.)\n" +
-            "5. Key Number: Unique identifier for the key\n" +
+            "5. Key No/Model: Unique identifier for the key\n" +
             "6. Key For: Purpose of the key\n" +
             "   • Home: Residential keys\n" +
             "   • Office: Commercial/office keys\n" +
@@ -272,10 +272,10 @@ public class ReadmeDialog extends JDialog {
             "  • Phone: Phone number\n" +
             "  • Vehicle: Vehicle number\n" +
             "  • ID: ID number\n" +
-            "  • Key: Key number\n" +
+            "  • Key: Key No/Model\n" +
             "  • Remarks: Remarks field\n\n" +
             "Filters:\n" +
-            "  • Vehicle Type: Filter by 2 Wheeler, 4 Wheeler, Other\n" +
+            "  • Vehicle Type: Filter by Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi\n" +
             "  • Key For: Filter by purpose\n" +
             "  • Date From/To: Filter by date range\n\n" +
             "Search Tips:\n" +
@@ -376,7 +376,7 @@ public class ReadmeDialog extends JDialog {
             "  4. Vehicle No (if visible)\n" +
             "     or ID No (if vehicle hidden)\n" +
             "  5. ID Number\n" +
-            "  6. Key Number\n" +
+            "  6. Key No/Model\n" +
             "  7. Key For\n" +
             "  8. Remarks\n" +
             "  9. Quantity\n" +

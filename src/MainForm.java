@@ -4,8 +4,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +47,10 @@ public class MainForm extends JFrame {
     private JPanel imagePanel;
     private Image splashImage;
     private ImageIcon splashPreviewIcon;
+    private JRadioButton rbDuplicate;
+    private JRadioButton rbInShop;
+    private JRadioButton rbOnSite;
+    private ButtonGroup serviceTypeGroup;
     
     private String capturedImagePath = null;
     private String cachedImagePath = null;
@@ -255,7 +257,7 @@ public class MainForm extends JFrame {
                     totalQuantity += quantity;
                     totalAmount += amount;
 
-                    report.append(String.format("%d. Record ID: %d%n", count, recordId));
+                        report.append(String.format("%d. SN: %d%n", count, recordId));
                     report.append(String.format("   Name: %s | Phone: %s%n", name, phone));
                     report.append(String.format("   Key: %s | Type: %s | Purpose: %s%n", keyNo, keyType, purpose));
                     report.append(String.format("   Quantity: %d | Amount: %.2f%n%n", quantity, amount));
@@ -338,11 +340,11 @@ public class MainForm extends JFrame {
                     writer.append("Field,Value\n");
                     
                     // Write data
-                    writer.append("Record ID,").append(String.valueOf(d.getDuplicatorId())).append("\n");
+                    writer.append("SN,").append(String.valueOf(d.getDuplicatorId())).append("\n");
                     writer.append("Name,").append(escapeCsv(d.getName())).append("\n");
                     writer.append("Phone Number,").append(escapeCsv(d.getPhoneNumber())).append("\n");
                     writer.append("ID Number,").append(escapeCsv(d.getIdNo())).append("\n");
-                    writer.append("Key Number,").append(escapeCsv(d.getKeyNo())).append("\n");
+                    writer.append("Key No/Model,").append(escapeCsv(d.getKeyNo())).append("\n");
                     
                     String keyFor = d.getKeyType();
                     writer.append("Key For,").append(escapeCsv(keyFor != null ? keyFor : "N/A")).append("\n");
@@ -469,7 +471,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
         txtPhoneNumber = new JTextField(20);
         txtPhoneNumber.setPreferredSize(new Dimension(200, 30));
-        txtPhoneNumber.setBackground(new Color(250, 250, 250));
+        txtPhoneNumber.setBackground(new Color(252, 252, 252));
         txtPhoneNumber.setForeground(new Color(60, 62, 128));
         txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 12));
         txtPhoneNumber.setBorder(BorderFactory.createCompoundBorder(
@@ -512,10 +514,10 @@ public class MainForm extends JFrame {
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        cmbVehicleType = new JComboBox<>(new String[] {"SELECT", "2 Wheeler", "4 Wheeler", "Other"});
+        cmbVehicleType = new JComboBox<>(new String[] {"SELECT", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
         cmbVehicleType.setSelectedIndex(0); // Default to SELECT
         cmbVehicleType.setPreferredSize(new Dimension(200, 30));
-        cmbVehicleType.setBackground(new Color(250, 250, 250));
+        cmbVehicleType.setBackground(new Color(252, 252, 252));
         cmbVehicleType.setForeground(new Color(60, 62, 128));
         cmbVehicleType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbVehicleType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -611,7 +613,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
         txtIdNo = new JTextField(20);
         txtIdNo.setPreferredSize(new Dimension(200, 30));
-        txtIdNo.setBackground(new Color(250, 250, 250));
+        txtIdNo.setBackground(new Color(252, 252, 252));
         txtIdNo.setForeground(new Color(60, 62, 128));
         txtIdNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtIdNo.setBorder(BorderFactory.createCompoundBorder(
@@ -629,12 +631,12 @@ public class MainForm extends JFrame {
         });
         formPanel.add(txtIdNo, gbc);
         
-        // Key Number field
+    // Key Number / Model field
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
-        JLabel lblKeyNo = new JLabel("Key No:");
+    JLabel lblKeyNo = new JLabel("Key No/Model:");
         lblKeyNo.setFont(new Font("Arial", Font.BOLD, 12));
         formPanel.add(lblKeyNo, gbc);
         
@@ -675,10 +677,10 @@ public class MainForm extends JFrame {
         gbc.gridy = 6;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-        cmbKeyType = new JComboBox<>(new String[] {"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
-        cmbKeyType.setSelectedIndex(0); // Default to SELECT
+    cmbKeyType = new JComboBox<>(new String[] {"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
+    cmbKeyType.setSelectedItem("Personal"); // Default to Personal
         cmbKeyType.setPreferredSize(new Dimension(200, 30));
-        cmbKeyType.setBackground(new Color(250, 250, 250));
+        cmbKeyType.setBackground(new Color(252, 252, 252));
         cmbKeyType.setForeground(new Color(60, 62, 128));
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -726,7 +728,7 @@ public class MainForm extends JFrame {
         gbc.weighty = 0.0;
         txtRemarks = new JTextField(20);
         txtRemarks.setPreferredSize(new Dimension(200, 30));
-        txtRemarks.setBackground(new Color(250, 250, 250));
+        txtRemarks.setBackground(new Color(252, 252, 252));
         txtRemarks.setForeground(new Color(60, 62, 128));
         txtRemarks.setFont(new Font("Arial", Font.PLAIN, 12));
         txtRemarks.setBorder(BorderFactory.createCompoundBorder(
@@ -743,7 +745,8 @@ public class MainForm extends JFrame {
         });
         formPanel.add(txtRemarks, gbc);
         
-        // Quantity field with spinner
+        // Quantity and Service Type on the same line (no "Service Type" label)
+        // Quantity label
         gbc.gridx = 0;
         gbc.gridy = 8;
         gbc.fill = GridBagConstraints.NONE;
@@ -751,23 +754,49 @@ public class MainForm extends JFrame {
         JLabel lblQuantity = new JLabel("Quantity:");
         lblQuantity.setFont(new Font("Arial", Font.BOLD, 12));
         formPanel.add(lblQuantity, gbc);
-        
-        gbc.gridx = 1;
-        gbc.gridy = 8;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.weightx = 0.0;
+
+        // Build Service Type radio buttons (no label displayed)
+        JPanel serviceTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        serviceTypePanel.setBackground(Color.WHITE);
+
+        serviceTypeGroup = new ButtonGroup();
+
+        rbDuplicate = new JRadioButton("Duplicate", true);
+        rbDuplicate.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbDuplicate.setBackground(Color.WHITE);
+        rbDuplicate.setToolTipText("Regular key duplication");
+
+        rbInShop = new JRadioButton("In-shop");
+        rbInShop.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbInShop.setBackground(Color.WHITE);
+        rbInShop.setToolTipText("Key made in shop (adds remark)");
+
+        rbOnSite = new JRadioButton("On-site");
+        rbOnSite.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbOnSite.setBackground(Color.WHITE);
+        rbOnSite.setToolTipText("Key made on site (adds remark)");
+
+        serviceTypeGroup.add(rbDuplicate);
+        serviceTypeGroup.add(rbInShop);
+        serviceTypeGroup.add(rbOnSite);
+
+        serviceTypePanel.add(rbDuplicate);
+        serviceTypePanel.add(rbInShop);
+        serviceTypePanel.add(rbOnSite);
+
+        // Quantity spinner
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
         JSpinner spnQuantity = new JSpinner(spinnerModel);
         spnQuantity.setPreferredSize(new Dimension(100, 30));
         spnQuantity.setToolTipText("Number of keys (use arrow keys to increment/decrement)");
         ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField().setColumns(5);
-        
+
         // Style the spinner's text field
         JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField();
-        spinnerTextField.setBackground(new Color(250, 250, 250));
+        spinnerTextField.setBackground(new Color(252, 252, 252));
         spinnerTextField.setForeground(new Color(60, 62, 128));
         spinnerTextField.setFont(new Font("Arial", Font.PLAIN, 12));
-        
+
         // Add Enter key support to spinner
         spinnerTextField.addKeyListener(new KeyAdapter() {
             @Override
@@ -777,22 +806,57 @@ public class MainForm extends JFrame {
                 }
             }
         });
-        
+
         // Store reference for later use
         txtQuantity = spinnerTextField;
-        formPanel.add(spnQuantity, gbc);
+
+        // Style spinner outer border/background to match other input boxes
+        spnQuantity.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
+            BorderFactory.createEmptyBorder(2, 5, 2, 5)
+        ));
+        spnQuantity.setBackground(new Color(252, 252, 252));
+        spnQuantity.setOpaque(true);
+        // Remove inner editor border so the spinner shows the outer border cleanly
+        spinnerTextField.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+
+    // Combined panel to hold quantity spinner on the left and service type on the right
+    gbc.gridx = 1;
+    gbc.gridy = 8;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.weightx = 1.0;
+    JPanel qtyAndServicePanel = new JPanel(new BorderLayout());
+    qtyAndServicePanel.setBackground(Color.WHITE);
+
+    // Left side: quantity spinner (keeps original look)
+    JPanel qtyHolder = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    qtyHolder.setBackground(Color.WHITE);
+    qtyHolder.add(spnQuantity);
+    qtyAndServicePanel.add(qtyHolder, BorderLayout.WEST);
+
+    // Right side: service label + radio buttons, aligned to the right
+    JPanel serviceHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+    serviceHolder.setBackground(Color.WHITE);
+    JLabel lblServiceInline = new JLabel("Service Type:");
+    lblServiceInline.setFont(new Font("Arial", Font.BOLD, 12));
+    lblServiceInline.setForeground(new Color(60, 62, 128));
+    serviceHolder.add(lblServiceInline);
+    serviceHolder.add(serviceTypePanel);
+    qtyAndServicePanel.add(serviceHolder, BorderLayout.EAST);
+
+    formPanel.add(qtyAndServicePanel, gbc);
         
-        // Amount field
-        gbc.gridx = 0;
-        gbc.gridy = 9;
+    // Amount field (move up to the same row as buttons)
+    gbc.gridx = 0;
+    gbc.gridy = 9;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
         JLabel lblAmount = new JLabel("Amount:");
         lblAmount.setFont(new Font("Arial", Font.BOLD, 12));
         formPanel.add(lblAmount, gbc);
         
-        gbc.gridx = 1;
-        gbc.gridy = 9;
+    gbc.gridx = 1;
+    gbc.gridy = 9;
         gbc.fill = GridBagConstraints.NONE;
         gbc.weightx = 0.0;
         txtAmount = new JTextField(10);
@@ -853,7 +917,7 @@ public class MainForm extends JFrame {
 
         dateChooser = new JDateChooser();
         dateChooser.setPreferredSize(new Dimension(150, 30));
-        dateChooser.setBackground(new Color(250, 250, 250));
+        dateChooser.setBackground(new Color(252, 252, 252));
         dateChooser.setForeground(new Color(60, 62, 128));
         dateChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         dateChooser.setToolTipText("Date when the key was created/received");
@@ -1042,7 +1106,7 @@ public class MainForm extends JFrame {
         add(formPanel, BorderLayout.NORTH);
         
         // Create table for key entries at the bottom
-        String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
+    String[] columnNames = {"SN", "Name", "Phone", "Vehicle No", "Key No/Model", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
         DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -1102,7 +1166,7 @@ public class MainForm extends JFrame {
             tblKeyEntries.getColumnModel().getColumn(1).setPreferredWidth(150); // Name
             tblKeyEntries.getColumnModel().getColumn(2).setPreferredWidth(100); // Phone
             tblKeyEntries.getColumnModel().getColumn(3).setPreferredWidth(110); // Vehicle No
-            tblKeyEntries.getColumnModel().getColumn(4).setPreferredWidth(90); // Key No
+            tblKeyEntries.getColumnModel().getColumn(4).setPreferredWidth(90); // Key No/Model
             tblKeyEntries.getColumnModel().getColumn(5).setPreferredWidth(90); // Key Type
             tblKeyEntries.getColumnModel().getColumn(6).setPreferredWidth(90); // Purpose
             tblKeyEntries.getColumnModel().getColumn(7).setPreferredWidth(110); // ID No
@@ -1182,7 +1246,7 @@ public class MainForm extends JFrame {
                 int viewRow = tblKeyEntries.getSelectedRow();
                 int modelRow = tblKeyEntries.convertRowIndexToModel(viewRow);
                 Object idObj = tblKeyEntries.getModel().getValueAt(modelRow, 0);
-                setStatus("Selected ID: " + idObj);
+                    setStatus("Selected SN: " + idObj);
             }
         });
     }
@@ -1279,7 +1343,7 @@ public class MainForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(MainForm.this,
-                    "KeyBase - Key Management System\nVersion 2.1\n© 2025",
+                    "KeyBase - Key Management System\nVersion 2.2\n© 2025",
                     "About KeyBase",
                     JOptionPane.INFORMATION_MESSAGE);
             }
@@ -1497,6 +1561,15 @@ public class MainForm extends JFrame {
         } catch (NumberFormatException e) {
             amount = 0.00;
         }
+        
+        // Build remarks with service type annotation in a consistent way
+        ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.ServiceType.DUPLICATE;
+        if (rbInShop.isSelected()) {
+            serviceType = ServiceTypeHelper.ServiceType.IN_SHOP;
+        } else if (rbOnSite.isSelected()) {
+            serviceType = ServiceTypeHelper.ServiceType.ON_SITE;
+        }
+        String remarks = ServiceTypeHelper.applyServiceType(txtRemarks.getText().trim(), serviceType);
             
         Duplicator duplicator = new Duplicator(
             txtName.getText().trim(),
@@ -1507,7 +1580,7 @@ public class MainForm extends JFrame {
             (String) cmbVehicleType.getSelectedItem(),
             (String) cmbKeyType.getSelectedItem(),
             currentDate,
-            txtRemarks.getText().trim(),
+            remarks,
             quantity,
             amount,
             finalImagePath
@@ -1587,12 +1660,13 @@ public class MainForm extends JFrame {
         txtVehicleNo.setText("");
         txtIdNo.setText("");
         txtKeyNo.setText("");
-        cmbVehicleType.setSelectedIndex(0);
-        cmbKeyType.setSelectedIndex(0);
+    cmbVehicleType.setSelectedIndex(0);
+    cmbKeyType.setSelectedItem("Personal");
         dateChooser.setDate(new Date()); // Reset to current date
         txtRemarks.setText("");
         txtQuantity.setText("1");
         txtAmount.setText("");
+        rbDuplicate.setSelected(true);
         discardCachedImageSilently();
         lblImagePreview.setIcon(null);
         btnDeleteImage.setVisible(false);
@@ -1608,8 +1682,8 @@ public class MainForm extends JFrame {
     
     private void updateVehicleNoVisibility() {
         String selectedType = (String) cmbVehicleType.getSelectedItem();
-        // Show Vehicle No only for 2 Wheeler and 4 Wheeler, hide for SELECT, Other, or empty
-        boolean showVehicleNo = "2 Wheeler".equals(selectedType) || "4 Wheeler".equals(selectedType);
+        // Show Vehicle No only for Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi
+        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) ||  "JCB".equals(selectedType) || "Hitachi".equals(selectedType) || "Bus".equals(selectedType) || "Traveller".equals(selectedType);
         lblVehicleNo.setVisible(showVehicleNo);
         txtVehicleNo.setVisible(showVehicleNo);
     }

@@ -1,7 +1,7 @@
 #define ProjectRoot "E:\\KeyBase"
 #define StageRoot   "E:\\KeyBase\\dist\\KeyBase"
 #define MyAppName "KeyBase"
-#define MyAppVersion "2.1.0"
+#define MyAppVersion "2.2.0"
 #define MyCompany "KeyBase.sam"
 #define InstallDirName "KeyBase"
 #define JreInstaller "E:\\KeyBase\\installer\\packages\\jre-8u471-windows-x64.exe"

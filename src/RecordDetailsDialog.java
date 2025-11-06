@@ -4,8 +4,11 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.awt.print.*;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
@@ -15,7 +18,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
     private JPanel detailsPanel;
     
     public RecordDetailsDialog(Frame owner, Duplicator duplicator) {
-        super(owner, "Record Details - ID: " + duplicator.getDuplicatorId(), true);
+        super(owner, "Record Details - SN: " + duplicator.getDuplicatorId(), true);
         this.duplicator = duplicator;
         
         setSize(700, 600);
@@ -50,8 +53,8 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         
         int row = 0;
         
-        // ID
-        addDetailRow(detailsPanel, gbc, row++, "Record ID:", String.valueOf(duplicator.getDuplicatorId()));
+    // SN
+    addDetailRow(detailsPanel, gbc, row++, "SN:", String.valueOf(duplicator.getDuplicatorId()));
         
         // Name
         addDetailRow(detailsPanel, gbc, row++, "Name:", duplicator.getName());
@@ -62,13 +65,24 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         // ID Number
         addDetailRow(detailsPanel, gbc, row++, "ID Number:", duplicator.getIdNo());
         
-        // Key Number
-        addDetailRow(detailsPanel, gbc, row++, "Key Number:", duplicator.getKeyNo());
+    // Key Type
+    String keyType = duplicator.getKeyType();
+    addDetailRow(detailsPanel, gbc, row++, "Key Type:", (keyType != null && !keyType.trim().isEmpty()) ? keyType : "N/A");
+
+    // Vehicle Number
+    addDetailRow(detailsPanel, gbc, row++, "Vehicle No:", (duplicator.getVehicleNo() != null && !duplicator.getVehicleNo().trim().isEmpty()) ? duplicator.getVehicleNo() : "N/A");
+
+    // Key Number / Model
+    addDetailRow(detailsPanel, gbc, row++, "Key No/Model:", duplicator.getKeyNo());
         
         // Purpose
         String purpose = duplicator.getPurpose();
         addDetailRow(detailsPanel, gbc, row++, "Purpose:", 
             (purpose != null && !purpose.trim().isEmpty()) ? purpose : "N/A");
+
+        // Service Type
+        ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
+        addDetailRow(detailsPanel, gbc, row++, "Service Type:", serviceType.getDisplayName());
         
         // Date
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
@@ -84,7 +98,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             String.format("₹ %.2f", duplicator.getAmount()));
         
         // Remarks
-        String remarks = duplicator.getRemarks();
+        String remarks = ServiceTypeHelper.stripServiceSuffix(duplicator.getRemarks());
         addDetailRow(detailsPanel, gbc, row++, "Remarks:", 
             (remarks != null && !remarks.trim().isEmpty()) ? remarks : "No remarks");
         
@@ -160,14 +174,14 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         btnPrint.setToolTipText("Print this record");
         btnPrint.addActionListener(e -> printRecord());
         
-        JButton btnExportCsv = new JButton("Export CSV");
-        btnExportCsv.setFont(new Font("Arial", Font.BOLD, 12));
-        btnExportCsv.setBackground(new Color(109, 193, 210));
-        btnExportCsv.setForeground(new Color(60, 62, 128));
-        btnExportCsv.setFocusPainted(false);
-        btnExportCsv.setPreferredSize(new Dimension(120, 32));
-        btnExportCsv.setToolTipText("Export this record to CSV");
-        btnExportCsv.addActionListener(e -> exportToCsv());
+    JButton btnExportCsv = new JButton("Export XLSX");
+    btnExportCsv.setFont(new Font("Arial", Font.BOLD, 12));
+    btnExportCsv.setBackground(new Color(109, 193, 210));
+    btnExportCsv.setForeground(new Color(60, 62, 128));
+    btnExportCsv.setFocusPainted(false);
+    btnExportCsv.setPreferredSize(new Dimension(120, 32));
+    btnExportCsv.setToolTipText("Export this record to XLSX (Excel)");
+    btnExportCsv.addActionListener(e -> exportToXlsx());
         
         JButton btnClose = new JButton("Close");
         btnClose.setFont(new Font("Arial", Font.BOLD, 12));
@@ -287,8 +301,8 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
         
         // Print details
-        g2d.setFont(labelFont);
-        g2d.drawString("Record ID:", labelX, y);
+    g2d.setFont(labelFont);
+    g2d.drawString("SN:", labelX, y);
         g2d.setFont(valueFont);
         g2d.drawString(String.valueOf(duplicator.getDuplicatorId()), valueX, y);
         y += lineHeight;
@@ -311,11 +325,23 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         g2d.drawString(duplicator.getIdNo(), valueX, y);
         y += lineHeight;
         
-        g2d.setFont(labelFont);
-        g2d.drawString("Key Number:", labelX, y);
-        g2d.setFont(valueFont);
-        g2d.drawString(duplicator.getKeyNo(), valueX, y);
-        y += lineHeight;
+    g2d.setFont(labelFont);
+    g2d.drawString("Key Type:", labelX, y);
+    g2d.setFont(valueFont);
+    g2d.drawString((duplicator.getKeyType() != null ? duplicator.getKeyType() : "N/A"), valueX, y);
+    y += lineHeight;
+
+    g2d.setFont(labelFont);
+    g2d.drawString("Vehicle No:", labelX, y);
+    g2d.setFont(valueFont);
+    g2d.drawString((duplicator.getVehicleNo() != null ? duplicator.getVehicleNo() : "N/A"), valueX, y);
+    y += lineHeight;
+
+    g2d.setFont(labelFont);
+    g2d.drawString("Key No/Model:", labelX, y);
+    g2d.setFont(valueFont);
+    g2d.drawString(duplicator.getKeyNo(), valueX, y);
+    y += lineHeight;
         
         String purpose = duplicator.getPurpose();
         if (purpose != null && !purpose.trim().isEmpty()) {
@@ -325,6 +351,13 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             g2d.drawString(purpose, valueX, y);
             y += lineHeight;
         }
+
+        ServiceTypeHelper.ServiceType serviceTypeForPrint = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
+        g2d.setFont(labelFont);
+        g2d.drawString("Service Type:", labelX, y);
+        g2d.setFont(valueFont);
+        g2d.drawString(serviceTypeForPrint.getDisplayName(), valueX, y);
+        y += lineHeight;
         
         g2d.setFont(labelFont);
         g2d.drawString("Date Added:", labelX, y);
@@ -346,7 +379,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         g2d.drawString(String.format("₹ %.2f", duplicator.getAmount()), valueX, y);
         y += lineHeight;
         
-        String remarks = duplicator.getRemarks();
+    String remarks = ServiceTypeHelper.stripServiceSuffix(duplicator.getRemarks());
         if (remarks != null && !remarks.trim().isEmpty()) {
             g2d.setFont(labelFont);
             g2d.drawString("Remarks:", labelX, y);
@@ -383,55 +416,57 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         return PAGE_EXISTS;
     }
     
-    private void exportToCsv() {
+    private void exportToXlsx() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Export Record to CSV");
-        fileChooser.setSelectedFile(new File("record_" + duplicator.getDuplicatorId() + ".csv"));
-        
+        fileChooser.setDialogTitle("Export Record to XLSX");
+        fileChooser.setSelectedFile(new File("record_" + duplicator.getDuplicatorId() + ".xlsx"));
+
         if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             String filePath = file.getAbsolutePath();
-            
-            if (!filePath.toLowerCase().endsWith(".csv")) {
-                filePath += ".csv";
+
+            if (!filePath.toLowerCase().endsWith(".xlsx")) {
+                filePath += ".xlsx";
             }
-            
-            try (FileWriter writer = new FileWriter(filePath)) {
-                // Write header
-                writer.append("Field,Value\n");
-                
-                // Write data
-                writer.append("Record ID,").append(String.valueOf(duplicator.getDuplicatorId())).append("\n");
-                writer.append("Name,").append(escapeCsv(duplicator.getName())).append("\n");
-                writer.append("Phone Number,").append(escapeCsv(duplicator.getPhoneNumber())).append("\n");
-                writer.append("ID Number,").append(escapeCsv(duplicator.getIdNo())).append("\n");
-                writer.append("Key Number,").append(escapeCsv(duplicator.getKeyNo())).append("\n");
-                
+
+            try {
+                List<SimpleXlsxExporter.ColumnSpec> columns = Arrays.asList(
+                    new SimpleXlsxExporter.ColumnSpec("Field", 30.0, SimpleXlsxExporter.CellType.STRING),
+                    new SimpleXlsxExporter.ColumnSpec("Value", 60.0, SimpleXlsxExporter.CellType.STRING)
+                );
+
+                List<List<Object>> rows = new ArrayList<>();
+                rows.add(Arrays.asList("SN", duplicator.getDuplicatorId()));
+                rows.add(Arrays.asList("Name", duplicator.getName()));
+                rows.add(Arrays.asList("Phone Number", duplicator.getPhoneNumber()));
+                rows.add(Arrays.asList("ID Number", duplicator.getIdNo()));
+                rows.add(Arrays.asList("Key Type", duplicator.getKeyType() != null ? duplicator.getKeyType() : "N/A"));
+                rows.add(Arrays.asList("Vehicle No", duplicator.getVehicleNo() != null ? duplicator.getVehicleNo() : "N/A"));
+                rows.add(Arrays.asList("Key No/Model", duplicator.getKeyNo()));
+
                 String purpose = duplicator.getPurpose();
-                writer.append("Purpose,").append(escapeCsv(purpose != null ? purpose : "N/A")).append("\n");
-                
+                rows.add(Arrays.asList("Purpose", purpose != null ? purpose : "N/A"));
+
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String dateStr = (duplicator.getDateAdded() != null) 
-                    ? dateFormat.format(duplicator.getDateAdded()) : "N/A";
-                writer.append("Date Added,").append(dateStr).append("\n");
-                
-                writer.append("Quantity,").append(String.valueOf(duplicator.getQuantity())).append("\n");
-                writer.append("Amount,").append(String.format("%.2f", duplicator.getAmount())).append("\n");
-                
+                String dateStr = (duplicator.getDateAdded() != null) ? dateFormat.format(duplicator.getDateAdded()) : "N/A";
+                rows.add(Arrays.asList("Date Added", dateStr));
+
+                rows.add(Arrays.asList("Quantity", duplicator.getQuantity()));
+                rows.add(Arrays.asList("Amount", String.format("%.2f", duplicator.getAmount())));
+
                 String remarks = duplicator.getRemarks();
-                writer.append("Remarks,").append(escapeCsv(remarks != null ? remarks : "")).append("\n");
-                
+                rows.add(Arrays.asList("Remarks", remarks != null ? remarks : ""));
+
                 String imagePath = duplicator.getImagePath();
-                writer.append("Image Path,").append(escapeCsv(imagePath != null ? imagePath : "")).append("\n");
-                
-                writer.flush();
-                
+                rows.add(Arrays.asList("Image Path", imagePath != null ? imagePath : ""));
+
+                SimpleXlsxExporter.export(filePath, "Record_" + duplicator.getDuplicatorId(), columns, rows, SimpleXlsxExporter.Orientation.AUTO);
+
                 JOptionPane.showMessageDialog(this,
                     "Record exported successfully to:\n" + filePath,
                     "Export Successful",
                     JOptionPane.INFORMATION_MESSAGE);
-                    
-            } catch (Exception e) {
+            } catch (IOException e) {
                 JOptionPane.showMessageDialog(this,
                     "Error exporting record: " + e.getMessage(),
                     "Export Error",
@@ -484,7 +519,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             "- Vehicle Type → deleted\n" +
             "- Vehicle No → deleted\n" +
             "- ID Number → deleted\n" +
-            "- Key Number → deleted\n" +
+            "- Key No/Model → deleted\n" +
             "- Purpose → deleted\n" +
             "- Remarks → deleted\n" +
             "- Date → cleared\n" +

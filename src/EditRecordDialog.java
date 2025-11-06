@@ -20,6 +20,10 @@ public class EditRecordDialog extends JDialog {
     private JTextField txtRemarks;
     private JSpinner spnQuantity;
     private JTextField txtAmount;
+    private JRadioButton rbDuplicate;
+    private JRadioButton rbInShop;
+    private JRadioButton rbOnSite;
+    private ButtonGroup serviceTypeGroup;
     private JLabel lblImagePreview;
     private JButton btnDeleteImage;
     private JDateChooser dateChooser;
@@ -108,7 +112,7 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblKeyType, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        cmbKeyType = new JComboBox<>(new String[]{"SELECT", "2 Wheeler", "4 Wheeler", "Other"});
+        cmbKeyType = new JComboBox<>(new String[]{"SELECT", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setPreferredSize(new Dimension(300, 26));
         cmbKeyType.addItemListener(e -> updateVehicleNoVisibility());
@@ -145,10 +149,10 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(txtIdNo, gbc);
         row++;
         
-        // Key Number
+    // Key Number / Model
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblKeyNo = new JLabel("Key Number:");
+    JLabel lblKeyNo = new JLabel("Key No/Model:");
         lblKeyNo.setFont(labelFont);
         lblKeyNo.setForeground(labelColor);
         formPanel.add(lblKeyNo, gbc);
@@ -169,8 +173,9 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblKeyFor, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        cmbKeyFor = new JComboBox<>(new String[]{"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
-        cmbKeyFor.setFont(new Font("Arial", Font.PLAIN, 12));
+    cmbKeyFor = new JComboBox<>(new String[]{"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
+    cmbKeyFor.setFont(new Font("Arial", Font.PLAIN, 12));
+    cmbKeyFor.setSelectedItem("Personal"); // Default to Personal
         cmbKeyFor.setPreferredSize(new Dimension(300, 26));
         formPanel.add(cmbKeyFor, gbc);
         row++;
@@ -208,6 +213,45 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(spnQuantity, gbc);
     gbc.weightx = 1.0;
     gbc.fill = GridBagConstraints.HORIZONTAL;
+        row++;
+
+        // Service Type
+        gbc.gridx = 0; gbc.gridy = row;
+        gbc.weightx = 0.0;
+        JLabel lblServiceType = new JLabel("Service Type:");
+        lblServiceType.setFont(labelFont);
+        lblServiceType.setForeground(labelColor);
+        formPanel.add(lblServiceType, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        JPanel serviceTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        serviceTypePanel.setBackground(Color.WHITE);
+
+        serviceTypeGroup = new ButtonGroup();
+
+        rbDuplicate = new JRadioButton("Duplicate");
+        rbDuplicate.setBackground(Color.WHITE);
+        rbDuplicate.setFont(new Font("Arial", Font.PLAIN, 12));
+    rbDuplicate.setSelected(true);
+
+        rbInShop = new JRadioButton("In-shop");
+        rbInShop.setBackground(Color.WHITE);
+        rbInShop.setFont(new Font("Arial", Font.PLAIN, 12));
+
+        rbOnSite = new JRadioButton("On-site");
+        rbOnSite.setBackground(Color.WHITE);
+        rbOnSite.setFont(new Font("Arial", Font.PLAIN, 12));
+
+        serviceTypeGroup.add(rbDuplicate);
+        serviceTypeGroup.add(rbInShop);
+        serviceTypeGroup.add(rbOnSite);
+
+        serviceTypePanel.add(rbDuplicate);
+        serviceTypePanel.add(rbInShop);
+        serviceTypePanel.add(rbOnSite);
+
+        formPanel.add(serviceTypePanel, gbc);
         row++;
         
         // Amount
@@ -320,12 +364,11 @@ public class EditRecordDialog extends JDialog {
         String vehicleNo = duplicator.getVehicleNo();
         if (vehicleNo != null && !vehicleNo.trim().isEmpty()) {
             txtVehicleNo.setText(vehicleNo);
-            
-            // Try to determine vehicle type from vehicle number
-            if (!vehicleNo.equalsIgnoreCase("N/A") && !vehicleNo.equalsIgnoreCase("deleted")) {
-                // If vehicle number exists, try to guess type or default to 2 Wheeler
-                cmbKeyType.setSelectedItem("2 Wheeler");
-            }
+        }
+
+        String keyType = duplicator.getKeyType();
+        if (keyType != null && !keyType.trim().isEmpty()) {
+            cmbKeyType.setSelectedItem(keyType);
         }
         
         // Load Purpose
@@ -342,7 +385,20 @@ public class EditRecordDialog extends JDialog {
         
         spnQuantity.setValue(duplicator.getQuantity());
         txtAmount.setText(String.format("%.2f", duplicator.getAmount()));
-        txtRemarks.setText(duplicator.getRemarks());
+
+        ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
+        switch (serviceType) {
+            case IN_SHOP:
+                rbInShop.setSelected(true);
+                break;
+            case ON_SITE:
+                rbOnSite.setSelected(true);
+                break;
+            default:
+                rbDuplicate.setSelected(true);
+                break;
+        }
+        txtRemarks.setText(ServiceTypeHelper.stripServiceSuffix(duplicator.getRemarks()));
         
         // Load image
         if (imagePath != null && !imagePath.trim().isEmpty()) {
@@ -371,7 +427,7 @@ public class EditRecordDialog extends JDialog {
     
     private void updateVehicleNoVisibility() {
         String selectedType = (String) cmbKeyType.getSelectedItem();
-        boolean showVehicleNo = "2 Wheeler".equals(selectedType) || "4 Wheeler".equals(selectedType);
+        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) || "Machines".equals(selectedType) || "JCB".equals(selectedType) || "Hitachi".equals(selectedType);
         lblVehicleNo.setVisible(showVehicleNo);
         txtVehicleNo.setVisible(showVehicleNo);
     }
@@ -463,6 +519,12 @@ public class EditRecordDialog extends JDialog {
         duplicator.setPhoneNumber(txtPhoneNumber.getText().trim());
         duplicator.setIdNo(txtIdNo.getText().trim());
         duplicator.setKeyNo(txtKeyNo.getText().trim());
+        String selectedKeyType = (String) cmbKeyType.getSelectedItem();
+        if (!"SELECT".equals(selectedKeyType)) {
+            duplicator.setKeyType(selectedKeyType);
+        } else {
+            duplicator.setKeyType(null);
+        }
         
         // Save vehicle number
         duplicator.setVehicleNo(txtVehicleNo.getText().trim());
@@ -489,7 +551,16 @@ public class EditRecordDialog extends JDialog {
             duplicator.setAmount(0.00);
         }
         
-        duplicator.setRemarks(txtRemarks.getText().trim());
+        ServiceTypeHelper.ServiceType selectedServiceType;
+        if (rbInShop.isSelected()) {
+            selectedServiceType = ServiceTypeHelper.ServiceType.IN_SHOP;
+        } else if (rbOnSite.isSelected()) {
+            selectedServiceType = ServiceTypeHelper.ServiceType.ON_SITE;
+        } else {
+            selectedServiceType = ServiceTypeHelper.ServiceType.DUPLICATE;
+        }
+        String finalRemarks = ServiceTypeHelper.applyServiceType(txtRemarks.getText().trim(), selectedServiceType);
+        duplicator.setRemarks(finalRemarks);
         
         // Update image path (in case it was deleted)
         duplicator.setImagePath(imagePath);

@@ -368,7 +368,7 @@ The application uses **H2 embedded database**:
 
 ## Version History
 
-### Version 2.1 (Current)
+### Version 2.2 (Current)
 - Purpose dropdown in the search window now filters by stored record purpose
 - Added Ctrl+S shortcut to save records and Ctrl+P to print today's entries
 - Randomized placeholder artwork appears when photos are missing, including a dedicated "no results" image in the search panel

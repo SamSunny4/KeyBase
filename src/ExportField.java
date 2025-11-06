@@ -7,11 +7,11 @@ import java.util.Locale;
 import java.util.Map;
 
 public enum ExportField {
-    ID("ID", "ID", 12.0, SimpleXlsxExporter.CellType.NUMBER),
+    ID("ID", "SN", 12.0, SimpleXlsxExporter.CellType.NUMBER),
     NAME("NAME", "Name", 26.0, SimpleXlsxExporter.CellType.STRING),
     PHONE("PHONE", "Phone", 18.0, SimpleXlsxExporter.CellType.STRING),
     ID_NO("ID_NO", "ID No", 18.0, SimpleXlsxExporter.CellType.STRING),
-    KEY_NO("KEY_NO", "Key No", 16.0, SimpleXlsxExporter.CellType.STRING),
+    KEY_NO("KEY_NO", "Key No/Model", 16.0, SimpleXlsxExporter.CellType.STRING),
     KEY_TYPE("KEY_TYPE", "Key Type", 16.0, SimpleXlsxExporter.CellType.STRING),
     PURPOSE("PURPOSE", "Purpose", 18.0, SimpleXlsxExporter.CellType.STRING),
     VEHICLE_NO("VEHICLE_NO", "Vehicle No", 18.0, SimpleXlsxExporter.CellType.STRING),

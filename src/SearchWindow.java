@@ -28,6 +28,7 @@ public class SearchWindow extends JFrame {
     private JComboBox<String> cmbSearchField;
     private JComboBox<String> cmbVehicleKeyType;
     private JComboBox<String> cmbKeyType;
+    private JComboBox<String> cmbServiceType;
     private JTable tblResults;
     private JLabel lblImagePreview;
     private DefaultTableModel tableModel;
@@ -78,8 +79,9 @@ public class SearchWindow extends JFrame {
         ));
         searchPanel.setBackground(Color.WHITE);
         
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+    GridBagConstraints gbc = new GridBagConstraints();
+    // Reduce horizontal inset so labels and controls sit closer together
+    gbc.insets = new Insets(8, 4, 8, 4);
         gbc.anchor = GridBagConstraints.WEST;
         
         // Search field selector
@@ -92,7 +94,7 @@ public class SearchWindow extends JFrame {
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        cmbSearchField = new JComboBox<>(new String[] {"All Fields", "Name", "Phone Number", "Vehicle Number", "ID Number", "Key Number", "Remarks"});
+    cmbSearchField = new JComboBox<>(new String[] {"All Fields", "Name", "Phone Number", "Vehicle Number", "ID Number", "Key No/Model", "Remarks"});
         cmbSearchField.setPreferredSize(new Dimension(150, 30));
         cmbSearchField.setBackground(new Color(250, 250, 250));
         cmbSearchField.setForeground(new Color(60, 62, 128));
@@ -164,23 +166,57 @@ public class SearchWindow extends JFrame {
         cmbKeyType.setToolTipText("Filter by key purpose");
         searchPanel.add(cmbKeyType, gbc);
         
-        // Filter by vehicle key type
+        // Filter by vehicle key type (made smaller)
         gbc.gridx = 2;
         gbc.gridy = 1;
         JLabel lblKeyType = new JLabel("Key Type:");
         lblKeyType.setFont(new Font("Arial", Font.BOLD, 12));
         searchPanel.add(lblKeyType, gbc);
         
-        gbc.gridx = 3;
-        gbc.gridy = 1;
-        cmbVehicleKeyType = new JComboBox<>(new String[] {"Any", "2 Wheeler", "4 Wheeler", "Other"});
-        cmbVehicleKeyType.setPreferredSize(new Dimension(150, 30));
+    gbc.gridx = 3;
+    gbc.gridy = 1;
+    gbc.gridwidth = 1;
+    // Ensure this column/component does not expand to fill available space
+    gbc.fill = GridBagConstraints.NONE;
+    gbc.weightx = 0.0;
+    cmbVehicleKeyType = new JComboBox<>(new String[] {"Any", "Bike", "Car", "Truck", "Scooter", "Auto", "Machines", "JCB", "Hitachi"});
+    // Make vehicle key type smaller (150px) to occupy less horizontal space
+    cmbVehicleKeyType.setPreferredSize(new Dimension(150, 30));
+    // Prevent unwanted stretching by capping maximum size (helps with some LAFs)
+    cmbVehicleKeyType.setMaximumSize(cmbVehicleKeyType.getPreferredSize());
         cmbVehicleKeyType.setBackground(new Color(250, 250, 250));
         cmbVehicleKeyType.setForeground(new Color(60, 62, 128));
         cmbVehicleKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbVehicleKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         cmbVehicleKeyType.setToolTipText("Filter by vehicle key type");
         searchPanel.add(cmbVehicleKeyType, gbc);
+        
+    // Filter by service type (label + dropdown)
+    gbc.gridx = 4;
+    gbc.gridy = 1;
+    JLabel lblServiceType = new JLabel("Service Type:");
+    lblServiceType.setFont(new Font("Arial", Font.BOLD, 12));
+    searchPanel.add(lblServiceType, gbc);
+
+    gbc.gridx = 5;
+    gbc.gridy = 1;
+    // Place service combo immediately after Key Type and style it similar to other filters
+    cmbServiceType = new JComboBox<>(new String[] {"Any", "Duplicate", "In-shop", "On-site"});
+    // Match preferred size to vehicle key type (small) so controls align
+    cmbServiceType.setPreferredSize(cmbVehicleKeyType.getPreferredSize());
+    cmbServiceType.setMaximumSize(cmbServiceType.getPreferredSize());
+    cmbServiceType.setBackground(cmbKeyType.getBackground());
+    cmbServiceType.setForeground(cmbKeyType.getForeground());
+    cmbServiceType.setFont(cmbKeyType.getFont());
+    cmbServiceType.setBorder(cmbKeyType.getBorder());
+    cmbServiceType.setToolTipText("Filter by service type");
+    // Prevent this component from stretching
+    gbc.fill = GridBagConstraints.NONE;
+    gbc.weightx = 0.0;
+    searchPanel.add(cmbServiceType, gbc);
+    // Restore fill/weightx for subsequent components
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    gbc.weightx = 1.0;
         
         // Date range filter
         gbc.gridx = 0;
@@ -215,16 +251,16 @@ public class SearchWindow extends JFrame {
         dateToChooser.setToolTipText("End date for filtering (yyyy-MM-dd)");
         searchPanel.add(dateToChooser, gbc);
         
-        // Clear filters button
-        gbc.gridx = 4;
-        gbc.gridy = 2;
-        JButton btnClear = new JButton("Clear Filters");
-        btnClear.setPreferredSize(new Dimension(120, 30));
-        btnClear.setBackground(new Color(109, 193, 210));
-        btnClear.setForeground(new Color(60, 62, 128));
-        btnClear.setFont(new Font("Arial", Font.BOLD, 12));
-        btnClear.setFocusPainted(false);
-        btnClear.setToolTipText("Reset all filters");
+    // Clear filters button (placed on same row as Search)
+    gbc.gridx = 5;
+    gbc.gridy = 0;
+    JButton btnClear = new JButton("Clear Filters");
+    btnClear.setPreferredSize(new Dimension(100, 30));
+    btnClear.setBackground(new Color(109, 193, 210));
+    btnClear.setForeground(new Color(60, 62, 128));
+    btnClear.setFont(new Font("Arial", Font.BOLD, 12));
+    btnClear.setFocusPainted(false);
+    btnClear.setToolTipText("Reset all filters");
         btnClear.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -247,7 +283,7 @@ public class SearchWindow extends JFrame {
         splitPane.setContinuousLayout(true);
         
         // Table for results
-        String[] columnNames = {"ID", "Name", "Phone", "Vehicle No", "Key No", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
+    String[] columnNames = {"SN", "Name", "Phone", "Vehicle No", "Key No/Model", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             private final Class<?>[] columnTypes = new Class<?>[] {
                 Integer.class, String.class, String.class, String.class, String.class, String.class,
@@ -417,6 +453,7 @@ public class SearchWindow extends JFrame {
         String searchField = (String) cmbSearchField.getSelectedItem();
     String purposeFilter = (String) cmbKeyType.getSelectedItem();
     String keyTypeFilter = (String) cmbVehicleKeyType.getSelectedItem();
+    String serviceTypeFilter = (String) cmbServiceType.getSelectedItem();
         java.util.Date dateFrom = dateFromChooser.getDate();
         java.util.Date dateTo = dateToChooser.getDate();
         
@@ -437,7 +474,7 @@ public class SearchWindow extends JFrame {
                 case "ID Number":
                     queryBuilder.append("AND LOWER(id_no) LIKE LOWER(?) ");
                     break;
-                case "Key Number":
+                case "Key No/Model":
                     queryBuilder.append("AND LOWER(key_no) LIKE LOWER(?) ");
                     break;
                 case "Remarks":
@@ -455,6 +492,28 @@ public class SearchWindow extends JFrame {
 
         if (!"Any".equals(keyTypeFilter)) {
             queryBuilder.append("AND key_type = ? ");
+        }
+        
+        if (!"Any".equals(serviceTypeFilter)) {
+            switch (serviceTypeFilter) {
+                case "Duplicate":
+                    queryBuilder.append("AND (remarks IS NULL OR remarks = '' OR (LOWER(remarks) NOT LIKE '%")
+                        .append(ServiceTypeHelper.IN_SHOP_KEYWORD)
+                        .append("%' AND LOWER(remarks) NOT LIKE '%")
+                        .append(ServiceTypeHelper.ON_SITE_KEYWORD)
+                        .append("%')) ");
+                    break;
+                case "In-shop":
+                    queryBuilder.append("AND LOWER(remarks) LIKE '%")
+                        .append(ServiceTypeHelper.IN_SHOP_KEYWORD)
+                        .append("%' ");
+                    break;
+                case "On-site":
+                    queryBuilder.append("AND LOWER(remarks) LIKE '%")
+                        .append(ServiceTypeHelper.ON_SITE_KEYWORD)
+                        .append("%' ");
+                    break;
+            }
         }
         
         if (dateFrom != null) {
@@ -554,6 +613,7 @@ public class SearchWindow extends JFrame {
         cmbSearchField.setSelectedIndex(0);
         cmbKeyType.setSelectedIndex(0);
         cmbVehicleKeyType.setSelectedIndex(0);
+        cmbServiceType.setSelectedIndex(0);
         dateFromChooser.setDate(null);
         dateToChooser.setDate(null);
     }
@@ -820,11 +880,11 @@ public class SearchWindow extends JFrame {
                     writer.append("Field,Value\n");
                     
                     // Write data
-                    writer.append("Record ID,").append(String.valueOf(d.getDuplicatorId())).append("\n");
+                    writer.append("SN,").append(String.valueOf(d.getDuplicatorId())).append("\n");
                     writer.append("Name,").append(escapeCsv(d.getName())).append("\n");
                     writer.append("Phone Number,").append(escapeCsv(d.getPhoneNumber())).append("\n");
                     writer.append("ID Number,").append(escapeCsv(d.getIdNo())).append("\n");
-                    writer.append("Key Number,").append(escapeCsv(d.getKeyNo())).append("\n");
+                    writer.append("Key No/Model,").append(escapeCsv(d.getKeyNo())).append("\n");
                     
                     String purpose = d.getPurpose();
                     writer.append("Purpose,").append(escapeCsv(purpose != null ? purpose : "N/A")).append("\n");
