@@ -115,7 +115,7 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblKeyType, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        cmbKeyType = new JComboBox<>(new String[]{"SELECT", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
+        cmbKeyType = new JComboBox<>(new String[]{"Vehicles", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setPreferredSize(new Dimension(300, 26));
         cmbKeyType.addItemListener(e -> updateVehicleNoVisibility());
@@ -466,7 +466,7 @@ public class EditRecordDialog extends JDialog {
     
     private void updateVehicleNoVisibility() {
         String selectedType = (String) cmbKeyType.getSelectedItem();
-        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) || "Machines".equals(selectedType) || "JCB".equals(selectedType) || "Hitachi".equals(selectedType);
+        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) || "Machines".equals(selectedType) || "JCB".equals(selectedType) || "Hitachi".equals(selectedType) || "Bus".equals(selectedType) || "Traveller".equals(selectedType) || "Vehicles".equals(selectedType);
         lblVehicleNo.setVisible(showVehicleNo);
         txtVehicleNo.setVisible(showVehicleNo);
     }

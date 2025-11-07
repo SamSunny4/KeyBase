@@ -517,8 +517,8 @@ public class MainForm extends JFrame {
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-    cmbVehicleType = new JComboBox<>(new String[] {"SELECT", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
-        cmbVehicleType.setSelectedIndex(0); // Default to SELECT
+    cmbVehicleType = new JComboBox<>(new String[] {"Vehicles","Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
+    cmbVehicleType.setSelectedItem("Vehicles"); // Default to Vehicles
     cmbVehicleType.setPreferredSize(new Dimension(125, 30));
         cmbVehicleType.setBackground(new Color(252, 252, 252));
         cmbVehicleType.setForeground(new Color(60, 62, 128));
@@ -680,7 +680,7 @@ public class MainForm extends JFrame {
         gbc.gridy = 6;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-    cmbKeyType = new JComboBox<>(new String[] {"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
+    cmbKeyType = new JComboBox<>(new String[] {"Personal", "Commercial", "Department", "Suspicious"});
     cmbKeyType.setSelectedItem("Personal"); // Default to Personal
         cmbKeyType.setPreferredSize(new Dimension(125, 30));
         cmbKeyType.setBackground(new Color(252, 252, 252));
@@ -1727,7 +1727,7 @@ public class MainForm extends JFrame {
     private void updateVehicleNoVisibility() {
         String selectedType = (String) cmbVehicleType.getSelectedItem();
         // Show Vehicle No only for Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi
-        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) ||  "JCB".equals(selectedType) || "Hitachi".equals(selectedType) || "Bus".equals(selectedType) || "Traveller".equals(selectedType);
+        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) ||  "JCB".equals(selectedType) || "Hitachi".equals(selectedType) || "Bus".equals(selectedType) || "Traveller".equals(selectedType) || "Vehicles".equals(selectedType);
         lblVehicleNo.setVisible(showVehicleNo);
         txtVehicleNo.setVisible(showVehicleNo);
     }

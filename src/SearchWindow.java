@@ -180,7 +180,7 @@ public class SearchWindow extends JFrame {
     // Ensure this column/component does not expand to fill available space
     gbc.fill = GridBagConstraints.NONE;
     gbc.weightx = 0.0;
-    cmbVehicleKeyType = new JComboBox<>(new String[] {"Any", "Bike", "Car", "Truck", "Scooter", "Auto", "Machines", "JCB", "Hitachi"});
+    cmbVehicleKeyType = new JComboBox<>(new String[] {"Any","Vehicles","Bike", "Car", "Truck", "Scooter", "Auto", "Machines", "JCB", "Hitachi"});
     // Make vehicle key type smaller (150px) to occupy less horizontal space
     cmbVehicleKeyType.setPreferredSize(new Dimension(150, 30));
     // Prevent unwanted stretching by capping maximum size (helps with some LAFs)
