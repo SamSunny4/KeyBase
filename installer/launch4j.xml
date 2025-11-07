@@ -18,7 +18,8 @@
   </classPath>
   <jre>
     <bundledJre64Bit>true</bundledJre64Bit>
-  <minVersion>17</minVersion>
+    <bundledJrePath>jre</bundledJrePath>
+    <minVersion></minVersion>
     <maxVersion></maxVersion>
     <jdkPreference>preferJre</jdkPreference>
     <runtimeBits>64</runtimeBits>
