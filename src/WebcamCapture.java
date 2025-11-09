@@ -25,6 +25,13 @@ public class WebcamCapture extends JDialog {
         initComponents();
         setupWebcam();
     }
+
+    // Overload to support callers that are JDialog/Dialog owners
+    public WebcamCapture(Dialog parent) {
+        super(parent, "Capture Image", true);
+        initComponents();
+        setupWebcam();
+    }
     
     private void initComponents() {
         setLayout(new BorderLayout());

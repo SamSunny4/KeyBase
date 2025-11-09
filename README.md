@@ -2,8 +2,10 @@
 
 KeyBase is a comprehensive Java Swing application designed to manage key duplicator records with an embedded H2 database. It provides a complete solution for key shops to track customer information, key details, and maintain visual records through webcam integration.
 
+> Recent updates (2025): Portable JRE bundling (no Java install needed), enhanced image staging (captures preview immediately but only committed on save), service/payment tagging, and improved search filters.
+
 ## Features
-Java JDK 17 (LTS) or newer — the project is built to target Java 17. The installer can bundle a portable JRE so end users don't need a system Java.
+Target runtime: Java 17 (LTS). The distributed installer or staged `dist/KeyBase` folder includes a portable JRE so end users do NOT need Java pre-installed.
 ### Core Functionality
 - **Customer Management**: Store detailed customer information including name, phone number, vehicle type, vehicle number, and ID number
 - **Key Tracking**: Track key details with key type, purpose (Home, Office, Locker, Department, Suspicious), date, quantity, and amount
@@ -15,6 +17,9 @@ Java JDK 17 (LTS) or newer — the project is built to target Java 17. The insta
 - **Smart Search**: Multi-criteria search with case-insensitive substring matching across all fields
 - **Date Range Filtering**: Search records within specific date ranges
 - **Image Preview**: View customer photos in search results and record details
+ - **Service Type Tracking**: Remarks are auto-suffixed when marked In-shop or On-site (duplicate by default)
+ - **Payment Marker**: UPI payments automatically add a " - UPI" suffix in remarks; search can filter Cash vs UPI
+ - **Deferred Image Commit**: New or recaptured images appear immediately but only replace the stored file after you click Save in Edit dialog
 Application defaults are provided in `config/app.properties` which is packaged with the installer. At runtime the application writes per-user overrides to:
 
 - Windows: `%LOCALAPPDATA%\KeyBase\app.properties`
@@ -31,9 +36,9 @@ Configure defaults in `config/app.properties` (these are copied/merged into the 
 - **Combo Box Integration**: Smooth navigation with keyboard shortcuts (Ctrl+S, Ctrl+P, Alt+C, Alt+R, Ctrl+E)
 Packaging notes (for maintainers):
 
-- The staging script is `installer/prepare-dist.ps1`. It builds the jar, copies resources into `dist\KeyBase`, and optionally includes a portable JRE if placed under `installer/packages/jre-portable/` (or as `installer/packages/portable-jre.zip`).
-- The Inno Setup script `installer/keybase.iss` builds the Windows installer and will include everything under `dist\KeyBase`.
-- If you need to bundle a specific JRE version, extract it under `installer/packages/jre-portable/` before running the staging script.
+- The staging script is `installer/prepare-dist.ps1`. It builds the jar, copies resources into `dist\KeyBase`, and bundles a portable JRE from `installer/packages/jre-portable` (or extracts `portable-jre.zip`) so no system Java is required.
+- The Inno Setup script `installer/keybase.iss` builds the Windows installer and will include everything under `dist\KeyBase` including the bundled JRE.
+- To change runtime version, replace the contents of `installer/packages/jre-portable` (or supply a new `portable-jre.zip`) before staging.
 
 If you'd like a reproducible build or CI integration, open an issue and I can add a simple build script or GitHub Actions workflow later.
 - **Smart Visibility**: Vehicle number field shows/hides based on vehicle type selection
@@ -43,11 +48,16 @@ If you'd like a reproducible build or CI integration, open an issue and I can ad
 
 ## Requirements
 
-- Java JDK 8 or higher
-- Webcam compatible with Java (optional, for image capture)
-- Windows, macOS, or Linux operating system
-- Minimum 2GB RAM recommended
-- 100MB free disk space
+For developers:
+- Java JDK 17 (LTS) for building
+- PowerShell (on Windows) to run the staging script
+- Inno Setup 6 (optional) to produce the installer (`ISCC.exe`)
+
+For end users (portable distribution / installer):
+- Windows 64-bit
+- No Java installation needed (bundled JRE)
+- Webcam hardware (optional for photos)
+- ~250MB free disk space for app + JRE + data growth
 
 ## Required Libraries
 
@@ -63,12 +73,26 @@ Place the following JAR files in the `lib` directory:
 
 ## Build and Run
 
-Simply double-click `run.bat` (Windows) to start the application. The script will:
-- Compile the application automatically if needed (first run)
-- Initialize the database if it doesn't exist
-- Launch the KeyBase GUI
+### Running (End User)
+Double-click `KeyBase.exe` inside the distributed folder or installed directory. If the EXE is unavailable, `run.bat` will fall back and launch using the bundled JRE.
 
-That's it! The application handles everything automatically.
+### Developer Staging
+Run:
+```powershell
+pwsh -File installer/prepare-dist.ps1
+```
+This produces `dist\KeyBase` containing:
+- `KeyBase.jar` (main application)
+- `KeyBase.exe` (wrapped GUI launcher via Launch4j, portable JRE aware)
+- `jre/` (portable Java runtime)
+- Support folders: `config/`, `images/`, `resources/`, `lib/`, `data/`
+
+### Installer Creation (Optional)
+Install Inno Setup 6, then:
+```powershell
+& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\keybase.iss
+```
+Generates `KeyBase-Setup.exe` in the project root or `installer` output directory.
 
 ### Manual Build (optional)
 
@@ -239,12 +263,12 @@ Available in both Main Form and Search Window tables:
 ## Image Management
 
 ### Capturing Images
-1. Click "Capture" button in main form
-2. Webcam preview window opens
-3. Click "Capture" to take photo
-4. Image saved to cache temporarily
-5. "Delete" button appears to remove if needed
-6. Image moved to permanent location on Save
+1. Click "Capture" (only shown if no current image)
+2. Webcam preview dialog appears
+3. Click "Capture" to take photo (stored in `images/cache` initially)
+4. Preview updates immediately (staged image)
+5. Optionally use "Recapture" to stage a replacement or "Delete Image" to remove staged/committed image
+6. Final commit happens only when you click "Save Changes" in Edit; staging file is merged (overwriting existing image file contents or adopted as new).
 
 ### Image Storage
 - Default location: `images/` directory
@@ -254,8 +278,8 @@ Available in both Main Form and Search Window tables:
 - Fallback placeholders automatically display when no photo is available, retaining layout consistency in search and detail views.
 
 ### Deleting Images
-- **Before Save**: Click "Delete" button next to "Capture"
-- **After Save**: Use "Delete Data" in record details (removes all data except name and ID)
+ - **Staged or Existing**: Click "Delete Image" in the Edit dialog (removes staged file or committed file and reverts to no-image state).
+ - **Full Record Purge**: Use "Delete Data" in record details to clear record fields (retains minimal identity fields).
 
 ## Application Settings
 
@@ -368,13 +392,21 @@ The application uses **H2 embedded database**:
 
 ## Version History
 
-### Version 2.2 (Current)
-- Purpose dropdown in the search window now filters by stored record purpose
-- Added Ctrl+S shortcut to save records and Ctrl+P to print today's entries
-- Randomized placeholder artwork appears when photos are missing, including a dedicated "no results" image in the search panel
-- Preferences dialog gained a camera disable switch with splash fallback support
-- Edit Record dialog preserves the previously saved purpose selection
-- QR code generation now uses the ZXing library for higher compatibility with mobile scanners
+### Version 2.3 (Current)
+- Bundled portable JRE (no system Java required) integrated into staging and installer
+- Launch4j configuration updated to support embedded runtime path
+- Image capture now uses a staging (pending) approach: commit occurs on Save to avoid accidental overwrite
+- Search window enhanced with Payment filter (Any / Cash / UPI) and service type recognition via remarks
+- Service and payment markers standardized through helper (`ServiceTypeHelper`)
+- Larger image preview area in Edit dialog with conditional buttons: Capture vs Recapture/Delete
+
+### Version 2.2
+ - Purpose dropdown in the search window now filters by stored record purpose
+ - Added Ctrl+S shortcut to save records and Ctrl+P to print today's entries
+ - Randomized placeholder artwork appears when photos are missing, including a dedicated "no results" image in the search panel
+ - Preferences dialog gained a camera disable switch with splash fallback support
+ - Edit Record dialog preserves the previously saved purpose selection
+ - QR code generation now uses the ZXing library for higher compatibility with mobile scanners
 
 ### Version 2.0
 - Added Edit Record functionality

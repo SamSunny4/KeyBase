@@ -29,9 +29,14 @@ public class EditRecordDialog extends JDialog {
     private ButtonGroup paymentTypeGroup;
     private JLabel lblImagePreview;
     private JButton btnDeleteImage;
+    private JButton btnRecaptureImage;
+    private JButton btnCaptureImage;
+    private JPanel imageButtonsPanel;
     private JDateChooser dateChooser;
     private String imagePath;
     private boolean saved = false;
+    // Holds a newly captured image path that is not yet committed (user hasn't clicked Save).
+    private String pendingImagePath;
     
     public EditRecordDialog(Frame owner, Duplicator duplicator) {
         super(owner, "Edit Record - ID: " + duplicator.getDuplicatorId(), true);
@@ -328,12 +333,12 @@ public class EditRecordDialog extends JDialog {
             new Font("Arial", Font.BOLD, 12),
             new Color(60, 62, 128)
         ));
-        imagePanel.setPreferredSize(new Dimension(220, 0));
+    imagePanel.setPreferredSize(new Dimension(320, 0));
         
         lblImagePreview = new JLabel();
         lblImagePreview.setHorizontalAlignment(JLabel.CENTER);
         lblImagePreview.setVerticalAlignment(JLabel.CENTER);
-        lblImagePreview.setPreferredSize(new Dimension(200, 200));
+    lblImagePreview.setPreferredSize(new Dimension(280, 280));
         lblImagePreview.setBackground(new Color(250, 250, 250));
         lblImagePreview.setOpaque(true);
         lblImagePreview.setBorder(BorderFactory.createCompoundBorder(
@@ -342,16 +347,42 @@ public class EditRecordDialog extends JDialog {
         ));
         imagePanel.add(lblImagePreview, BorderLayout.CENTER);
         
-        // Delete image button
-        btnDeleteImage = new JButton("Delete Image");
-        btnDeleteImage.setFont(new Font("Arial", Font.BOLD, 10));
-        btnDeleteImage.setBackground(new Color(220, 80, 80));
-        btnDeleteImage.setForeground(Color.RED);
-        btnDeleteImage.setFocusPainted(false);
-        btnDeleteImage.setPreferredSize(new Dimension(110, 26));
-        btnDeleteImage.setToolTipText("Delete the captured image");
-        btnDeleteImage.addActionListener(e -> deleteImage());
-        imagePanel.add(btnDeleteImage, BorderLayout.SOUTH);
+    // Image action buttons panel (dynamic: Capture OR Recapture/Delete)
+    imageButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 5));
+    imageButtonsPanel.setBackground(Color.WHITE);
+
+    btnCaptureImage = new JButton("Capture");
+    btnCaptureImage.setFont(new Font("Arial", Font.BOLD, 10));
+    btnCaptureImage.setBackground(new Color(109, 193, 210));
+    btnCaptureImage.setForeground(new Color(60, 62, 128));
+    btnCaptureImage.setFocusPainted(false);
+    btnCaptureImage.setPreferredSize(new Dimension(110, 26));
+    btnCaptureImage.setToolTipText("Capture a new image");
+    btnCaptureImage.addActionListener(e -> captureNewImage());
+
+    btnRecaptureImage = new JButton("Recapture");
+    btnRecaptureImage.setFont(new Font("Arial", Font.BOLD, 10));
+    btnRecaptureImage.setBackground(new Color(109, 193, 210));
+    btnRecaptureImage.setForeground(new Color(60, 62, 128));
+    btnRecaptureImage.setFocusPainted(false);
+    btnRecaptureImage.setPreferredSize(new Dimension(110, 26));
+    btnRecaptureImage.setToolTipText("Capture a new image to replace the current one");
+    btnRecaptureImage.addActionListener(e -> recaptureImage());
+
+    btnDeleteImage = new JButton("Delete Image");
+    btnDeleteImage.setFont(new Font("Arial", Font.BOLD, 10));
+    btnDeleteImage.setBackground(new Color(220, 80, 80));
+    btnDeleteImage.setForeground(Color.RED);
+    btnDeleteImage.setFocusPainted(false);
+    btnDeleteImage.setPreferredSize(new Dimension(110, 26));
+    btnDeleteImage.setToolTipText("Delete the captured image");
+    btnDeleteImage.addActionListener(e -> deleteImage());
+
+    // Add all; visibility toggled via updateImageButtonsState()
+    imageButtonsPanel.add(btnCaptureImage);
+    imageButtonsPanel.add(btnRecaptureImage);
+    imageButtonsPanel.add(btnDeleteImage);
+    imagePanel.add(imageButtonsPanel, BorderLayout.SOUTH);
         
         mainPanel.add(imagePanel, BorderLayout.EAST);
         
@@ -445,23 +476,23 @@ public class EditRecordDialog extends JDialog {
                 File imageFile = new File(imagePath);
                 if (imageFile.exists()) {
                     BufferedImage img = ImageIO.read(imageFile);
-                    Image scaledImg = img.getScaledInstance(180, 180, Image.SCALE_SMOOTH);
+                    Image scaledImg = img.getScaledInstance(260, 260, Image.SCALE_SMOOTH);
                     lblImagePreview.setIcon(new ImageIcon(scaledImg));
-                    btnDeleteImage.setVisible(true);
+                    // image present
                 } else {
                     lblImagePreview.setText("Image not found");
-                    btnDeleteImage.setVisible(false);
+                    imagePath = null; // treat as no image
                 }
             } catch (Exception e) {
                 lblImagePreview.setText("Error loading image");
-                btnDeleteImage.setVisible(false);
+                imagePath = null;
             }
         } else {
             lblImagePreview.setText("No image");
-            btnDeleteImage.setVisible(false);
         }
         
         updateVehicleNoVisibility();
+        updateImageButtonsState();
     }
     
     private void updateVehicleNoVisibility() {
@@ -499,11 +530,10 @@ public class EditRecordDialog extends JDialog {
                         // Update the preview
                         lblImagePreview.setIcon(null);
                         lblImagePreview.setText("Image deleted");
-                        btnDeleteImage.setVisible(false);
+                        updateImageButtonsState();
                         
                         JOptionPane.showMessageDialog(this,
-                            "Image deleted successfully.\n" +
-                            "Click 'Save Changes' to update the record.",
+                            "Image deleted successfully.",
                             "Success",
                             JOptionPane.INFORMATION_MESSAGE);
                     } else {
@@ -517,7 +547,7 @@ public class EditRecordDialog extends JDialog {
                     imagePath = null;
                     lblImagePreview.setIcon(null);
                     lblImagePreview.setText("No image");
-                    btnDeleteImage.setVisible(false);
+                    updateImageButtonsState();
                     
                     JOptionPane.showMessageDialog(this,
                         "Image file not found. Reference cleared.",
@@ -532,7 +562,84 @@ public class EditRecordDialog extends JDialog {
             }
         }
     }
+
+    private void recaptureImage() {
+        // Launch capture for replacing existing image but delay commit until Save.
+        WebcamCapture captureDialog = new WebcamCapture(this);
+        captureDialog.setVisible(true);
+        if (!captureDialog.isImageCaptured()) return;
+
+        String newImagePath = captureDialog.getSavedImagePath();
+        if (newImagePath == null || newImagePath.trim().isEmpty()) return;
+
+        int confirm = JOptionPane.showConfirmDialog(
+            this,
+            "Save this new image as a replacement? It will apply only after you click 'Save Changes'.",
+            "Confirm Recapture",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+        if (confirm != JOptionPane.YES_OPTION) {
+            try { new File(newImagePath).delete(); } catch (Exception ignore) {}
+            return;
+        }
+
+        // Clean up any previous pending file
+        discardPendingImageFile();
+        pendingImagePath = newImagePath;
+
+        try {
+            BufferedImage newImg = ImageIO.read(new File(pendingImagePath));
+            Image scaledImg = newImg.getScaledInstance(260, 260, Image.SCALE_SMOOTH);
+            lblImagePreview.setIcon(new ImageIcon(scaledImg));
+            lblImagePreview.setText("");
+            updateImageButtonsState();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load staged image: " + ex.getMessage(),
+                "Image Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
     
+    private void captureNewImage() {
+        // First capture when no existing image; stage pending until Save.
+        WebcamCapture captureDialog = new WebcamCapture(this);
+        captureDialog.setVisible(true);
+        if (!captureDialog.isImageCaptured()) return;
+        String newImagePath = captureDialog.getSavedImagePath();
+        if (newImagePath == null || newImagePath.trim().isEmpty()) return;
+        discardPendingImageFile();
+        pendingImagePath = newImagePath;
+        try {
+            BufferedImage newImg = ImageIO.read(new File(pendingImagePath));
+            Image scaledImg = newImg.getScaledInstance(260, 260, Image.SCALE_SMOOTH);
+            lblImagePreview.setIcon(new ImageIcon(scaledImg));
+            lblImagePreview.setText("");
+            updateImageButtonsState();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                "Failed to load captured image: " + ex.getMessage(),
+                "Image Error",
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateImageButtonsState() {
+        // Effective image shown: either committed (imagePath) or staged (pendingImagePath)
+        boolean hasEffectiveImage = (pendingImagePath != null && !pendingImagePath.trim().isEmpty()) || (pendingImagePath == null && imagePath != null && !imagePath.trim().isEmpty());
+        if (btnCaptureImage != null) btnCaptureImage.setVisible(!hasEffectiveImage);
+        if (btnRecaptureImage != null) btnRecaptureImage.setVisible(hasEffectiveImage);
+        if (btnDeleteImage != null) {
+            btnDeleteImage.setVisible(hasEffectiveImage);
+            btnDeleteImage.setEnabled(hasEffectiveImage);
+        }
+        if (imageButtonsPanel != null) {
+            imageButtonsPanel.revalidate();
+            imageButtonsPanel.repaint();
+        }
+    }
+
     private void saveChanges() {
         // Validate
         if (txtName.getText().trim().isEmpty()) {
@@ -606,7 +713,31 @@ public class EditRecordDialog extends JDialog {
         }
         duplicator.setRemarks(finalRemarks);
         
-        // Update image path (in case it was deleted)
+        // Commit pending image if present
+        if (pendingImagePath != null && !pendingImagePath.trim().isEmpty()) {
+            try {
+                if (imagePath != null && !imagePath.trim().isEmpty()) {
+                    // Overwrite existing image file contents to keep same path reference
+                    BufferedImage stagedImg = ImageIO.read(new File(pendingImagePath));
+                    ImageIO.write(stagedImg, "JPG", new File(imagePath));
+                    // Remove the staged file if different
+                    if (!pendingImagePath.equals(imagePath)) {
+                        discardPendingImageFile();
+                    }
+                } else {
+                    // No existing image; adopt pending as official
+                    imagePath = pendingImagePath;
+                    pendingImagePath = null; // adopted
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Failed to commit staged image: " + ex.getMessage(),
+                    "Image Commit Error",
+                    JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        // Update image path on duplicator
         duplicator.setImagePath(imagePath);
         
         // Save to database
@@ -627,5 +758,24 @@ public class EditRecordDialog extends JDialog {
     
     public boolean isSaved() {
         return saved;
+    }
+
+    @Override
+    public void dispose() {
+        // If dialog closed without saving, discard any staged image
+        if (!saved) {
+            discardPendingImageFile();
+        }
+        super.dispose();
+    }
+
+    private void discardPendingImageFile() {
+        if (pendingImagePath != null) {
+            try {
+                File f = new File(pendingImagePath);
+                if (f.exists()) f.delete();
+            } catch (Exception ignore) {}
+            pendingImagePath = null;
+        }
     }
 }
