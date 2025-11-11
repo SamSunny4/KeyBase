@@ -2,8 +2,6 @@
 
 KeyBase is a comprehensive Java Swing application designed to manage key duplicator records with an embedded H2 database. It provides a complete solution for key shops to track customer information, key details, and maintain visual records through webcam integration.
 
-> Recent updates (2025): Portable JRE bundling (no Java install needed), enhanced image staging (captures preview immediately but only committed on save), service/payment tagging, and improved search filters.
-
 ## Features
 Target runtime: Java 17 (LTS). The distributed installer or staged `dist/KeyBase` folder includes a portable JRE so end users do NOT need Java pre-installed.
 ### Core Functionality
@@ -392,7 +390,22 @@ The application uses **H2 embedded database**:
 
 ## Version History
 
-### Version 2.3 (Current)
+### Version 3.0 (Current): Major visual refresh and analytics
+This release introduces a modern Sales Analytics dashboard, UI polish, and a number of workflow improvements:
+
+- Sales Metrics window (Tools → Sales) with interactive charts (Day/Month/Year) and navigation
+- Modernized sidebar and control styling (teal gradient, Segoe UI typography, compact layout)
+- Chart improvements: gradient area fill under the line, peak badge, and hover tooltip that snaps to nearest point
+- New metric types: Total Sales, Sales by Key Type, Sales by Purpose, Sales by Quantity
+- Excludes "Vehicles" from the Key Type breakdown by default (filtered in analytics)
+- Deferred image commit workflow: captured/recaptured images are staged and only replace stored images after Save
+- Compact Metrics window size and borderless previous/next navigation buttons for a cleaner appearance
+- Packaging and distribution notes remain: portable JRE bundling, staging script, and installer support
+
+ Previous highlights (2025): Portable JRE bundling, service/payment tagging, and improved search filters.
+
+
+### Version 2.3
 - Bundled portable JRE (no system Java required) integrated into staging and installer
 - Launch4j configuration updated to support embedded runtime path
 - Image capture now uses a staging (pending) approach: commit occurs on Save to avoid accidental overwrite

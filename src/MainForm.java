@@ -1391,7 +1391,23 @@ public class MainForm extends JFrame {
         helpMenu.add(readmeItem);
         helpMenu.add(aboutItem);
         
+        // Tools menu
+        JMenu toolsMenu = new JMenu("Tools");
+        
+        JMenuItem salesMetricsItem = new JMenuItem("Sales Metrics");
+        salesMetricsItem.setToolTipText("View sales analytics and charts");
+        salesMetricsItem.setMnemonic(KeyEvent.VK_M);
+        salesMetricsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showMetricsWindow();
+            }
+        });
+        
+        toolsMenu.add(salesMetricsItem);
+        
         menuBar.add(fileMenu);
+        menuBar.add(toolsMenu);
         menuBar.add(helpMenu);
         
         setJMenuBar(menuBar);
@@ -1799,6 +1815,11 @@ public class MainForm extends JFrame {
     private void showReadmeDialog() {
         ReadmeDialog readmeDialog = new ReadmeDialog(this);
         readmeDialog.setVisible(true);
+    }
+    
+    private void showMetricsWindow() {
+        MetricsWindow metricsWindow = new MetricsWindow(this);
+        metricsWindow.setVisible(true);
     }
     
     private void exportToExcel() {

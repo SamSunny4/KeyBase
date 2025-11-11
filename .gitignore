@@ -53,9 +53,10 @@ installer/packages/portable-jre.zip
 installer/packages/jre-portable/
 
 # License generator batch (do not push the generator script to public repo)
-tools/license/generate_license.bat
+tools/license/
 src/LicenseGenerator.java
 src/LicenseManager.java
+to
 # User per-machine config (don't commit)
 /KeyBase.appdata
 %LOCALAPPDATA%/KeyBase/
