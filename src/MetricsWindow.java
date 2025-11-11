@@ -455,14 +455,14 @@ public class MetricsWindow extends JFrame {
     private String buildTotalSalesQuery() {
         switch (currentPeriod) {
             case DAY:
-                // Hourly breakdown for a single day
-                return "SELECT TO_CHAR(date_added, 'HH24:00'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY TO_CHAR(date_added, 'HH24:00') ORDER BY 1";
+                // Hourly breakdown for a single day (H2 uses FORMATDATETIME)
+                return "SELECT FORMATDATETIME(date_added, 'HH:00'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY FORMATDATETIME(date_added, 'HH:00') ORDER BY 1";
             case MONTH:
                 // Daily breakdown for a month
-                return "SELECT TO_CHAR(date_added, 'DD'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY TO_CHAR(date_added, 'DD') ORDER BY 1";
+                return "SELECT FORMATDATETIME(date_added, 'dd'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY FORMATDATETIME(date_added, 'dd') ORDER BY CAST(FORMATDATETIME(date_added, 'dd') AS INT)";
             case YEAR:
                 // Monthly breakdown for a year
-                return "SELECT TO_CHAR(date_added, 'Mon'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY TO_CHAR(date_added, 'MM'), TO_CHAR(date_added, 'Mon') ORDER BY TO_CHAR(date_added, 'MM')";
+                return "SELECT FORMATDATETIME(date_added, 'MMM'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY FORMATDATETIME(date_added, 'MM'), FORMATDATETIME(date_added, 'MMM') ORDER BY FORMATDATETIME(date_added, 'MM')";
             default:
                 return "SELECT 'Total', SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ?";
         }
