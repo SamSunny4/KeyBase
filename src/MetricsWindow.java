@@ -21,7 +21,7 @@ public class MetricsWindow extends JFrame {
     
     // Period enumeration
     private enum Period {
-        DAY("Day"), MONTH("Month"), YEAR("Year");
+        MONTH("Month"), YEAR("Year");
         private final String label;
         Period(String label) { this.label = label; }
         @Override public String toString() { return label; }
@@ -41,14 +41,13 @@ public class MetricsWindow extends JFrame {
     
     // State
     private MetricType currentMetric = MetricType.TOTAL_SALES;
-    private Period currentPeriod = Period.DAY;
+    private Period currentPeriod = Period.MONTH;
     private LocalDate currentDate = LocalDate.now();
     
     // UI components
     private JPanel chartPanel;
     private JButton btnPrevPeriod;
     private JButton btnNextPeriod;
-    private JToggleButton btnDay;
     private JToggleButton btnMonth;
     private JToggleButton btnYear;
     private JLabel lblPeriodTitle;
@@ -298,12 +297,11 @@ public class MetricsWindow extends JFrame {
         
         ButtonGroup periodGroup = new ButtonGroup();
         
-        btnDay = new JToggleButton("Day");
         btnMonth = new JToggleButton("Month");
         btnYear = new JToggleButton("Year");
         
-        JToggleButton[] periodButtons = {btnDay, btnMonth, btnYear};
-        Period[] periods = {Period.DAY, Period.MONTH, Period.YEAR};
+        JToggleButton[] periodButtons = {btnMonth, btnYear};
+        Period[] periods = {Period.MONTH, Period.YEAR};
         
         for (int i = 0; i < periodButtons.length; i++) {
             JToggleButton btn = periodButtons[i];
@@ -350,9 +348,6 @@ public class MetricsWindow extends JFrame {
     
     private void navigatePeriod(int direction) {
         switch (currentPeriod) {
-            case DAY:
-                currentDate = currentDate.plusDays(direction);
-                break;
             case MONTH:
                 currentDate = currentDate.plusMonths(direction);
                 break;
@@ -454,9 +449,6 @@ public class MetricsWindow extends JFrame {
     
     private String buildTotalSalesQuery() {
         switch (currentPeriod) {
-            case DAY:
-                // Hourly breakdown for a single day (H2 uses FORMATDATETIME)
-                return "SELECT FORMATDATETIME(date_added, 'HH:00'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY FORMATDATETIME(date_added, 'HH:00') ORDER BY 1";
             case MONTH:
                 // Daily breakdown for a month
                 return "SELECT FORMATDATETIME(date_added, 'dd'), SUM(amount) FROM duplicator WHERE date_added >= ? AND date_added <= ? GROUP BY FORMATDATETIME(date_added, 'dd') ORDER BY CAST(FORMATDATETIME(date_added, 'dd') AS INT)";
@@ -476,10 +468,6 @@ public class MetricsWindow extends JFrame {
         LocalDate start, end;
         
         switch (currentPeriod) {
-            case DAY:
-                start = currentDate;
-                end = currentDate;
-                break;
             case MONTH:
                 start = currentDate.with(TemporalAdjusters.firstDayOfMonth());
                 end = currentDate.with(TemporalAdjusters.lastDayOfMonth());
@@ -528,10 +516,6 @@ public class MetricsWindow extends JFrame {
         LocalDate prevStart, prevEnd;
         
         switch (currentPeriod) {
-            case DAY:
-                prevStart = currentDate.minusDays(1);
-                prevEnd = currentDate.minusDays(1);
-                break;
             case MONTH:
                 LocalDate prevMonth = currentDate.minusMonths(1);
                 prevStart = prevMonth.with(TemporalAdjusters.firstDayOfMonth());
@@ -562,10 +546,6 @@ public class MetricsWindow extends JFrame {
         // Update period title
         SimpleDateFormat sdf;
         switch (currentPeriod) {
-            case DAY:
-                sdf = new SimpleDateFormat("EEEE, MMM dd, yyyy");
-                lblPeriodTitle.setText(sdf.format(java.sql.Date.valueOf(currentDate)));
-                break;
             case MONTH:
                 sdf = new SimpleDateFormat("MMMM yyyy");
                 lblPeriodTitle.setText(sdf.format(java.sql.Date.valueOf(currentDate.with(TemporalAdjusters.firstDayOfMonth()))));

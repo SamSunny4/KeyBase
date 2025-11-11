@@ -1404,7 +1404,18 @@ public class MainForm extends JFrame {
             }
         });
         
+        JMenuItem keyStatsItem = new JMenuItem("Key Statistics");
+        keyStatsItem.setToolTipText("View key counts and breakdowns");
+        keyStatsItem.setMnemonic(KeyEvent.VK_K);
+        keyStatsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showKeyStatisticsWindow();
+            }
+        });
+        
         toolsMenu.add(salesMetricsItem);
+        toolsMenu.add(keyStatsItem);
         
         menuBar.add(fileMenu);
         menuBar.add(toolsMenu);
@@ -1820,6 +1831,11 @@ public class MainForm extends JFrame {
     private void showMetricsWindow() {
         MetricsWindow metricsWindow = new MetricsWindow(this);
         metricsWindow.setVisible(true);
+    }
+    
+    private void showKeyStatisticsWindow() {
+        KeyStatisticsWindow statsWindow = new KeyStatisticsWindow(this);
+        statsWindow.setVisible(true);
     }
     
     private void exportToExcel() {
