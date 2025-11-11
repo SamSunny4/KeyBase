@@ -1382,7 +1382,7 @@ public class MainForm extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JOptionPane.showMessageDialog(MainForm.this,
-                    "KeyBase - Key Management System\nVersion 2.3.0\n© 2025",
+                    "KeyBase - Key Management System\nVersion 3.0\n© 2025",
                     "About KeyBase",
                     JOptionPane.INFORMATION_MESSAGE);
             }
