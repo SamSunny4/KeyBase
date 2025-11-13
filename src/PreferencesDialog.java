@@ -24,7 +24,18 @@ public class PreferencesDialog extends JDialog {
     private JTextField customDbPathField;
     private JButton dbBrowseButton;
     private final Map<ExportField, JCheckBox> fieldCheckBoxes = new LinkedHashMap<>();
+    private final Map<String, JCheckBox> requiredFieldCheckBoxes = new LinkedHashMap<>();
     private boolean settingsChanged = false;
+    
+    // Modern UI components
+    private JPanel contentPanel;
+    private CardLayout cardLayout;
+    
+    // Section names
+    private static final String SECTION_CAMERA = "Camera Settings";
+    private static final String SECTION_FIELDS = "Required Fields";
+    private static final String SECTION_DATABASE = "Database";
+    private static final String SECTION_EXPORT = "Export Settings";
 
     public PreferencesDialog(JFrame parent) {
         super(parent, "Preferences", true);
@@ -33,13 +44,27 @@ public class PreferencesDialog extends JDialog {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        setSize(560, 620);
+        setSize(950, 700);
         setLocationRelativeTo(null);
-
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        mainPanel.setBackground(Color.WHITE);
+        getContentPane().setBackground(Color.WHITE);
+        
+        // Create modern sidebar
+        JPanel sidebar = createSidebar();
+        add(sidebar, BorderLayout.WEST);
+        
+        // Create content area with CardLayout
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        // Add all section panels
+        contentPanel.add(createCameraPanel(), SECTION_CAMERA);
+        contentPanel.add(createRequiredFieldsPanelModern(), SECTION_FIELDS);
+        contentPanel.add(createDatabasePanelModern(), SECTION_DATABASE);
+        contentPanel.add(createExportPanelModern(), SECTION_EXPORT);
+        
+        add(contentPanel, BorderLayout.CENTER);
 
         // Webcam Device Selection
         JPanel webcamPanel = new JPanel(new BorderLayout(5, 0));
@@ -96,54 +121,42 @@ public class PreferencesDialog extends JDialog {
         });
         imagePathPanel.add(browseButton, BorderLayout.EAST);
 
-        // Add panels to main panel
-        mainPanel.add(webcamPanel);
-        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        mainPanel.add(imagePathPanel);
-        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        mainPanel.add(createDatabasePanel());
-        mainPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-        mainPanel.add(createExportPanel());
-        mainPanel.add(Box.createVerticalGlue());
-
-        add(mainPanel, BorderLayout.CENTER);
-
-        // Buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        // Buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(220, 220, 220)));
         
         JButton saveButton = new JButton("Save");
-        saveButton.setFont(new Font("Arial", Font.BOLD, 12));
-        saveButton.setBackground(new Color(109, 193, 210));
-        saveButton.setForeground(new Color(60, 62, 128));
+        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        saveButton.setBackground(new Color(25, 118, 140));
+        saveButton.setForeground(Color.WHITE);
         saveButton.setFocusPainted(false);
-        saveButton.setPreferredSize(new Dimension(90, 32));
-        saveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (saveSettings()) {
-                    dispose();
-                }
+        saveButton.setBorderPainted(false);
+        saveButton.setPreferredSize(new Dimension(100, 36));
+        saveButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        saveButton.addActionListener(e -> {
+            if (saveSettings()) {
+                dispose();
             }
         });
         
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.setFont(new Font("Arial", Font.BOLD, 12));
+        cancelButton.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         cancelButton.setBackground(new Color(240, 240, 240));
-        cancelButton.setForeground(new Color(60, 62, 128));
+        cancelButton.setForeground(new Color(80, 80, 80));
         cancelButton.setFocusPainted(false);
-        cancelButton.setPreferredSize(new Dimension(90, 32));
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-            }
-        });
+        cancelButton.setBorderPainted(false);
+        cancelButton.setPreferredSize(new Dimension(100, 36));
+        cancelButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        cancelButton.addActionListener(e -> dispose());
         
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
         
         add(buttonPanel, BorderLayout.SOUTH);
+        
+        // Show first section by default
+        cardLayout.show(contentPanel, SECTION_CAMERA);
     }
 
     private void loadWebcamDevices() {
@@ -180,6 +193,242 @@ public class PreferencesDialog extends JDialog {
             webcamSelector.addItem("Default webcam");
         }
     }
+    
+    private JPanel createSidebar() {
+        JPanel sidebar = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                // Gradient background matching MetricsWindow
+                GradientPaint gradient = new GradientPaint(
+                    0, 0, new Color(25, 118, 140),
+                    0, getHeight(), new Color(15, 76, 92)
+                );
+                g2.setPaint(gradient);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setPreferredSize(new Dimension(200, 0));
+        sidebar.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 0, 3, new Color(109, 193, 210)),
+            BorderFactory.createEmptyBorder(25, 15, 25, 15)
+        ));
+        
+        JLabel title = new JLabel("Preferences");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        title.setForeground(Color.WHITE);
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
+        sidebar.add(title);
+        
+        JLabel subtitle = new JLabel("Configure your settings");
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        subtitle.setForeground(new Color(180, 220, 230));
+        subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        sidebar.add(subtitle);
+        sidebar.add(Box.createVerticalStrut(30));
+        
+        // Create section buttons
+        List<JPanel> sectionButtons = new ArrayList<>();
+        String[] sections = {SECTION_CAMERA, SECTION_FIELDS, SECTION_DATABASE, SECTION_EXPORT};
+        for (int i = 0; i < sections.length; i++) {
+            JPanel btn = createSectionButton(sections[i], i == 0, sectionButtons);
+            sectionButtons.add(btn);
+            sidebar.add(btn);
+            sidebar.add(Box.createVerticalStrut(8));
+        }
+        
+        sidebar.add(Box.createVerticalGlue());
+        
+        // Footer
+        JLabel footerLabel = new JLabel("KeyBase v3.0");
+        footerLabel.setFont(new Font("Segoe UI", Font.ITALIC, 10));
+        footerLabel.setForeground(new Color(150, 200, 210));
+        footerLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        sidebar.add(footerLabel);
+        
+        return sidebar;
+    }
+    
+    private JPanel createSectionButton(String sectionName, boolean initialSelected, List<JPanel> allButtons) {
+        class SelectablePanel extends JPanel {
+            private boolean selected = false;
+            private boolean hovered = false;
+            
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g;
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                
+                if (selected) {
+                    g2.setColor(new Color(10, 60, 75, 220));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                    g2.setColor(new Color(109, 193, 210));
+                    g2.fillRoundRect(0, 0, 4, getHeight(), 4, 4);
+                } else if (hovered) {
+                    g2.setColor(new Color(25, 118, 140, 60));
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                }
+            }
+            
+            public void setSelected(boolean sel) {
+                this.selected = sel;
+                repaint();
+            }
+            
+            public void setHovered(boolean hov) {
+                this.hovered = hov;
+                repaint();
+            }
+        }
+        
+        SelectablePanel btnPanel = new SelectablePanel();
+        btnPanel.setLayout(new BorderLayout());
+        btnPanel.setOpaque(false);
+        btnPanel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnPanel.setPreferredSize(new Dimension(200, 40));
+        btnPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnPanel.setSelected(initialSelected);
+        
+        JLabel label = new JLabel(sectionName);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        label.setForeground(Color.WHITE);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        btnPanel.add(label, BorderLayout.CENTER);
+        
+        // Mouse listeners
+        btnPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (!btnPanel.selected) {
+                    btnPanel.setHovered(true);
+                }
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btnPanel.setHovered(false);
+            }
+            
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                // Deselect all buttons
+                for (JPanel btn : allButtons) {
+                    if (btn instanceof SelectablePanel) {
+                        ((SelectablePanel) btn).setSelected(false);
+                    }
+                }
+                // Select this button
+                btnPanel.setSelected(true);
+                // Show corresponding panel
+                cardLayout.show(contentPanel, sectionName);
+            }
+        });
+        
+        return btnPanel;
+    }
+    
+    private JPanel createCameraPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        
+        // Title
+        JLabel titleLabel = new JLabel("Camera Settings");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(25, 118, 140));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(titleLabel);
+        panel.add(Box.createVerticalStrut(5));
+        
+        JLabel descLabel = new JLabel("Configure webcam and image storage settings");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(120, 120, 120));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(descLabel);
+        panel.add(Box.createVerticalStrut(25));
+        
+        // Webcam Device
+        JPanel webcamContainer = createModernSection("Webcam Device");
+        
+        webcamSelector = new JComboBox<>();
+        webcamSelector.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        webcamSelector.setAlignmentX(Component.LEFT_ALIGNMENT);
+        webcamSelector.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        loadWebcamDevices();
+        webcamContainer.add(webcamSelector);
+        webcamContainer.add(Box.createVerticalStrut(10));
+        
+        disableCameraCheckBox = new JCheckBox("Disable camera features");
+        disableCameraCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        disableCameraCheckBox.setBackground(Color.WHITE);
+        disableCameraCheckBox.setForeground(new Color(80, 80, 80));
+        disableCameraCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        disableCameraCheckBox.setSelected(AppConfig.isCameraDisabled());
+        disableCameraCheckBox.addActionListener(e -> webcamSelector.setEnabled(!disableCameraCheckBox.isSelected()));
+        webcamSelector.setEnabled(!disableCameraCheckBox.isSelected());
+        webcamContainer.add(disableCameraCheckBox);
+        
+        panel.add(webcamContainer);
+        panel.add(Box.createVerticalStrut(20));
+        
+        // Image Storage
+        JPanel imageContainer = createModernSection("Image Storage Location");
+        
+        imagePathField = new JTextField(AppConfig.getImagesDirectory());
+        imagePathField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        imagePathField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        imagePathField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        
+        JButton browseBtn = new JButton("Browse...");
+        browseBtn.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        browseBtn.setBackground(new Color(25, 118, 140));
+        browseBtn.setForeground(Color.WHITE);
+        browseBtn.setFocusPainted(false);
+        browseBtn.setBorderPainted(false);
+        browseBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        browseBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        browseBtn.addActionListener(e -> browseForImagePath());
+        
+        JPanel pathPanel = new JPanel(new BorderLayout(10, 0));
+        pathPanel.setBackground(Color.WHITE);
+        pathPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pathPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        pathPanel.add(imagePathField, BorderLayout.CENTER);
+        pathPanel.add(browseBtn, BorderLayout.EAST);
+        
+        imageContainer.add(pathPanel);
+        panel.add(imageContainer);
+        panel.add(Box.createVerticalGlue());
+        
+        return panel;
+    }
+    
+    private JPanel createModernSection(String title) {
+        JPanel section = new JPanel();
+        section.setLayout(new BoxLayout(section, BoxLayout.Y_AXIS));
+        section.setBackground(Color.WHITE);
+        section.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+            BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        section.setAlignmentX(Component.LEFT_ALIGNMENT);
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2000));
+        
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        titleLabel.setForeground(new Color(60, 60, 60));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        section.add(titleLabel);
+        section.add(Box.createVerticalStrut(12));
+        
+        return section;
+    }
 
     private void browseForImagePath() {
         JFileChooser fileChooser = new JFileChooser();
@@ -190,6 +439,70 @@ public class PreferencesDialog extends JDialog {
             File selectedDir = fileChooser.getSelectedFile();
             imagePathField.setText(selectedDir.getAbsolutePath());
         }
+    }
+
+    private JPanel createRequiredFieldsPanelModern() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        
+        // Title
+        JLabel titleLabel = new JLabel("Required Fields");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(25, 118, 140));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(titleLabel);
+        panel.add(Box.createVerticalStrut(5));
+        
+        JLabel descLabel = new JLabel("Select which fields must be filled before saving a record");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(120, 120, 120));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(descLabel);
+        panel.add(Box.createVerticalStrut(25));
+        
+        // Fields container
+        JPanel fieldsContainer = createModernSection("Form Field Requirements");
+        
+        // Get current required fields
+        Set<String> requiredFields = AppConfig.getRequiredFields();
+        
+        // Define all available fields
+        String[] formFields = {
+            "NAME", "PHONE", "ID_NO", "VEHICLE_NO", "KEY_NO", 
+            "PURPOSE", "REMARKS", "QUANTITY", "AMOUNT", "DATE"
+        };
+        
+        String[] formFieldLabels = {
+            "Name", "Phone Number", "ID Number", "Vehicle Number", "Key Number",
+            "Purpose", "Remarks", "Quantity", "Amount", "Date"
+        };
+        
+        JPanel checkBoxGrid = new JPanel(new GridLayout(0, 2, 15, 10));
+        checkBoxGrid.setBackground(Color.WHITE);
+        checkBoxGrid.setAlignmentX(Component.LEFT_ALIGNMENT);
+        checkBoxGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 400));
+        
+        for (int i = 0; i < formFields.length; i++) {
+            JCheckBox checkBox = new JCheckBox(formFieldLabels[i]);
+            checkBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            checkBox.setBackground(Color.WHITE);
+            checkBox.setForeground(new Color(80, 80, 80));
+            checkBox.setSelected(requiredFields.contains(formFields[i]));
+            requiredFieldCheckBoxes.put(formFields[i], checkBox);
+            checkBoxGrid.add(checkBox);
+        }
+        
+        fieldsContainer.add(checkBoxGrid);
+        panel.add(fieldsContainer);
+        panel.add(Box.createVerticalGlue());
+        
+        return panel;
+    }
+    
+    private JPanel createRequiredFieldsPanel() {
+        // Old method - kept for compatibility, redirects to modern version
+        return createRequiredFieldsPanelModern();
     }
 
     private JPanel createExportPanel() {
@@ -241,6 +554,168 @@ public class PreferencesDialog extends JDialog {
         selectOrientationRadio(AppConfig.getExportOrientation());
 
         return exportPanel;
+    }
+    
+    private JPanel createDatabasePanelModern() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        
+        // Title
+        JLabel titleLabel = new JLabel("Database Settings");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(25, 118, 140));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(titleLabel);
+        panel.add(Box.createVerticalStrut(5));
+        
+        JLabel descLabel = new JLabel("Configure database connection");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(120, 120, 120));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(descLabel);
+        panel.add(Box.createVerticalStrut(25));
+        
+        // Database container
+        JPanel dbContainer = createModernSection("Custom Database");
+        
+        useCustomDbCheckBox = new JCheckBox("Use existing H2 database file");
+        useCustomDbCheckBox.setBackground(Color.WHITE);
+        useCustomDbCheckBox.setForeground(new Color(80, 80, 80));
+        useCustomDbCheckBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        useCustomDbCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        dbContainer.add(useCustomDbCheckBox);
+        dbContainer.add(Box.createVerticalStrut(12));
+        
+        String savedPath = AppConfig.getCustomDatabasePath();
+        String displayPath = savedPath;
+        if (displayPath == null) {
+            displayPath = "";
+        }
+        if (!displayPath.isEmpty()) {
+            File directFile = new File(displayPath);
+            if (directFile.exists() && directFile.isFile()) {
+                displayPath = directFile.getAbsolutePath();
+            } else {
+                File mvCandidate = new File(displayPath + ".mv.db");
+                if (mvCandidate.exists()) {
+                    displayPath = mvCandidate.getAbsolutePath();
+                }
+            }
+        }
+        
+        customDbPathField = new JTextField(displayPath);
+        customDbPathField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        customDbPathField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        customDbPathField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        
+        dbBrowseButton = new JButton("Browse...");
+        dbBrowseButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        dbBrowseButton.setBackground(new Color(25, 118, 140));
+        dbBrowseButton.setForeground(Color.WHITE);
+        dbBrowseButton.setFocusPainted(false);
+        dbBrowseButton.setBorderPainted(false);
+        dbBrowseButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        dbBrowseButton.addActionListener(e -> browseForDatabasePath());
+        
+        JPanel pathPanel = new JPanel(new BorderLayout(10, 0));
+        pathPanel.setBackground(Color.WHITE);
+        pathPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pathPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        pathPanel.add(customDbPathField, BorderLayout.CENTER);
+        pathPanel.add(dbBrowseButton, BorderLayout.EAST);
+        
+        dbContainer.add(pathPanel);
+        dbContainer.add(Box.createVerticalStrut(10));
+        
+        JLabel helperLabel = new JLabel("<html><i>Select the H2 database (.mv.db) you want this app to use.</i></html>");
+        helperLabel.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        helperLabel.setForeground(new Color(120, 120, 120));
+        helperLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        dbContainer.add(helperLabel);
+        
+        boolean hasCustomPath = savedPath != null && !savedPath.isEmpty();
+        useCustomDbCheckBox.setSelected(hasCustomPath);
+        toggleCustomDatabaseInputs(hasCustomPath);
+        
+        useCustomDbCheckBox.addActionListener(e -> {
+            boolean enabled = useCustomDbCheckBox.isSelected();
+            toggleCustomDatabaseInputs(enabled);
+        });
+        
+        panel.add(dbContainer);
+        panel.add(Box.createVerticalGlue());
+        
+        return panel;
+    }
+    
+    private JPanel createExportPanelModern() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+        
+        // Title
+        JLabel titleLabel = new JLabel("Export Settings");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(25, 118, 140));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(titleLabel);
+        panel.add(Box.createVerticalStrut(5));
+        
+        JLabel descLabel = new JLabel("Configure CSV export preferences");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(120, 120, 120));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(descLabel);
+        panel.add(Box.createVerticalStrut(25));
+        
+        // Orientation section
+        JPanel orientationContainer = createModernSection("Page Orientation");
+        
+        ButtonGroup orientationGroup = new ButtonGroup();
+        orientationAutoRadio = createOrientationRadio("Auto", "AUTO", orientationGroup);
+        orientationPortraitRadio = createOrientationRadio("Portrait", "PORTRAIT", orientationGroup);
+        orientationLandscapeRadio = createOrientationRadio("Landscape", "LANDSCAPE", orientationGroup);
+        
+        orientationAutoRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        orientationPortraitRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        orientationLandscapeRadio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        orientationContainer.add(orientationAutoRadio);
+        orientationContainer.add(Box.createVerticalStrut(8));
+        orientationContainer.add(orientationPortraitRadio);
+        orientationContainer.add(Box.createVerticalStrut(8));
+        orientationContainer.add(orientationLandscapeRadio);
+        
+        selectOrientationRadio(AppConfig.getExportOrientation());
+        
+        panel.add(orientationContainer);
+        panel.add(Box.createVerticalStrut(20));
+        
+        // Export fields section
+        JPanel fieldsContainer = createModernSection("Fields to Export");
+        
+        JPanel checkBoxGrid = new JPanel(new GridLayout(0, 2, 15, 10));
+        checkBoxGrid.setBackground(Color.WHITE);
+        checkBoxGrid.setAlignmentX(Component.LEFT_ALIGNMENT);
+        checkBoxGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 400));
+        
+        Set<String> selectedFields = new HashSet<>(AppConfig.getExportFields());
+        for (ExportField field : ExportField.values()) {
+            JCheckBox checkBox = new JCheckBox(field.getHeader());
+            checkBox.setBackground(Color.WHITE);
+            checkBox.setForeground(new Color(80, 80, 80));
+            checkBox.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            checkBox.setSelected(selectedFields.contains(field.getKey()));
+            fieldCheckBoxes.put(field, checkBox);
+            checkBoxGrid.add(checkBox);
+        }
+        
+        fieldsContainer.add(checkBoxGrid);
+        panel.add(fieldsContainer);
+        panel.add(Box.createVerticalGlue());
+        
+        return panel;
     }
 
     private JPanel createDatabasePanel() {
@@ -328,8 +803,8 @@ public class PreferencesDialog extends JDialog {
         JRadioButton radio = new JRadioButton(label);
         radio.putClientProperty("orientationValue", value);
         radio.setBackground(Color.WHITE);
-        radio.setForeground(new Color(60, 62, 128));
-        radio.setFont(new Font("Arial", Font.PLAIN, 12));
+        radio.setForeground(new Color(80, 80, 80));
+        radio.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         group.add(radio);
         return radio;
     }
@@ -376,6 +851,20 @@ public class PreferencesDialog extends JDialog {
         boolean disableCamera = disableCameraCheckBox.isSelected();
         if (disableCamera != AppConfig.isCameraDisabled()) {
             AppConfig.setCameraDisabled(disableCamera);
+            settingsChanged = true;
+        }
+
+        // Save required fields
+        Set<String> newRequiredFields = new HashSet<>();
+        for (Map.Entry<String, JCheckBox> entry : requiredFieldCheckBoxes.entrySet()) {
+            if (entry.getValue().isSelected()) {
+                newRequiredFields.add(entry.getKey());
+            }
+        }
+        
+        Set<String> currentRequired = AppConfig.getRequiredFields();
+        if (!newRequiredFields.equals(currentRequired)) {
+            AppConfig.setRequiredFields(newRequiredFields);
             settingsChanged = true;
         }
 

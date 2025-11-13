@@ -10,6 +10,7 @@ public class AppConfig {
     private static final String EXPORT_ORIENTATION_KEY = "export.orientation";
     private static final String EXPORT_FIELDS_KEY = "export.fields";
     private static final String CUSTOM_DB_PATH_KEY = "database.customPath";
+    private static final String REQUIRED_FIELDS_KEY = "form.requiredFields";
     private static Properties properties;
 
     static {
@@ -63,7 +64,8 @@ public class AppConfig {
 
         properties.setProperty(EXPORT_ORIENTATION_KEY, "AUTO");
         properties.setProperty(EXPORT_FIELDS_KEY, String.join(",", ExportField.defaultKeys()));
-    properties.setProperty(CUSTOM_DB_PATH_KEY, "");
+        properties.setProperty(CUSTOM_DB_PATH_KEY, "");
+        properties.setProperty(REQUIRED_FIELDS_KEY, "NAME,PHONE,ID_NO");
     }
 
     private static void ensurePropertyDefaults() {
@@ -101,6 +103,11 @@ public class AppConfig {
 
         if (!properties.containsKey(CUSTOM_DB_PATH_KEY)) {
             properties.setProperty(CUSTOM_DB_PATH_KEY, "");
+            changed = true;
+        }
+
+        if (!properties.containsKey(REQUIRED_FIELDS_KEY)) {
+            properties.setProperty(REQUIRED_FIELDS_KEY, "NAME,PHONE,ID_NO");
             changed = true;
         }
 
@@ -236,6 +243,42 @@ public class AppConfig {
             absolute = absolute.substring(0, absolute.length() - TRACE_SUFFIX.length());
         }
         return absolute;
+    }
+
+    public static Set<String> getRequiredFields() {
+        String value = properties.getProperty(REQUIRED_FIELDS_KEY, "NAME,PHONE,ID_NO");
+        Set<String> fields = new HashSet<>();
+        if (value != null && !value.trim().isEmpty()) {
+            for (String field : value.split(",")) {
+                String normalized = field.trim().toUpperCase(Locale.ROOT);
+                if (!normalized.isEmpty()) {
+                    fields.add(normalized);
+                }
+            }
+        }
+        return fields;
+    }
+
+    public static void setRequiredFields(Set<String> fields) {
+        if (fields == null || fields.isEmpty()) {
+            properties.setProperty(REQUIRED_FIELDS_KEY, "");
+        } else {
+            Set<String> normalized = new HashSet<>();
+            for (String field : fields) {
+                if (field != null && !field.trim().isEmpty()) {
+                    normalized.add(field.trim().toUpperCase(Locale.ROOT));
+                }
+            }
+            properties.setProperty(REQUIRED_FIELDS_KEY, String.join(",", normalized));
+        }
+        saveProperties();
+    }
+
+    public static boolean isFieldRequired(String fieldName) {
+        if (fieldName == null || fieldName.trim().isEmpty()) {
+            return false;
+        }
+        return getRequiredFields().contains(fieldName.trim().toUpperCase(Locale.ROOT));
     }
 
     private static void saveProperties() {

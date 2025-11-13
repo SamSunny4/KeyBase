@@ -441,7 +441,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtName = new JTextField(20);
     txtName.setPreferredSize(new Dimension(125, 30));
-        txtName.setBackground(new Color(250, 250, 250));
+        txtName.setBackground(new Color(236, 243, 243));
         txtName.setForeground(new Color(60, 62, 128));
         txtName.setFont(new Font("Arial", Font.PLAIN, 12));
         txtName.setBorder(BorderFactory.createCompoundBorder(
@@ -474,7 +474,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtPhoneNumber = new JTextField(20);
     txtPhoneNumber.setPreferredSize(new Dimension(125, 30));
-        txtPhoneNumber.setBackground(new Color(252, 252, 252));
+        txtPhoneNumber.setBackground(new Color(236, 243, 243));
         txtPhoneNumber.setForeground(new Color(60, 62, 128));
         txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 12));
         txtPhoneNumber.setBorder(BorderFactory.createCompoundBorder(
@@ -520,7 +520,7 @@ public class MainForm extends JFrame {
     cmbVehicleType = new JComboBox<>(new String[] {"Vehicles","Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
     cmbVehicleType.setSelectedItem("Vehicles"); // Default to Vehicles
     cmbVehicleType.setPreferredSize(new Dimension(125, 30));
-        cmbVehicleType.setBackground(new Color(252, 252, 252));
+        cmbVehicleType.setBackground(new Color(236, 243, 243));
         cmbVehicleType.setForeground(new Color(60, 62, 128));
         cmbVehicleType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbVehicleType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -583,7 +583,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtVehicleNo = new JTextField(20);
     txtVehicleNo.setPreferredSize(new Dimension(125, 30));
-        txtVehicleNo.setBackground(new Color(250, 250, 250));
+        txtVehicleNo.setBackground(new Color(236, 243, 243));
         txtVehicleNo.setForeground(new Color(60, 62, 128));
         txtVehicleNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtVehicleNo.setBorder(BorderFactory.createCompoundBorder(
@@ -616,7 +616,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtIdNo = new JTextField(20);
     txtIdNo.setPreferredSize(new Dimension(125, 30));
-        txtIdNo.setBackground(new Color(252, 252, 252));
+        txtIdNo.setBackground(new Color(236, 243, 243));
         txtIdNo.setForeground(new Color(60, 62, 128));
         txtIdNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtIdNo.setBorder(BorderFactory.createCompoundBorder(
@@ -649,7 +649,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtKeyNo = new JTextField(20);
     txtKeyNo.setPreferredSize(new Dimension(125, 30));
-        txtKeyNo.setBackground(new Color(250, 250, 250));
+        txtKeyNo.setBackground(new Color(236, 243, 243));
         txtKeyNo.setForeground(new Color(60, 62, 128));
         txtKeyNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtKeyNo.setBorder(BorderFactory.createCompoundBorder(
@@ -683,7 +683,7 @@ public class MainForm extends JFrame {
     cmbKeyType = new JComboBox<>(new String[] {"Personal", "Commercial", "Department", "Suspicious"});
     cmbKeyType.setSelectedItem("Personal"); // Default to Personal
         cmbKeyType.setPreferredSize(new Dimension(125, 30));
-        cmbKeyType.setBackground(new Color(252, 252, 252));
+        cmbKeyType.setBackground(new Color(236, 243, 243));
         cmbKeyType.setForeground(new Color(60, 62, 128));
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -731,7 +731,7 @@ public class MainForm extends JFrame {
         gbc.weighty = 0.0;
     txtRemarks = new JTextField(20);
     txtRemarks.setPreferredSize(new Dimension(125, 30));
-        txtRemarks.setBackground(new Color(252, 252, 252));
+        txtRemarks.setBackground(new Color(236, 243, 243));
         txtRemarks.setForeground(new Color(60, 62, 128));
         txtRemarks.setFont(new Font("Arial", Font.PLAIN, 12));
         txtRemarks.setBorder(BorderFactory.createCompoundBorder(
@@ -796,7 +796,7 @@ public class MainForm extends JFrame {
 
         // Style the spinner's text field
         JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField();
-        spinnerTextField.setBackground(new Color(252, 252, 252));
+        spinnerTextField.setBackground(new Color(236, 243, 243));
         spinnerTextField.setForeground(new Color(60, 62, 128));
         spinnerTextField.setFont(new Font("Arial", Font.PLAIN, 12));
 
@@ -818,7 +818,7 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        spnQuantity.setBackground(new Color(252, 252, 252));
+        spnQuantity.setBackground(new Color(236, 243, 243));
         spnQuantity.setOpaque(true);
         // Remove inner editor border so the spinner shows the outer border cleanly
         spinnerTextField.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -959,7 +959,7 @@ public class MainForm extends JFrame {
 
     dateChooser = new JDateChooser();
     dateChooser.setPreferredSize(new Dimension(75, 30));
-        dateChooser.setBackground(new Color(252, 252, 252));
+        dateChooser.setBackground(new Color(236, 243, 243));
         dateChooser.setForeground(new Color(60, 62, 128));
         dateChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         dateChooser.setToolTipText("Date when the key was created/received");
@@ -1679,48 +1679,188 @@ public class MainForm extends JFrame {
     }
     
     private boolean validateForm() {
-        // Check name (required)
-        if (txtName.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Please enter a name.",
-                "Validation Error",
-                JOptionPane.WARNING_MESSAGE);
-            txtName.requestFocus();
-            return false;
+        // Check Name if required
+        if (AppConfig.isFieldRequired("NAME")) {
+            if (txtName.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter a name.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtName.requestFocus();
+                return false;
+            }
         }
         
-        // Check phone number (required)
-        String phoneNumber = txtPhoneNumber.getText().trim();
-        if (phoneNumber.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Please enter a phone number.",
-                "Validation Error",
-                JOptionPane.WARNING_MESSAGE);
-            txtPhoneNumber.requestFocus();
-            return false;
+        // Check Phone Number if required
+        if (AppConfig.isFieldRequired("PHONE")) {
+            String phoneNumber = txtPhoneNumber.getText().trim();
+            if (phoneNumber.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter a phone number.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtPhoneNumber.requestFocus();
+                return false;
+            }
+            
+            // Validate phone number format (must be 10 digits) only if not empty
+            if (phoneNumber.length() != 10 || !phoneNumber.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(this,
+                    "Phone number must be exactly 10 digits.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtPhoneNumber.requestFocus();
+                return false;
+            }
+        } else {
+            // If phone is not required but is filled, validate format
+            String phoneNumber = txtPhoneNumber.getText().trim();
+            if (!phoneNumber.isEmpty() && (phoneNumber.length() != 10 || !phoneNumber.matches("\\d{10}"))) {
+                JOptionPane.showMessageDialog(this,
+                    "Phone number must be exactly 10 digits.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtPhoneNumber.requestFocus();
+                return false;
+            }
         }
         
-        // Validate phone number format (must be 10 digits)
-        if (phoneNumber.length() != 10 || !phoneNumber.matches("\\d{10}")) {
-            JOptionPane.showMessageDialog(this,
-                "Phone number must be exactly 10 digits.",
-                "Validation Error",
-                JOptionPane.WARNING_MESSAGE);
-            txtPhoneNumber.requestFocus();
-            return false;
+        // Check ID Number if required
+        if (AppConfig.isFieldRequired("ID_NO")) {
+            if (txtIdNo.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter an ID number.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtIdNo.requestFocus();
+                return false;
+            }
         }
         
-        // Check ID number (required)
-        if (txtIdNo.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                "Please enter an ID number.",
-                "Validation Error",
-                JOptionPane.WARNING_MESSAGE);
-            txtIdNo.requestFocus();
-            return false;
+        // Check Vehicle Number if required
+        if (AppConfig.isFieldRequired("VEHICLE_NO")) {
+            if (txtVehicleNo.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter a vehicle number.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtVehicleNo.requestFocus();
+                return false;
+            }
         }
         
-        // All other fields are optional - allow null/empty values
+        // Check Key Number if required
+        if (AppConfig.isFieldRequired("KEY_NO")) {
+            if (txtKeyNo.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter a key number.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtKeyNo.requestFocus();
+                return false;
+            }
+        }
+        
+        // Check Purpose if required
+        if (AppConfig.isFieldRequired("PURPOSE")) {
+            Object selectedPurpose = cmbKeyType.getSelectedItem();
+            if (selectedPurpose == null || selectedPurpose.toString().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please select a purpose.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                cmbKeyType.requestFocus();
+                return false;
+            }
+        }
+        
+        // Check Remarks if required
+        if (AppConfig.isFieldRequired("REMARKS")) {
+            if (txtRemarks.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter remarks.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtRemarks.requestFocus();
+                return false;
+            }
+        }
+        
+        // Check Quantity if required
+        if (AppConfig.isFieldRequired("QUANTITY")) {
+            String qtyText = txtQuantity.getText().trim();
+            if (qtyText.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter quantity.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtQuantity.requestFocus();
+                return false;
+            }
+            try {
+                int qty = Integer.parseInt(qtyText);
+                if (qty <= 0) {
+                    JOptionPane.showMessageDialog(this,
+                        "Quantity must be greater than 0.",
+                        "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
+                    txtQuantity.requestFocus();
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this,
+                    "Quantity must be a valid number.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtQuantity.requestFocus();
+                return false;
+            }
+        }
+        
+        // Check Amount if required
+        if (AppConfig.isFieldRequired("AMOUNT")) {
+            String amtText = txtAmount.getText().trim();
+            if (amtText.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                    "Please enter amount.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtAmount.requestFocus();
+                return false;
+            }
+            try {
+                double amt = Double.parseDouble(amtText);
+                if (amt < 0) {
+                    JOptionPane.showMessageDialog(this,
+                        "Amount cannot be negative.",
+                        "Validation Error",
+                        JOptionPane.WARNING_MESSAGE);
+                    txtAmount.requestFocus();
+                    return false;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this,
+                    "Amount must be a valid number.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                txtAmount.requestFocus();
+                return false;
+            }
+        }
+        
+        // Check Date if required
+        if (AppConfig.isFieldRequired("DATE")) {
+            if (dateChooser.getDate() == null) {
+                JOptionPane.showMessageDialog(this,
+                    "Please select a date.",
+                    "Validation Error",
+                    JOptionPane.WARNING_MESSAGE);
+                dateChooser.requestFocus();
+                return false;
+            }
+        }
+        
+        // All required fields validated
         return true;
     }
     
