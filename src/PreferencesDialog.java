@@ -36,6 +36,7 @@ public class PreferencesDialog extends JDialog {
     private static final String SECTION_FIELDS = "Required Fields";
     private static final String SECTION_DATABASE = "Database";
     private static final String SECTION_EXPORT = "Export Settings";
+    private static final String SECTION_CATALOG = "Key Catalog";
 
     public PreferencesDialog(JFrame parent) {
         super(parent, "Preferences", true);
@@ -63,6 +64,7 @@ public class PreferencesDialog extends JDialog {
         contentPanel.add(createRequiredFieldsPanelModern(), SECTION_FIELDS);
         contentPanel.add(createDatabasePanelModern(), SECTION_DATABASE);
         contentPanel.add(createExportPanelModern(), SECTION_EXPORT);
+        contentPanel.add(createKeyCatalogPanel(), SECTION_CATALOG);
         
         add(contentPanel, BorderLayout.CENTER);
 
@@ -233,7 +235,7 @@ public class PreferencesDialog extends JDialog {
         
         // Create section buttons
         List<JPanel> sectionButtons = new ArrayList<>();
-        String[] sections = {SECTION_CAMERA, SECTION_FIELDS, SECTION_DATABASE, SECTION_EXPORT};
+        String[] sections = {SECTION_CAMERA, SECTION_FIELDS, SECTION_DATABASE, SECTION_EXPORT, SECTION_CATALOG};
         for (int i = 0; i < sections.length; i++) {
             JPanel btn = createSectionButton(sections[i], i == 0, sectionButtons);
             sectionButtons.add(btn);
@@ -716,6 +718,237 @@ public class PreferencesDialog extends JDialog {
         panel.add(Box.createVerticalGlue());
         
         return panel;
+    }
+
+    private JPanel createKeyCatalogPanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        
+        // Header
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+        
+        JLabel titleLabel = new JLabel("Key Catalog");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(25, 118, 140));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        headerPanel.add(titleLabel);
+        headerPanel.add(Box.createVerticalStrut(5));
+        
+        JLabel descLabel = new JLabel("Manage key categories and sub-categories");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(120, 120, 120));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        headerPanel.add(descLabel);
+        
+        panel.add(headerPanel, BorderLayout.NORTH);
+        
+        // Content
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setResizeWeight(0.5);
+        splitPane.setBorder(null);
+        splitPane.setDividerSize(10);
+        splitPane.setBackground(Color.WHITE);
+        
+        // Parent Categories List
+        DefaultListModel<String> parentModel = new DefaultListModel<>();
+        for (String p : AppConfig.getParentCategories()) {
+            parentModel.addElement(p);
+        }
+        JList<String> parentList = new JList<>(parentModel);
+        parentList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Child Categories List
+        DefaultListModel<String> childModel = new DefaultListModel<>();
+        JList<String> childList = new JList<>(childModel);
+        childList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Parent Panel
+        JPanel parentPanel = createCategoryListPanel("Parent Categories", parentList, parentModel, null, childModel, true);
+        
+        // Child Panel
+        JPanel childPanel = createCategoryListPanel("Sub-Categories", childList, childModel, parentList, null, false);
+        
+        splitPane.setLeftComponent(parentPanel);
+        splitPane.setRightComponent(childPanel);
+        
+        panel.add(splitPane, BorderLayout.CENTER);
+        
+        // Selection Listener for Parent List
+        parentList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String selected = parentList.getSelectedValue();
+                childModel.clear();
+                if (selected != null) {
+                    for (String child : AppConfig.getChildCategories(selected)) {
+                        childModel.addElement(child);
+                    }
+                    // Update title of child panel if possible, or just rely on context
+                }
+            }
+        });
+        
+        // Select first parent by default
+        if (parentModel.getSize() > 0) {
+            parentList.setSelectedIndex(0);
+        }
+        
+        return panel;
+    }
+    
+    private JPanel createCategoryListPanel(String title, JList<String> list, DefaultListModel<String> model, 
+                                           JList<String> parentList, DefaultListModel<String> childModel, boolean isParent) {
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTitle.setForeground(new Color(60, 60, 60));
+        panel.add(lblTitle, BorderLayout.NORTH);
+        
+        list.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        JScrollPane scrollPane = new JScrollPane(list);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+        panel.add(scrollPane, BorderLayout.CENTER);
+        
+        // Buttons
+        JPanel btnPanel = new JPanel(new GridLayout(2, 3, 5, 5));
+        btnPanel.setBackground(Color.WHITE);
+        
+        JButton btnAdd = new JButton("Add");
+        JButton btnRename = new JButton("Rename");
+        JButton btnDelete = new JButton("Delete");
+        JButton btnUp = new JButton("Up");
+        JButton btnDown = new JButton("Down");
+        JButton btnDefault = new JButton("Set Default");
+        
+        btnPanel.add(btnAdd);
+        btnPanel.add(btnRename);
+        btnPanel.add(btnDelete);
+        btnPanel.add(btnUp);
+        btnPanel.add(btnDown);
+        btnPanel.add(btnDefault);
+        
+        panel.add(btnPanel, BorderLayout.SOUTH);
+        
+        // Actions
+        btnAdd.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(this, "Enter name:");
+            if (name != null && !name.trim().isEmpty()) {
+                name = name.trim();
+                if (model.contains(name)) {
+                    JOptionPane.showMessageDialog(this, "Already exists!");
+                    return;
+                }
+                model.addElement(name);
+                saveChanges(isParent, parentList, model);
+                settingsChanged = true;
+            }
+        });
+        
+        btnRename.addActionListener(e -> {
+            int idx = list.getSelectedIndex();
+            if (idx != -1) {
+                String oldName = model.getElementAt(idx);
+                String newName = JOptionPane.showInputDialog(this, "Enter new name:", oldName);
+                if (newName != null && !newName.trim().isEmpty() && !newName.equals(oldName)) {
+                    newName = newName.trim();
+                    if (model.contains(newName)) {
+                        JOptionPane.showMessageDialog(this, "Already exists!");
+                        return;
+                    }
+                    model.set(idx, newName);
+                    if (isParent) {
+                        AppConfig.renameParentCategory(oldName, newName);
+                        // Reload children for the renamed parent (which is now selected)
+                        // Actually, renameParentCategory handles the property move.
+                        // But we need to ensure the UI stays consistent.
+                    }
+                    saveChanges(isParent, parentList, model);
+                    settingsChanged = true;
+                }
+            }
+        });
+        
+        btnDelete.addActionListener(e -> {
+            int idx = list.getSelectedIndex();
+            if (idx != -1) {
+                String val = model.getElementAt(idx);
+                if (JOptionPane.showConfirmDialog(this, "Delete '" + val + "'?", "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                    model.remove(idx);
+                    if (isParent) {
+                        AppConfig.deleteParentCategory(val);
+                        if (childModel != null) childModel.clear();
+                    }
+                    saveChanges(isParent, parentList, model);
+                    settingsChanged = true;
+                }
+            }
+        });
+        
+        btnUp.addActionListener(e -> {
+            int idx = list.getSelectedIndex();
+            if (idx > 0) {
+                String val = model.remove(idx);
+                model.add(idx - 1, val);
+                list.setSelectedIndex(idx - 1);
+                saveChanges(isParent, parentList, model);
+                settingsChanged = true;
+            }
+        });
+        
+        btnDown.addActionListener(e -> {
+            int idx = list.getSelectedIndex();
+            if (idx != -1 && idx < model.getSize() - 1) {
+                String val = model.remove(idx);
+                model.add(idx + 1, val);
+                list.setSelectedIndex(idx + 1);
+                saveChanges(isParent, parentList, model);
+                settingsChanged = true;
+            }
+        });
+        
+        btnDefault.addActionListener(e -> {
+            int idx = list.getSelectedIndex();
+            if (idx != -1) {
+                String val = model.getElementAt(idx);
+                if (isParent) {
+                    AppConfig.setDefaultParentCategory(val);
+                } else {
+                    String parent = parentList.getSelectedValue();
+                    if (parent != null) {
+                        AppConfig.setDefaultChildCategory(parent, val);
+                    }
+                }
+                JOptionPane.showMessageDialog(this, "Default set to: " + val);
+                settingsChanged = true;
+            }
+        });
+        
+        return panel;
+    }
+    
+    private void saveChanges(boolean isParent, JList<String> parentList, DefaultListModel<String> model) {
+        List<String> items = new ArrayList<>();
+        for (int i = 0; i < model.getSize(); i++) {
+            items.add(model.getElementAt(i));
+        }
+        
+        if (isParent) {
+            AppConfig.setParentCategories(items);
+        } else {
+            String parent = parentList.getSelectedValue();
+            if (parent != null) {
+                AppConfig.setChildCategories(parent, items);
+            }
+        }
     }
 
     private JPanel createDatabasePanel() {

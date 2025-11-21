@@ -30,6 +30,7 @@ public class MetricsWindow extends JFrame {
     // Metric type
     private enum MetricType {
         TOTAL_SALES("Total Sales"),
+        BY_CATEGORY("Sales by Category"),
         BY_KEY_TYPE("Sales by Key Type"),
         BY_PURPOSE("Sales by Purpose"),
         BY_QUANTITY("Sales by Quantity");
@@ -368,6 +369,9 @@ public class MetricsWindow extends JFrame {
                 case TOTAL_SALES:
                     loadTotalSales(conn);
                     break;
+                case BY_CATEGORY:
+                    loadSalesByCategory(conn);
+                    break;
                 case BY_KEY_TYPE:
                     loadSalesByKeyType(conn);
                     break;
@@ -444,6 +448,43 @@ public class MetricsWindow extends JFrame {
                 double value = rs.getDouble(2);
                 chartData.add(new DataPoint("Qty " + qty, value));
             }
+        }
+    }
+    
+    private void loadSalesByCategory(Connection conn) throws SQLException {
+        String sql = buildSalesByDimensionQuery("key_type");
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            setDateParameters(ps);
+            ResultSet rs = ps.executeQuery();
+            
+            Map<String, Double> categorySales = new HashMap<>();
+            
+            while (rs.next()) {
+                String keyType = rs.getString(1);
+                if (keyType == null || keyType.trim().isEmpty()) keyType = "Unknown";
+                double value = rs.getDouble(2);
+                
+                // Find parent category
+                String parent = "Other";
+                for (String p : AppConfig.getParentCategories()) {
+                    for (String child : AppConfig.getChildCategories(p)) {
+                        if (child.equalsIgnoreCase(keyType)) {
+                            parent = p;
+                            break;
+                        }
+                    }
+                    if (!"Other".equals(parent)) break;
+                }
+                
+                categorySales.put(parent, categorySales.getOrDefault(parent, 0.0) + value);
+            }
+            
+            for (Map.Entry<String, Double> entry : categorySales.entrySet()) {
+                chartData.add(new DataPoint(entry.getKey(), entry.getValue()));
+            }
+            
+            // Sort by value descending
+            chartData.sort((a, b) -> Double.compare(b.value, a.value));
         }
     }
     

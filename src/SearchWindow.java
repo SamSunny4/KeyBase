@@ -26,6 +26,7 @@ import javax.swing.table.TableRowSorter;
 public class SearchWindow extends JFrame {
     private JTextField txtSearch;
     private JComboBox<String> cmbSearchField;
+    private JComboBox<String> cmbKeyCategory;
     private JComboBox<String> cmbVehicleKeyType;
     private JComboBox<String> cmbKeyType;
     private JComboBox<String> cmbServiceType;
@@ -149,14 +150,66 @@ public class SearchWindow extends JFrame {
             }
         });
         
-        // Filter by purpose
+        // Filter by Category
         gbc.gridx = 0;
+        gbc.gridy = 1;
+        JLabel lblCategory = new JLabel("Category:");
+        lblCategory.setFont(new Font("Arial", Font.BOLD, 12));
+        searchPanel.add(lblCategory, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        cmbKeyCategory = new JComboBox<>();
+        cmbKeyCategory.addItem("Any");
+        for (String p : AppConfig.getParentCategories()) {
+            cmbKeyCategory.addItem(p);
+        }
+        cmbKeyCategory.setPreferredSize(new Dimension(150, 30));
+        cmbKeyCategory.setBackground(new Color(250, 250, 250));
+        cmbKeyCategory.setForeground(new Color(60, 62, 128));
+        cmbKeyCategory.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbKeyCategory.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
+        searchPanel.add(cmbKeyCategory, gbc);
+
+        // Filter by Type (Child)
+        gbc.gridx = 2;
+        gbc.gridy = 1;
+        JLabel lblKeyType = new JLabel("Type:");
+        lblKeyType.setFont(new Font("Arial", Font.BOLD, 12));
+        searchPanel.add(lblKeyType, gbc);
+
+        gbc.gridx = 3;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.weightx = 0.0;
+        cmbVehicleKeyType = new JComboBox<>();
+        // Initial population handled by updateChildCategories
+        
+        cmbVehicleKeyType.setPreferredSize(new Dimension(150, 30));
+        cmbVehicleKeyType.setMaximumSize(cmbVehicleKeyType.getPreferredSize());
+        cmbVehicleKeyType.setBackground(new Color(250, 250, 250));
+        cmbVehicleKeyType.setForeground(new Color(60, 62, 128));
+        cmbVehicleKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbVehicleKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
+        searchPanel.add(cmbVehicleKeyType, gbc);
+
+        // Listener for Category
+        cmbKeyCategory.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                updateChildCategories();
+            }
+        });
+        updateChildCategories(); // Initial population
+
+        // Filter by Purpose
+        gbc.gridx = 4;
         gbc.gridy = 1;
         JLabel lblKeyFor = new JLabel("Purpose:");
         lblKeyFor.setFont(new Font("Arial", Font.BOLD, 12));
         searchPanel.add(lblKeyFor, gbc);
         
-        gbc.gridx = 1;
+        gbc.gridx = 5;
         gbc.gridy = 1;
         cmbKeyType = new JComboBox<>(new String[] {"Any", "Personal", "Commercial", "Department", "Suspicious"});
         cmbKeyType.setPreferredSize(new Dimension(150, 30));
@@ -164,62 +217,29 @@ public class SearchWindow extends JFrame {
         cmbKeyType.setForeground(new Color(60, 62, 128));
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        cmbKeyType.setToolTipText("Filter by key purpose");
         searchPanel.add(cmbKeyType, gbc);
-        
-        // Filter by vehicle key type (made smaller)
-        gbc.gridx = 2;
-        gbc.gridy = 1;
-        JLabel lblKeyType = new JLabel("Key Type:");
-        lblKeyType.setFont(new Font("Arial", Font.BOLD, 12));
-        searchPanel.add(lblKeyType, gbc);
-        
-    gbc.gridx = 3;
-    gbc.gridy = 1;
-    gbc.gridwidth = 1;
-    // Ensure this column/component does not expand to fill available space
-    gbc.fill = GridBagConstraints.NONE;
-    gbc.weightx = 0.0;
-    cmbVehicleKeyType = new JComboBox<>(new String[] {"Any","Vehicles","Bike", "Car", "Truck", "Scooter", "Auto", "Machines", "JCB", "Hitachi"});
-    // Make vehicle key type smaller (150px) to occupy less horizontal space
-    cmbVehicleKeyType.setPreferredSize(new Dimension(150, 30));
-    // Prevent unwanted stretching by capping maximum size (helps with some LAFs)
-    cmbVehicleKeyType.setMaximumSize(cmbVehicleKeyType.getPreferredSize());
-        cmbVehicleKeyType.setBackground(new Color(250, 250, 250));
-        cmbVehicleKeyType.setForeground(new Color(60, 62, 128));
-        cmbVehicleKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
-        cmbVehicleKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        cmbVehicleKeyType.setToolTipText("Filter by vehicle key type");
-        searchPanel.add(cmbVehicleKeyType, gbc);
-        
-    // Filter by service type (label + dropdown)
-    gbc.gridx = 4;
-    gbc.gridy = 1;
-    JLabel lblServiceType = new JLabel("Service Type:");
-    lblServiceType.setFont(new Font("Arial", Font.BOLD, 12));
-    searchPanel.add(lblServiceType, gbc);
 
-    gbc.gridx = 5;
-    gbc.gridy = 1;
-    // Place service combo immediately after Key Type and style it similar to other filters
-    cmbServiceType = new JComboBox<>(new String[] {"Any", "Duplicate", "In-shop", "On-site"});
-    // Match preferred size to vehicle key type (small) so controls align
-    cmbServiceType.setPreferredSize(cmbVehicleKeyType.getPreferredSize());
-    cmbServiceType.setMaximumSize(cmbServiceType.getPreferredSize());
-    cmbServiceType.setBackground(cmbKeyType.getBackground());
-    cmbServiceType.setForeground(cmbKeyType.getForeground());
-    cmbServiceType.setFont(cmbKeyType.getFont());
-    cmbServiceType.setBorder(cmbKeyType.getBorder());
-    cmbServiceType.setToolTipText("Filter by service type");
-    // Prevent this component from stretching
-    gbc.fill = GridBagConstraints.NONE;
-    gbc.weightx = 0.0;
-    searchPanel.add(cmbServiceType, gbc);
-    // Restore fill/weightx for subsequent components
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.weightx = 1.0;
+        // Filter by Service Type
+        gbc.gridx = 6;
+        gbc.gridy = 1;
+        JLabel lblServiceType = new JLabel("Service:");
+        lblServiceType.setFont(new Font("Arial", Font.BOLD, 12));
+        searchPanel.add(lblServiceType, gbc);
+
+        gbc.gridx = 7;
+        gbc.gridy = 1;
+        cmbServiceType = new JComboBox<>(new String[] {"Any", "Duplicate", "In-shop", "On-site"});
+        cmbServiceType.setPreferredSize(new Dimension(150, 30));
+        cmbServiceType.setBackground(new Color(250, 250, 250));
+        cmbServiceType.setForeground(new Color(60, 62, 128));
+        cmbServiceType.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbServiceType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
+        searchPanel.add(cmbServiceType, gbc);
         
-    // Date range filter
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
+        
+        // Date range filter
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel lblDateFrom = new JLabel("Date From:");
@@ -233,7 +253,6 @@ public class SearchWindow extends JFrame {
         dateFromChooser.setBackground(new Color(250, 250, 250));
         dateFromChooser.setForeground(new Color(60, 62, 128));
         dateFromChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        dateFromChooser.setToolTipText("Start date for filtering (yyyy-MM-dd)");
         searchPanel.add(dateFromChooser, gbc);
         
         gbc.gridx = 2;
@@ -249,34 +268,29 @@ public class SearchWindow extends JFrame {
         dateToChooser.setBackground(new Color(250, 250, 250));
         dateToChooser.setForeground(new Color(60, 62, 128));
         dateToChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        dateToChooser.setToolTipText("End date for filtering (yyyy-MM-dd)");
         searchPanel.add(dateToChooser, gbc);
 
-    // Payment filter (placed on the same row as Service Type)
-    gbc.gridx = 6;
-    gbc.gridy = 1;
-    JLabel lblPayment = new JLabel("Payment:");
-    lblPayment.setFont(new Font("Arial", Font.BOLD, 12));
-    searchPanel.add(lblPayment, gbc);
+        // Payment filter (moved to row 2)
+        gbc.gridx = 4;
+        gbc.gridy = 2;
+        JLabel lblPayment = new JLabel("Payment:");
+        lblPayment.setFont(new Font("Arial", Font.BOLD, 12));
+        searchPanel.add(lblPayment, gbc);
 
-    gbc.gridx = 7;
-    gbc.gridy = 1;
-    cmbPayment = new JComboBox<>(new String[] {"Any", "Cash", "UPI"});
-    // Match size and style of other small combo boxes
-    cmbPayment.setPreferredSize(new Dimension(150, 30));
-    cmbPayment.setMaximumSize(cmbPayment.getPreferredSize());
-    cmbPayment.setBackground(new Color(250, 250, 250));
-    cmbPayment.setForeground(new Color(60, 62, 128));
-    cmbPayment.setFont(new Font("Arial", Font.PLAIN, 12));
-    cmbPayment.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-    cmbPayment.setToolTipText("Filter by payment method");
-    // Prevent stretching
-    gbc.fill = GridBagConstraints.NONE;
-    gbc.weightx = 0.0;
-    searchPanel.add(cmbPayment, gbc);
-    // Restore for later
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-    gbc.weightx = 1.0;
+        gbc.gridx = 5;
+        gbc.gridy = 2;
+        cmbPayment = new JComboBox<>(new String[] {"Any", "Cash", "UPI"});
+        cmbPayment.setPreferredSize(new Dimension(150, 30));
+        cmbPayment.setMaximumSize(cmbPayment.getPreferredSize());
+        cmbPayment.setBackground(new Color(250, 250, 250));
+        cmbPayment.setForeground(new Color(60, 62, 128));
+        cmbPayment.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbPayment.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
+        searchPanel.add(cmbPayment, gbc);
+        
+        // Restore for later
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1.0;
         
     // Clear filters button (placed on same row as Search)
     gbc.gridx = 5;
@@ -478,8 +492,9 @@ public class SearchWindow extends JFrame {
         
         String searchText = txtSearch.getText().trim();
         String searchField = (String) cmbSearchField.getSelectedItem();
-    String purposeFilter = (String) cmbKeyType.getSelectedItem();
-    String keyTypeFilter = (String) cmbVehicleKeyType.getSelectedItem();
+        String categoryFilter = (String) cmbKeyCategory.getSelectedItem();
+        String purposeFilter = (String) cmbKeyType.getSelectedItem();
+        String keyTypeFilter = (String) cmbVehicleKeyType.getSelectedItem();
     String serviceTypeFilter = (String) cmbServiceType.getSelectedItem();
     String paymentFilter = cmbPayment != null ? (String) cmbPayment.getSelectedItem() : "Any";
         java.util.Date dateFrom = dateFromChooser.getDate();
@@ -520,6 +535,17 @@ public class SearchWindow extends JFrame {
 
         if (!"Any".equals(keyTypeFilter)) {
             queryBuilder.append("AND key_type = ? ");
+        } else if (categoryFilter != null && !"Any".equals(categoryFilter)) {
+             List<String> children = AppConfig.getChildCategories(categoryFilter);
+             if (!children.isEmpty()) {
+                 queryBuilder.append("AND key_type IN (");
+                 for (int i = 0; i < children.size(); i++) {
+                     queryBuilder.append(i == 0 ? "?" : ", ?");
+                 }
+                 queryBuilder.append(") ");
+             } else {
+                 queryBuilder.append("AND 1=0 "); 
+             }
         }
         
         if (!"Any".equals(serviceTypeFilter)) {
@@ -590,6 +616,11 @@ public class SearchWindow extends JFrame {
 
             if (!"Any".equals(keyTypeFilter)) {
                 pstmt.setString(paramIndex++, keyTypeFilter);
+            } else if (categoryFilter != null && !"Any".equals(categoryFilter)) {
+                 List<String> children = AppConfig.getChildCategories(categoryFilter);
+                 for (String child : children) {
+                     pstmt.setString(paramIndex++, child);
+                 }
             }
             
             if (dateFrom != null) {
@@ -607,13 +638,16 @@ public class SearchWindow extends JFrame {
                 java.sql.Date dateAdded = rs.getDate("date_added");
                 String dateStr = (dateAdded != null) ? dateFormat.format(dateAdded) : "";
                 
+                String keyType = rs.getString("key_type");
+                // Category removed from table view
+                
                 Object[] row = {
                     rs.getInt("duplicator_id"),
                     rs.getString("name"),
                     rs.getString("phone_number"),
                     rs.getString("vehicle_no"),
                     rs.getString("key_no"),
-                    rs.getString("key_type"),
+                    keyType,
                     rs.getString("purpose"),
                     rs.getString("id_no"),
                     dateStr,
@@ -649,8 +683,9 @@ public class SearchWindow extends JFrame {
     private void clearFilters() {
         txtSearch.setText("");
         cmbSearchField.setSelectedIndex(0);
+        cmbKeyCategory.setSelectedIndex(0);
         cmbKeyType.setSelectedIndex(0);
-        cmbVehicleKeyType.setSelectedIndex(0);
+        if (cmbVehicleKeyType.getItemCount() > 0) cmbVehicleKeyType.setSelectedIndex(0);
         cmbServiceType.setSelectedIndex(0);
         if (cmbPayment != null) cmbPayment.setSelectedIndex(0);
         dateFromChooser.setDate(null);
@@ -817,6 +852,10 @@ public class SearchWindow extends JFrame {
             case PHONE -> safeString(tableModel.getValueAt(modelRow, 2));
             case KEY_NO -> safeString(tableModel.getValueAt(modelRow, 4));
             case VEHICLE_NO -> safeString(tableModel.getValueAt(modelRow, 3));
+            case CATEGORY -> {
+                String kType = safeString(tableModel.getValueAt(modelRow, 5));
+                yield AppConfig.findParentForChild(kType);
+            }
             case KEY_TYPE -> safeString(tableModel.getValueAt(modelRow, 5));
             case PURPOSE -> safeString(tableModel.getValueAt(modelRow, 6));
             case DATE -> safeString(tableModel.getValueAt(modelRow, 8));
@@ -972,5 +1011,24 @@ public class SearchWindow extends JFrame {
             return "\"" + value.replace("\"", "\"\"") + "\"";
         }
         return value;
+    }
+
+    private void updateChildCategories() {
+        String parent = (String) cmbKeyCategory.getSelectedItem();
+        cmbVehicleKeyType.removeAllItems();
+        cmbVehicleKeyType.addItem("Any");
+        
+        if (parent != null && !"Any".equals(parent)) {
+            for (String child : AppConfig.getChildCategories(parent)) {
+                cmbVehicleKeyType.addItem(child);
+            }
+        } else {
+            // If Any category, show all possible types
+            for (String p : AppConfig.getParentCategories()) {
+                for (String child : AppConfig.getChildCategories(p)) {
+                    cmbVehicleKeyType.addItem(child);
+                }
+            }
+        }
     }
 }

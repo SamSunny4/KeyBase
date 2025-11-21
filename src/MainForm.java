@@ -31,7 +31,8 @@ public class MainForm extends JFrame {
     private JTextField txtIdNo;
     private JTextField txtKeyNo;
     private JComboBox<String> cmbKeyType;
-    private JComboBox<String> cmbVehicleType;
+    private JComboBox<String> cmbKeyCategory; // Parent Category
+    private JComboBox<String> cmbVehicleType; // Sub-Category
     private JTextField txtRemarks;
     private JTextField txtQuantity;
     private JTextField txtAmount;
@@ -498,7 +499,7 @@ public class MainForm extends JFrame {
                     }
                     
                     // If validation passes, move to next field (Key Type combo)
-                    cmbVehicleType.requestFocus();
+                    cmbKeyCategory.requestFocus();
                 }
             }
         });
@@ -517,26 +518,71 @@ public class MainForm extends JFrame {
         gbc.gridy = 2;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
-    cmbVehicleType = new JComboBox<>(new String[] {"Vehicles","Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
-    cmbVehicleType.setSelectedItem("Vehicles"); // Default to Vehicles
-    cmbVehicleType.setPreferredSize(new Dimension(125, 30));
+
+        // Parent Category
+        cmbKeyCategory = new JComboBox<>();
+        for (String p : AppConfig.getParentCategories()) {
+            cmbKeyCategory.addItem(p);
+        }
+        String defaultParent = AppConfig.getDefaultParentCategory();
+        if (defaultParent != null && !defaultParent.isEmpty()) {
+            cmbKeyCategory.setSelectedItem(defaultParent);
+        }
+        
+        cmbKeyCategory.setPreferredSize(new Dimension(125, 30));
+        cmbKeyCategory.setBackground(new Color(236, 243, 243));
+        cmbKeyCategory.setForeground(new Color(60, 62, 128));
+        cmbKeyCategory.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbKeyCategory.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
+        cmbKeyCategory.setToolTipText("Select category");
+
+        // Child Category (reusing cmbVehicleType variable)
+        cmbVehicleType = new JComboBox<>();
+        cmbVehicleType.setPreferredSize(new Dimension(125, 30));
         cmbVehicleType.setBackground(new Color(236, 243, 243));
         cmbVehicleType.setForeground(new Color(60, 62, 128));
         cmbVehicleType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbVehicleType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        cmbVehicleType.setToolTipText("Select key type");
+        cmbVehicleType.setToolTipText("Select sub-category");
+
+        // Populate child categories based on initial parent
+        updateChildCategories();
+
+        // Panel to hold both dropdowns
+        JPanel keyTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        keyTypePanel.setBackground(Color.WHITE);
+        keyTypePanel.add(cmbKeyCategory);
+        keyTypePanel.add(cmbVehicleType);
         
-        // Use ItemListener instead of ActionListener to avoid interference with Enter key
-        cmbVehicleType.addItemListener(new ItemListener() {
+        formPanel.add(keyTypePanel, gbc);
+        
+        // Listeners
+        cmbKeyCategory.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
+                    updateChildCategories();
                     updateVehicleNoVisibility();
                 }
             }
         });
+
+        // Override the default Enter key behavior for Parent Combo
+        InputMap parentInputMap = cmbKeyCategory.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap parentActionMap = cmbKeyCategory.getActionMap();
+        Object parentEnterKey = parentInputMap.get(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
+        if (parentEnterKey != null) parentActionMap.remove(parentEnterKey);
         
-        // Override the default Enter key behavior completely
+        parentInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "moveToChild");
+        parentActionMap.put("moveToChild", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cmbKeyCategory.isPopupVisible()) cmbKeyCategory.setPopupVisible(false);
+                cmbVehicleType.requestFocus();
+            }
+        });
+        
+        // Override the default Enter key behavior for Child Combo
         InputMap vehicleInputMap = cmbVehicleType.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap vehicleActionMap = cmbVehicleType.getActionMap();
         
@@ -565,8 +611,6 @@ public class MainForm extends JFrame {
                 });
             }
         });
-        
-        formPanel.add(cmbVehicleType, gbc);
         
         // Vehicle Number field
         gbc.gridx = 0;
@@ -1870,14 +1914,24 @@ public class MainForm extends JFrame {
         txtVehicleNo.setText("");
         txtIdNo.setText("");
         txtKeyNo.setText("");
-    cmbVehicleType.setSelectedIndex(0);
-    cmbKeyType.setSelectedItem("Personal");
+        
+        // Reset Key Category to default
+        String defaultParent = AppConfig.getDefaultParentCategory();
+        if (defaultParent != null && !defaultParent.isEmpty()) {
+            cmbKeyCategory.setSelectedItem(defaultParent);
+        } else if (cmbKeyCategory.getItemCount() > 0) {
+            cmbKeyCategory.setSelectedIndex(0);
+        }
+        // Ensure children are updated/reset
+        updateChildCategories();
+        
+        cmbKeyType.setSelectedItem("Personal");
         dateChooser.setDate(new Date()); // Reset to current date
         txtRemarks.setText("");
         txtQuantity.setText("1");
         txtAmount.setText("");
         rbDuplicate.setSelected(true);
-    if (rbPaymentCash != null) rbPaymentCash.setSelected(true);
+        if (rbPaymentCash != null) rbPaymentCash.setSelected(true);
         discardCachedImageSilently();
         lblImagePreview.setIcon(null);
         btnDeleteImage.setVisible(false);
@@ -1891,12 +1945,29 @@ public class MainForm extends JFrame {
         txtName.requestFocus();
     }
     
+    private void updateChildCategories() {
+        String parent = (String) cmbKeyCategory.getSelectedItem();
+        cmbVehicleType.removeAllItems();
+        if (parent != null) {
+            for (String child : AppConfig.getChildCategories(parent)) {
+                cmbVehicleType.addItem(child);
+            }
+            // Set default child if available
+            String defaultChild = AppConfig.getDefaultChildCategory(parent);
+            if (defaultChild != null && !defaultChild.isEmpty()) {
+                cmbVehicleType.setSelectedItem(defaultChild);
+            } else if (cmbVehicleType.getItemCount() > 0) {
+                cmbVehicleType.setSelectedIndex(0);
+            }
+        }
+    }
+
     private void updateVehicleNoVisibility() {
-        String selectedType = (String) cmbVehicleType.getSelectedItem();
-        // Show Vehicle No only for Bike, Car, Truck, Scooter, Auto, Machines, JCB, Hitachi
-        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) ||  "JCB".equals(selectedType) || "Hitachi".equals(selectedType) || "Bus".equals(selectedType) || "Traveller".equals(selectedType) || "Vehicles".equals(selectedType);
-        lblVehicleNo.setVisible(showVehicleNo);
-        txtVehicleNo.setVisible(showVehicleNo);
+        String selectedParent = (String) cmbKeyCategory.getSelectedItem();
+        // Show Vehicle No only for Vehicles category
+        boolean showVehicleNo = "Vehicles".equals(selectedParent);
+        if (lblVehicleNo != null) lblVehicleNo.setVisible(showVehicleNo);
+        if (txtVehicleNo != null) txtVehicleNo.setVisible(showVehicleNo);
     }
     
     private void loadKeyEntries() {

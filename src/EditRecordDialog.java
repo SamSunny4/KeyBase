@@ -1,6 +1,7 @@
 package src;
 
 import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Date;
@@ -15,7 +16,8 @@ public class EditRecordDialog extends JDialog {
     private JLabel lblVehicleNo;
     private JTextField txtIdNo;
     private JTextField txtKeyNo;
-    private JComboBox<String> cmbKeyType;
+    private JComboBox<String> cmbKeyCategory; // Parent Category
+    private JComboBox<String> cmbKeyType; // Child Category
     private JComboBox<String> cmbKeyFor;
     private JTextField txtRemarks;
     private JSpinner spnQuantity;
@@ -43,7 +45,7 @@ public class EditRecordDialog extends JDialog {
         this.duplicator = duplicator;
         this.imagePath = duplicator.getImagePath();
         
-        setSize(850, 620);
+        setSize(1000, 750);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         
@@ -120,11 +122,39 @@ public class EditRecordDialog extends JDialog {
         formPanel.add(lblKeyType, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        cmbKeyType = new JComboBox<>(new String[]{"Vehicles", "Bike","Scooter","Auto","Car","Bus","Truck","Traveller","JCB","Hitachi","Machines","Door key","Other"});
+        
+        // Parent Category
+        cmbKeyCategory = new JComboBox<>();
+        for (String p : AppConfig.getParentCategories()) {
+            cmbKeyCategory.addItem(p);
+        }
+        cmbKeyCategory.setFont(new Font("Arial", Font.PLAIN, 12));
+        cmbKeyCategory.setPreferredSize(new Dimension(145, 26));
+        
+        // Child Category
+        cmbKeyType = new JComboBox<>();
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
-        cmbKeyType.setPreferredSize(new Dimension(300, 26));
-        cmbKeyType.addItemListener(e -> updateVehicleNoVisibility());
-        formPanel.add(cmbKeyType, gbc);
+        cmbKeyType.setPreferredSize(new Dimension(145, 26));
+        
+        // Panel
+        JPanel keyTypePanel = new JPanel(new GridLayout(1, 2, 5, 0));
+        keyTypePanel.setBackground(Color.WHITE);
+        keyTypePanel.add(cmbKeyCategory);
+        keyTypePanel.add(cmbKeyType);
+        
+        formPanel.add(keyTypePanel, gbc);
+        
+        // Listeners
+        cmbKeyCategory.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                updateChildCategories();
+                updateVehicleNoVisibility();
+            }
+        });
+        
+        // Initial population
+        updateChildCategories();
+        
         row++;
         
         // Vehicle No
@@ -414,6 +444,87 @@ public class EditRecordDialog extends JDialog {
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
         
         add(contentPanel);
+        
+        setupEnterNavigation();
+    }
+
+    private void setupEnterNavigation() {
+        // Name -> Phone
+        txtName.addActionListener(e -> txtPhoneNumber.requestFocus());
+        
+        // Phone -> Category
+        txtPhoneNumber.addActionListener(e -> cmbKeyCategory.requestFocus());
+        
+        // Category -> Type (using InputMap for JComboBox)
+        InputMap categoryInputMap = cmbKeyCategory.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap categoryActionMap = cmbKeyCategory.getActionMap();
+        categoryInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterPressed");
+        categoryActionMap.put("enterPressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cmbKeyCategory.isPopupVisible()) cmbKeyCategory.setPopupVisible(false);
+                cmbKeyType.requestFocus();
+            }
+        });
+        
+        // Type -> Vehicle No (if visible) or ID No
+        InputMap typeInputMap = cmbKeyType.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap typeActionMap = cmbKeyType.getActionMap();
+        typeInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterPressed");
+        typeActionMap.put("enterPressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cmbKeyType.isPopupVisible()) cmbKeyType.setPopupVisible(false);
+                if (txtVehicleNo.isVisible()) {
+                    txtVehicleNo.requestFocus();
+                } else {
+                    txtIdNo.requestFocus();
+                }
+            }
+        });
+        
+        // Vehicle No -> ID No
+        txtVehicleNo.addActionListener(e -> txtIdNo.requestFocus());
+        
+        // ID No -> Key No
+        txtIdNo.addActionListener(e -> txtKeyNo.requestFocus());
+        
+        // Key No -> Purpose
+        txtKeyNo.addActionListener(e -> cmbKeyFor.requestFocus());
+        
+        // Purpose -> Date
+        InputMap purposeInputMap = cmbKeyFor.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap purposeActionMap = cmbKeyFor.getActionMap();
+        purposeInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enterPressed");
+        purposeActionMap.put("enterPressed", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (cmbKeyFor.isPopupVisible()) cmbKeyFor.setPopupVisible(false);
+                dateChooser.getDateField().requestFocus();
+            }
+        });
+        
+        // Date -> Quantity
+        dateChooser.getDateField().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    spnQuantity.requestFocus();
+                }
+            }
+        });
+        
+        // Quantity -> Amount
+        if (spnQuantity.getEditor() instanceof JSpinner.DefaultEditor) {
+            JSpinner.DefaultEditor editor = (JSpinner.DefaultEditor) spnQuantity.getEditor();
+            editor.getTextField().addActionListener(e -> txtAmount.requestFocus());
+        }
+        
+        // Amount -> Remarks
+        txtAmount.addActionListener(e -> txtRemarks.requestFocus());
+        
+        // Remarks -> Save
+        txtRemarks.addActionListener(e -> saveChanges());
     }
     
     private void loadRecordData() {
@@ -430,6 +541,11 @@ public class EditRecordDialog extends JDialog {
 
         String keyType = duplicator.getKeyType();
         if (keyType != null && !keyType.trim().isEmpty()) {
+            String parent = AppConfig.findParentForChild(keyType);
+            if (parent != null) {
+                cmbKeyCategory.setSelectedItem(parent);
+            }
+            // Ensure the child is selected (listener updates list if parent changed)
             cmbKeyType.setSelectedItem(keyType);
         }
         
@@ -495,11 +611,21 @@ public class EditRecordDialog extends JDialog {
         updateImageButtonsState();
     }
     
+    private void updateChildCategories() {
+        String parent = (String) cmbKeyCategory.getSelectedItem();
+        cmbKeyType.removeAllItems();
+        if (parent != null) {
+            for (String child : AppConfig.getChildCategories(parent)) {
+                cmbKeyType.addItem(child);
+            }
+        }
+    }
+
     private void updateVehicleNoVisibility() {
-        String selectedType = (String) cmbKeyType.getSelectedItem();
-        boolean showVehicleNo = "Bike".equals(selectedType) || "Car".equals(selectedType) || "Truck".equals(selectedType) || "Scooter".equals(selectedType) || "Auto".equals(selectedType) || "Machines".equals(selectedType) || "JCB".equals(selectedType) || "Hitachi".equals(selectedType) || "Bus".equals(selectedType) || "Traveller".equals(selectedType) || "Vehicles".equals(selectedType);
-        lblVehicleNo.setVisible(showVehicleNo);
-        txtVehicleNo.setVisible(showVehicleNo);
+        String selectedParent = (String) cmbKeyCategory.getSelectedItem();
+        boolean showVehicleNo = "Vehicles".equals(selectedParent);
+        if (lblVehicleNo != null) lblVehicleNo.setVisible(showVehicleNo);
+        if (txtVehicleNo != null) txtVehicleNo.setVisible(showVehicleNo);
     }
     
     private void deleteImage() {
@@ -641,25 +767,62 @@ public class EditRecordDialog extends JDialog {
     }
 
     private void saveChanges() {
-        // Validate
-        if (txtName.getText().trim().isEmpty()) {
+        // Validate using AppConfig required fields
+        java.util.Set<String> required = AppConfig.getRequiredFields();
+        
+        if (required.contains("NAME") && txtName.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Name is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
             txtName.requestFocus();
             return;
         }
         
-        if (txtPhoneNumber.getText().trim().isEmpty()) {
+        if (required.contains("PHONE") && txtPhoneNumber.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Phone number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
             txtPhoneNumber.requestFocus();
             return;
         }
         
-        if (txtIdNo.getText().trim().isEmpty()) {
+        if (required.contains("ID_NO") && txtIdNo.getText().trim().isEmpty()) {
             JOptionPane.showMessageDialog(this, "ID number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
             txtIdNo.requestFocus();
             return;
         }
         
+        if (required.contains("VEHICLE_NO") && txtVehicleNo.isVisible() && txtVehicleNo.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vehicle number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            txtVehicleNo.requestFocus();
+            return;
+        }
+        
+        if (required.contains("KEY_NO") && txtKeyNo.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Key number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            txtKeyNo.requestFocus();
+            return;
+        }
+        
+        if (required.contains("PURPOSE") && "SELECT".equals(cmbKeyFor.getSelectedItem())) {
+            JOptionPane.showMessageDialog(this, "Purpose is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            cmbKeyFor.requestFocus();
+            return;
+        }
+        
+        if (required.contains("REMARKS") && txtRemarks.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Remarks is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            txtRemarks.requestFocus();
+            return;
+        }
+        
+        if (required.contains("AMOUNT")) {
+            try {
+                double amt = Double.parseDouble(txtAmount.getText().trim());
+                if (amt < 0) throw new NumberFormatException();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Valid amount is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                txtAmount.requestFocus();
+                return;
+            }
+        }
+
         // Update duplicator object
         duplicator.setName(txtName.getText().trim());
         duplicator.setPhoneNumber(txtPhoneNumber.getText().trim());

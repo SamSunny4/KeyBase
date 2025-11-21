@@ -11,6 +11,13 @@ public class AppConfig {
     private static final String EXPORT_FIELDS_KEY = "export.fields";
     private static final String CUSTOM_DB_PATH_KEY = "database.customPath";
     private static final String REQUIRED_FIELDS_KEY = "form.requiredFields";
+    
+    // Key Catalog Keys
+    private static final String KEY_CATEGORIES = "key.categories";
+    private static final String KEY_CATEGORY_PREFIX = "key.category.";
+    private static final String KEY_DEFAULT_PARENT = "key.default.parent";
+    private static final String KEY_DEFAULT_CHILD_PREFIX = "key.default.child.";
+
     private static Properties properties;
 
     static {
@@ -66,6 +73,18 @@ public class AppConfig {
         properties.setProperty(EXPORT_FIELDS_KEY, String.join(",", ExportField.defaultKeys()));
         properties.setProperty(CUSTOM_DB_PATH_KEY, "");
         properties.setProperty(REQUIRED_FIELDS_KEY, "NAME,PHONE,ID_NO");
+
+        // Default Key Catalog
+        if (!properties.containsKey(KEY_CATEGORIES)) {
+            properties.setProperty(KEY_CATEGORIES, "Vehicles,Padlock,Locker,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Vehicles", "Bike,Scooter,Auto,Car,Bus,Truck,Traveller,JCB,Hitachi,Machines,Door key,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Padlock", "7 Lever,6 Lever,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Locker", "Office Locker,Home Locker,Digital Locker,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Other", "Other");
+            
+            properties.setProperty(KEY_DEFAULT_PARENT, "Vehicles");
+            properties.setProperty(KEY_DEFAULT_CHILD_PREFIX + "Vehicles", "Bike");
+        }
     }
 
     private static void ensurePropertyDefaults() {
@@ -111,9 +130,120 @@ public class AppConfig {
             changed = true;
         }
 
+        // Ensure Key Catalog defaults
+        if (!properties.containsKey(KEY_CATEGORIES)) {
+            properties.setProperty(KEY_CATEGORIES, "Vehicles,Padlock,Locker,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Vehicles", "Bike,Scooter,Auto,Car,Bus,Truck,Traveller,JCB,Hitachi,Machines,Door key,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Padlock", "7 Lever,6 Lever,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Locker", "Office Locker,Home Locker,Digital Locker,Other");
+            properties.setProperty(KEY_CATEGORY_PREFIX + "Other", "Other");
+            
+            properties.setProperty(KEY_DEFAULT_PARENT, "Vehicles");
+            properties.setProperty(KEY_DEFAULT_CHILD_PREFIX + "Vehicles", "Bike");
+            changed = true;
+        }
+
         if (changed) {
             saveProperties();
         }
+    }
+
+    // Key Catalog Methods
+
+    public static List<String> getParentCategories() {
+        String val = properties.getProperty(KEY_CATEGORIES, "");
+        return splitList(val);
+    }
+
+    public static void setParentCategories(List<String> categories) {
+        properties.setProperty(KEY_CATEGORIES, String.join(",", categories));
+        saveProperties();
+    }
+
+    public static List<String> getChildCategories(String parent) {
+        String val = properties.getProperty(KEY_CATEGORY_PREFIX + parent, "");
+        return splitList(val);
+    }
+
+    public static void setChildCategories(String parent, List<String> children) {
+        properties.setProperty(KEY_CATEGORY_PREFIX + parent, String.join(",", children));
+        saveProperties();
+    }
+
+    public static void renameParentCategory(String oldName, String newName) {
+        // Get children of old parent
+        String children = properties.getProperty(KEY_CATEGORY_PREFIX + oldName);
+        if (children != null) {
+            properties.setProperty(KEY_CATEGORY_PREFIX + newName, children);
+            properties.remove(KEY_CATEGORY_PREFIX + oldName);
+        }
+        
+        // Update default parent if needed
+        String defaultParent = getDefaultParentCategory();
+        if (oldName.equals(defaultParent)) {
+            setDefaultParentCategory(newName);
+        }
+        
+        // Update default child key
+        String defaultChild = properties.getProperty(KEY_DEFAULT_CHILD_PREFIX + oldName);
+        if (defaultChild != null) {
+            properties.setProperty(KEY_DEFAULT_CHILD_PREFIX + newName, defaultChild);
+            properties.remove(KEY_DEFAULT_CHILD_PREFIX + oldName);
+        }
+
+        saveProperties();
+    }
+
+    public static void deleteParentCategory(String name) {
+        properties.remove(KEY_CATEGORY_PREFIX + name);
+        properties.remove(KEY_DEFAULT_CHILD_PREFIX + name);
+        if (name.equals(getDefaultParentCategory())) {
+            properties.remove(KEY_DEFAULT_PARENT);
+        }
+        saveProperties();
+    }
+
+    public static String getDefaultParentCategory() {
+        return properties.getProperty(KEY_DEFAULT_PARENT, "");
+    }
+
+    public static void setDefaultParentCategory(String parent) {
+        properties.setProperty(KEY_DEFAULT_PARENT, parent);
+        saveProperties();
+    }
+
+    public static String getDefaultChildCategory(String parent) {
+        return properties.getProperty(KEY_DEFAULT_CHILD_PREFIX + parent, "");
+    }
+
+    public static void setDefaultChildCategory(String parent, String child) {
+        properties.setProperty(KEY_DEFAULT_CHILD_PREFIX + parent, child);
+        saveProperties();
+    }
+
+    public static String findParentForChild(String child) {
+        if (child == null || child.trim().isEmpty()) return null;
+        for (String parent : getParentCategories()) {
+            List<String> children = getChildCategories(parent);
+            for (String c : children) {
+                if (c.equalsIgnoreCase(child)) {
+                    return parent;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static List<String> splitList(String val) {
+        List<String> list = new ArrayList<>();
+        if (val != null && !val.trim().isEmpty()) {
+            for (String s : val.split(",")) {
+                if (!s.trim().isEmpty()) {
+                    list.add(s.trim());
+                }
+            }
+        }
+        return list;
     }
 
     public static String getWebcamDevice() {

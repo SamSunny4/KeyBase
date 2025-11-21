@@ -17,6 +17,7 @@ public class KeyStatisticsWindow extends JFrame {
     // Statistic type
     private enum StatType {
         TOTAL_KEYS("Total Keys Done"),
+        BY_CATEGORY("By Category"),
         BY_KEY_TYPE("By Key Type"),
         BY_PURPOSE("By Purpose"),
         BY_QUANTITY("By Quantity");
@@ -238,6 +239,9 @@ public class KeyStatisticsWindow extends JFrame {
                 case TOTAL_KEYS:
                     loadTotalKeys(conn);
                     break;
+                case BY_CATEGORY:
+                    loadByCategory(conn);
+                    break;
                 case BY_KEY_TYPE:
                     loadByKeyType(conn);
                     break;
@@ -309,6 +313,39 @@ public class KeyStatisticsWindow extends JFrame {
                 statData.put("Quantity " + qty, count);
                 totalCount += qty * count; // Total keys = quantity × record count
             }
+        }
+    }
+    
+    private void loadByCategory(Connection conn) throws SQLException {
+        String sql = "SELECT key_type, SUM(quantity) FROM duplicator GROUP BY key_type";
+        try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+            Map<String, Integer> categoryCounts = new HashMap<>();
+            
+            while (rs.next()) {
+                String keyType = rs.getString(1);
+                int count = rs.getInt(2);
+                if (keyType == null || keyType.trim().isEmpty()) keyType = "Unknown";
+                
+                // Find parent category
+                String parent = "Other";
+                for (String p : AppConfig.getParentCategories()) {
+                    for (String child : AppConfig.getChildCategories(p)) {
+                        if (child.equalsIgnoreCase(keyType)) {
+                            parent = p;
+                            break;
+                        }
+                    }
+                    if (!"Other".equals(parent)) break;
+                }
+                
+                categoryCounts.put(parent, categoryCounts.getOrDefault(parent, 0) + count);
+                totalCount += count;
+            }
+            
+            // Sort by count desc
+            categoryCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .forEach(e -> statData.put(e.getKey(), e.getValue()));
         }
     }
     

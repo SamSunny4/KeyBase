@@ -12,6 +12,7 @@ public enum ExportField {
     PHONE("PHONE", "Phone", 18.0, SimpleXlsxExporter.CellType.STRING),
     ID_NO("ID_NO", "ID No", 18.0, SimpleXlsxExporter.CellType.STRING),
     KEY_NO("KEY_NO", "Key No/Model", 16.0, SimpleXlsxExporter.CellType.STRING),
+    CATEGORY("CATEGORY", "Category", 16.0, SimpleXlsxExporter.CellType.STRING),
     KEY_TYPE("KEY_TYPE", "Key Type", 16.0, SimpleXlsxExporter.CellType.STRING),
     PURPOSE("PURPOSE", "Purpose", 18.0, SimpleXlsxExporter.CellType.STRING),
     VEHICLE_NO("VEHICLE_NO", "Vehicle No", 18.0, SimpleXlsxExporter.CellType.STRING),

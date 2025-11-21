@@ -67,6 +67,11 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         
     // Key Type
     String keyType = duplicator.getKeyType();
+    
+    // Category (inferred)
+    String category = AppConfig.findParentForChild(keyType);
+    addDetailRow(detailsPanel, gbc, row++, "Category:", (category != null) ? category : "N/A");
+    
     addDetailRow(detailsPanel, gbc, row++, "Key Type:", (keyType != null && !keyType.trim().isEmpty()) ? keyType : "N/A");
 
     // Vehicle Number
@@ -330,6 +335,14 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         g2d.drawString(duplicator.getIdNo(), valueX, y);
         y += lineHeight;
         
+        // Category
+        String category = AppConfig.findParentForChild(duplicator.getKeyType());
+        g2d.setFont(labelFont);
+        g2d.drawString("Category:", labelX, y);
+        g2d.setFont(valueFont);
+        g2d.drawString((category != null ? category : "N/A"), valueX, y);
+        y += lineHeight;
+        
     g2d.setFont(labelFont);
     g2d.drawString("Key Type:", labelX, y);
     g2d.setFont(valueFont);
@@ -445,6 +458,8 @@ public class RecordDetailsDialog extends JDialog implements Printable {
                 rows.add(Arrays.asList("Name", duplicator.getName()));
                 rows.add(Arrays.asList("Phone Number", duplicator.getPhoneNumber()));
                 rows.add(Arrays.asList("ID Number", duplicator.getIdNo()));
+                String category = AppConfig.findParentForChild(duplicator.getKeyType());
+                rows.add(Arrays.asList("Category", category != null ? category : "N/A"));
                 rows.add(Arrays.asList("Key Type", duplicator.getKeyType() != null ? duplicator.getKeyType() : "N/A"));
                 rows.add(Arrays.asList("Vehicle No", duplicator.getVehicleNo() != null ? duplicator.getVehicleNo() : "N/A"));
                 rows.add(Arrays.asList("Key No/Model", duplicator.getKeyNo()));
