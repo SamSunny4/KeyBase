@@ -68,61 +68,6 @@ public class PreferencesDialog extends JDialog {
         
         add(contentPanel, BorderLayout.CENTER);
 
-        // Webcam Device Selection
-        JPanel webcamPanel = new JPanel(new BorderLayout(5, 0));
-        webcamPanel.setBackground(Color.WHITE);
-        webcamPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Webcam Device",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 12),
-            new Color(60, 62, 128)
-        ));
-
-    webcamSelector = new JComboBox<>();
-    webcamSelector.setFont(new Font("Arial", Font.PLAIN, 12));
-    loadWebcamDevices();
-    webcamPanel.add(webcamSelector, BorderLayout.CENTER);
-
-    disableCameraCheckBox = new JCheckBox("Disable camera features");
-    disableCameraCheckBox.setFont(new Font("Arial", Font.PLAIN, 12));
-    disableCameraCheckBox.setBackground(Color.WHITE);
-    disableCameraCheckBox.setForeground(new Color(60, 62, 128));
-    disableCameraCheckBox.setSelected(AppConfig.isCameraDisabled());
-    disableCameraCheckBox.addActionListener(e -> webcamSelector.setEnabled(!disableCameraCheckBox.isSelected()));
-    webcamPanel.add(disableCameraCheckBox, BorderLayout.SOUTH);
-    webcamSelector.setEnabled(!disableCameraCheckBox.isSelected());
-
-        // Image Storage Location
-        JPanel imagePathPanel = new JPanel(new BorderLayout(5, 0));
-        imagePathPanel.setBackground(Color.WHITE);
-        imagePathPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Image Storage Location",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 12),
-            new Color(60, 62, 128)
-        ));
-
-        imagePathField = new JTextField(AppConfig.getImagesDirectory());
-        imagePathField.setFont(new Font("Arial", Font.PLAIN, 12));
-        imagePathPanel.add(imagePathField, BorderLayout.CENTER);
-
-        JButton browseButton = new JButton("Browse...");
-        browseButton.setFont(new Font("Arial", Font.BOLD, 11));
-        browseButton.setBackground(new Color(109, 193, 210));
-        browseButton.setForeground(new Color(60, 62, 128));
-        browseButton.setFocusPainted(false);
-        browseButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                browseForImagePath();
-            }
-        });
-        imagePathPanel.add(browseButton, BorderLayout.EAST);
-
         // Buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 15));
         buttonPanel.setBackground(Color.WHITE);

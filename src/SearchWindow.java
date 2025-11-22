@@ -319,6 +319,7 @@ public class SearchWindow extends JFrame {
         
         // Split pane for results and image preview
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+        splitPane.setResizeWeight(1.0);
         splitPane.setDividerLocation(850);
         splitPane.setDividerSize(8);
         splitPane.setContinuousLayout(true);
@@ -345,18 +346,43 @@ public class SearchWindow extends JFrame {
             }
         };
         
-        tblResults = new JTable(tableModel);
+        tblResults = new JTable(tableModel) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(245, 250, 252));
+                }
+                return c;
+            }
+        };
         tblResults.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tblResults.setRowHeight(28);
-        tblResults.setFont(new Font("Arial", Font.PLAIN, 12));
-        tblResults.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        tblResults.getTableHeader().setBackground(new Color(60, 62, 128));
-        tblResults.getTableHeader().setForeground(Color.BLACK);
-        tblResults.getTableHeader().setPreferredSize(new Dimension(tblResults.getTableHeader().getWidth(), 35));
-        tblResults.setSelectionBackground(new Color(109, 193, 210, 100));
-        tblResults.setSelectionForeground(new Color(60, 62, 128));
-        tblResults.setGridColor(new Color(220, 220, 220));
-        tblResults.setShowGrid(true);
+        tblResults.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tblResults.setRowHeight(32);
+        tblResults.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        tblResults.setSelectionBackground(new Color(220, 240, 255));
+        tblResults.setSelectionForeground(Color.BLACK);
+        tblResults.setGridColor(new Color(230, 230, 230));
+        tblResults.setShowVerticalLines(true);
+        tblResults.setShowHorizontalLines(true);
+
+        // Style table header
+        javax.swing.table.JTableHeader header = tblResults.getTableHeader();
+        header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setBackground(new Color(60, 62, 128));
+                c.setForeground(Color.WHITE);
+                c.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                if (c instanceof JLabel) {
+                    ((JLabel) c).setHorizontalAlignment(JLabel.LEFT);
+                    ((JLabel) c).setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+                }
+                return c;
+            }
+        });
+        header.setPreferredSize(new Dimension(0, 40));
         tblResults.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tblResults.getSelectedRow() != -1) {
                 displaySelectedImage();
@@ -417,10 +443,8 @@ public class SearchWindow extends JFrame {
         tblResults.setRowSorter(sorter);
         
         JScrollPane tableScrollPane = new JScrollPane(tblResults);
-        tableScrollPane.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(5, 10, 10, 5),
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 1)
-        ));
+        tableScrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
+        tableScrollPane.getViewport().setBackground(Color.WHITE);
         splitPane.setLeftComponent(tableScrollPane);
         
         // Image preview panel

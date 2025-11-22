@@ -65,7 +65,7 @@ public class MainForm extends JFrame {
         initMenuBar();
         initShortcuts();
         setTitle("KeyBase - Key Management System");
-        setSize(1100, 750);
+        setSize(1120, 740);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         
@@ -413,9 +413,9 @@ public class MainForm extends JFrame {
         // Create form panel
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(10, 10, 10, 10),
+            BorderFactory.createEmptyBorder(10, 10, 2, 10),
             BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
+                BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
                 "Key Duplicator Information",
                 javax.swing.border.TitledBorder.LEFT,
                 javax.swing.border.TitledBorder.TOP,
@@ -442,7 +442,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtName = new JTextField(20);
     txtName.setPreferredSize(new Dimension(125, 30));
-        txtName.setBackground(new Color(236, 243, 243));
+        txtName.setBackground(new Color(239, 250, 250));
         txtName.setForeground(new Color(60, 62, 128));
         txtName.setFont(new Font("Arial", Font.PLAIN, 12));
         txtName.setBorder(BorderFactory.createCompoundBorder(
@@ -475,7 +475,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtPhoneNumber = new JTextField(20);
     txtPhoneNumber.setPreferredSize(new Dimension(125, 30));
-        txtPhoneNumber.setBackground(new Color(236, 243, 243));
+        txtPhoneNumber.setBackground(new Color(239, 250, 250));
         txtPhoneNumber.setForeground(new Color(60, 62, 128));
         txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 12));
         txtPhoneNumber.setBorder(BorderFactory.createCompoundBorder(
@@ -530,7 +530,7 @@ public class MainForm extends JFrame {
         }
         
         cmbKeyCategory.setPreferredSize(new Dimension(125, 30));
-        cmbKeyCategory.setBackground(new Color(236, 243, 243));
+        cmbKeyCategory.setBackground(new Color(239, 250, 250));
         cmbKeyCategory.setForeground(new Color(60, 62, 128));
         cmbKeyCategory.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyCategory.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -539,7 +539,7 @@ public class MainForm extends JFrame {
         // Child Category (reusing cmbVehicleType variable)
         cmbVehicleType = new JComboBox<>();
         cmbVehicleType.setPreferredSize(new Dimension(125, 30));
-        cmbVehicleType.setBackground(new Color(236, 243, 243));
+        cmbVehicleType.setBackground(new Color(239, 250, 250));
         cmbVehicleType.setForeground(new Color(60, 62, 128));
         cmbVehicleType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbVehicleType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -627,7 +627,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtVehicleNo = new JTextField(20);
     txtVehicleNo.setPreferredSize(new Dimension(125, 30));
-        txtVehicleNo.setBackground(new Color(236, 243, 243));
+        txtVehicleNo.setBackground(new Color(239, 250, 250));
         txtVehicleNo.setForeground(new Color(60, 62, 128));
         txtVehicleNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtVehicleNo.setBorder(BorderFactory.createCompoundBorder(
@@ -660,7 +660,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtIdNo = new JTextField(20);
     txtIdNo.setPreferredSize(new Dimension(125, 30));
-        txtIdNo.setBackground(new Color(236, 243, 243));
+        txtIdNo.setBackground(new Color(239, 250, 250));
         txtIdNo.setForeground(new Color(60, 62, 128));
         txtIdNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtIdNo.setBorder(BorderFactory.createCompoundBorder(
@@ -693,7 +693,7 @@ public class MainForm extends JFrame {
         gbc.weightx = 1.0;
     txtKeyNo = new JTextField(20);
     txtKeyNo.setPreferredSize(new Dimension(125, 30));
-        txtKeyNo.setBackground(new Color(236, 243, 243));
+        txtKeyNo.setBackground(new Color(239, 250, 250));
         txtKeyNo.setForeground(new Color(60, 62, 128));
         txtKeyNo.setFont(new Font("Arial", Font.PLAIN, 12));
         txtKeyNo.setBorder(BorderFactory.createCompoundBorder(
@@ -727,7 +727,7 @@ public class MainForm extends JFrame {
     cmbKeyType = new JComboBox<>(new String[] {"Personal", "Commercial", "Department", "Suspicious"});
     cmbKeyType.setSelectedItem("Personal"); // Default to Personal
         cmbKeyType.setPreferredSize(new Dimension(125, 30));
-        cmbKeyType.setBackground(new Color(236, 243, 243));
+        cmbKeyType.setBackground(new Color(239, 250, 250));
         cmbKeyType.setForeground(new Color(60, 62, 128));
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
@@ -775,7 +775,7 @@ public class MainForm extends JFrame {
         gbc.weighty = 0.0;
     txtRemarks = new JTextField(20);
     txtRemarks.setPreferredSize(new Dimension(125, 30));
-        txtRemarks.setBackground(new Color(236, 243, 243));
+        txtRemarks.setBackground(new Color(239, 250, 250));
         txtRemarks.setForeground(new Color(60, 62, 128));
         txtRemarks.setFont(new Font("Arial", Font.PLAIN, 12));
         txtRemarks.setBorder(BorderFactory.createCompoundBorder(
@@ -811,16 +811,19 @@ public class MainForm extends JFrame {
         rbDuplicate = new JRadioButton("Duplicate", true);
         rbDuplicate.setFont(new Font("Arial", Font.PLAIN, 12));
         rbDuplicate.setBackground(Color.WHITE);
+        rbDuplicate.setForeground(new Color(60, 62, 128));
         rbDuplicate.setToolTipText("Regular key duplication");
 
         rbInShop = new JRadioButton("In-shop");
         rbInShop.setFont(new Font("Arial", Font.PLAIN, 12));
         rbInShop.setBackground(Color.WHITE);
+        rbInShop.setForeground(new Color(60, 62, 128));
         rbInShop.setToolTipText("Key made in shop (adds remark)");
 
         rbOnSite = new JRadioButton("On-site");
         rbOnSite.setFont(new Font("Arial", Font.PLAIN, 12));
         rbOnSite.setBackground(Color.WHITE);
+        rbOnSite.setForeground(new Color(60, 62, 128));
         rbOnSite.setToolTipText("Key made on site (adds remark)");
 
         serviceTypeGroup.add(rbDuplicate);
@@ -840,7 +843,7 @@ public class MainForm extends JFrame {
 
         // Style the spinner's text field
         JFormattedTextField spinnerTextField = ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField();
-        spinnerTextField.setBackground(new Color(236, 243, 243));
+        spinnerTextField.setBackground(new Color(239, 250, 250));
         spinnerTextField.setForeground(new Color(60, 62, 128));
         spinnerTextField.setFont(new Font("Arial", Font.PLAIN, 12));
 
@@ -862,7 +865,7 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        spnQuantity.setBackground(new Color(236, 243, 243));
+        spnQuantity.setBackground(new Color(239, 250, 250));
         spnQuantity.setOpaque(true);
         // Remove inner editor border so the spinner shows the outer border cleanly
         spinnerTextField.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -917,7 +920,7 @@ public class MainForm extends JFrame {
     txtAmount.setPreferredSize(amtSize);
     txtAmount.setMinimumSize(amtSize);
     txtAmount.setMaximumSize(amtSize);
-        txtAmount.setBackground(new Color(250, 250, 250));
+        txtAmount.setBackground(new Color(239, 250, 250));
         txtAmount.setForeground(new Color(60, 62, 128));
         txtAmount.setFont(new Font("Arial", Font.PLAIN, 12));
         txtAmount.setBorder(BorderFactory.createCompoundBorder(
@@ -951,9 +954,11 @@ public class MainForm extends JFrame {
         rbPaymentCash = new JRadioButton("Cash", true);
         rbPaymentCash.setFont(new Font("Arial", Font.PLAIN, 12));
         rbPaymentCash.setBackground(Color.WHITE);
+        rbPaymentCash.setForeground(new Color(60, 62, 128));
         rbPaymentUpi = new JRadioButton("UPI");
         rbPaymentUpi.setFont(new Font("Arial", Font.PLAIN, 12));
         rbPaymentUpi.setBackground(Color.WHITE);
+        rbPaymentUpi.setForeground(new Color(60, 62, 128));
         paymentGroup.add(rbPaymentCash);
         paymentGroup.add(rbPaymentUpi);
         rbPaymentCash.setAlignmentY(Component.CENTER_ALIGNMENT);
@@ -987,13 +992,16 @@ public class MainForm extends JFrame {
         rightGbc.fill = GridBagConstraints.HORIZONTAL;
         rightGbc.anchor = GridBagConstraints.NORTHWEST;
         JPanel datePanel = new JPanel(new GridBagLayout());
-        datePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Date",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 12),
-            new Color(60, 62, 128)
+        datePanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(0, 0, 5, 0),
+            BorderFactory.createTitledBorder(
+                BorderFactory.createEmptyBorder(),
+                "Date",
+                javax.swing.border.TitledBorder.LEFT,
+                javax.swing.border.TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 12),
+                new Color(60, 62, 128)
+            )
         ));
         datePanel.setBackground(Color.WHITE);
         GridBagConstraints datePanelGbc = new GridBagConstraints();
@@ -1003,7 +1011,7 @@ public class MainForm extends JFrame {
 
     dateChooser = new JDateChooser();
     dateChooser.setPreferredSize(new Dimension(75, 30));
-        dateChooser.setBackground(new Color(236, 243, 243));
+        dateChooser.setBackground(new Color(239, 250, 250));
         dateChooser.setForeground(new Color(60, 62, 128));
         dateChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         dateChooser.setToolTipText("Date when the key was created/received");
@@ -1037,13 +1045,16 @@ public class MainForm extends JFrame {
     rightGbc.fill = GridBagConstraints.BOTH;
 
         imagePanel = new JPanel(new BorderLayout());
-        imagePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Image",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 12),
-            new Color(60, 62, 128)
+        imagePanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createEmptyBorder(0, 0, 0, 0),
+            BorderFactory.createTitledBorder(
+                BorderFactory.createEmptyBorder(),
+                "Image",
+                javax.swing.border.TitledBorder.LEFT,
+                javax.swing.border.TitledBorder.TOP,
+                new Font("Arial", Font.BOLD, 12),
+                new Color(60, 62, 128)
+            )
         ));
     imagePanel.setBackground(Color.WHITE);
     imagePanel.setOpaque(true);
@@ -1051,7 +1062,7 @@ public class MainForm extends JFrame {
     lblImagePreview = new JLabel();
     // Keep the preview square and increase size
     lblImagePreview.setPreferredSize(new Dimension(300, 300));
-        lblImagePreview.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 2));
+        lblImagePreview.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         lblImagePreview.setHorizontalAlignment(JLabel.CENTER);
         lblImagePreview.setBackground(Color.WHITE);
         lblImagePreview.setOpaque(true);
@@ -1137,7 +1148,7 @@ public class MainForm extends JFrame {
     btnSave.setForeground(new Color(60, 62, 128));
     btnSave.setFont(new Font("Arial", Font.BOLD, 14));
     btnSave.setFocusPainted(false);
-    btnSave.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 2));
+    btnSave.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         btnSave.setToolTipText("Save current record (Alt+S)");
         btnSave.addActionListener(new ActionListener() {
             @Override
@@ -1161,7 +1172,7 @@ public class MainForm extends JFrame {
         btnReset.setForeground(new Color(60, 62, 128));
         btnReset.setFont(new Font("Arial", Font.BOLD, 14));
         btnReset.setFocusPainted(false);
-        btnReset.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 2));
+        btnReset.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         btnReset.setMnemonic(KeyEvent.VK_R);
         btnReset.setToolTipText("Clear the form (Alt+R)");
         btnReset.addActionListener(new ActionListener() {
@@ -1197,51 +1208,71 @@ public class MainForm extends JFrame {
             }
         };
         
-        tblKeyEntries = new JTable(model);
-        JScrollPane scrollPane = new JScrollPane(tblKeyEntries);
-        scrollPane.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createEmptyBorder(5, 10, 10, 10),
-            BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-                "Key Entry Records",
-                javax.swing.border.TitledBorder.LEFT,
-                javax.swing.border.TitledBorder.TOP,
-                new Font("Arial", Font.BOLD, 14),
-                new Color(60, 62, 128)
-            )
-        ));
+        tblKeyEntries = new JTable(model) {
+            @Override
+            public Component prepareRenderer(javax.swing.table.TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                if (!isRowSelected(row)) {
+                    c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(245, 250, 252));
+                }
+                return c;
+            }
+        };
         
-        add(scrollPane, BorderLayout.CENTER);
+        // Container for table and title
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBackground(Color.WHITE);
+        // Minimal padding around the whole section
+        tablePanel.setBorder(BorderFactory.createEmptyBorder(2, 10, 5, 10));
+        
+        // Title label
+        JLabel lblRecordsTitle = new JLabel("Records");
+        lblRecordsTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblRecordsTitle.setForeground(new Color(60, 62, 128));
+        lblRecordsTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+        tablePanel.add(lblRecordsTitle, BorderLayout.NORTH);
 
-        // Status bar
-        statusBar = new JLabel("Ready");
-        statusBar.setFont(new Font("Arial", Font.PLAIN, 12));
-        statusBar.setForeground(new Color(60, 62, 128));
-        statusBar.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(109, 193, 210)),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)
-        ));
-        statusBar.setBackground(Color.WHITE);
-        statusBar.setOpaque(true);
-        add(statusBar, BorderLayout.SOUTH);
+        JScrollPane scrollPane = new JScrollPane(tblKeyEntries);
+        // Remove the default border or set a very thin one
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
+        
+        add(tablePanel, BorderLayout.CENTER);
+
+        // Status bar removed as requested
         
         // Load initial data
         loadKeyEntries();
         applyCameraPreferences();
         // UI tweaks for table
-        tblKeyEntries.setFont(new Font("Arial", Font.PLAIN, 12));
-        tblKeyEntries.setRowHeight(28);
+        tblKeyEntries.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        tblKeyEntries.setRowHeight(32);
         tblKeyEntries.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        tblKeyEntries.setSelectionBackground(new Color(109, 193, 210, 100));
-        tblKeyEntries.setSelectionForeground(new Color(60, 62, 128));
-        tblKeyEntries.setGridColor(new Color(200, 200, 200));
-        tblKeyEntries.setShowGrid(true);
+        tblKeyEntries.setSelectionBackground(new Color(220, 240, 255));
+        tblKeyEntries.setSelectionForeground(Color.BLACK);
+        tblKeyEntries.setGridColor(new Color(230, 230, 230));
+        tblKeyEntries.setShowVerticalLines(true);
+        tblKeyEntries.setShowHorizontalLines(true);
         
         // Style table header
-        tblKeyEntries.getTableHeader().setBackground(new Color(60, 62, 128));
-        tblKeyEntries.getTableHeader().setForeground(Color.BLACK);
-        tblKeyEntries.getTableHeader().setFont(new Font("Arial", Font.BOLD, 13));
-        tblKeyEntries.getTableHeader().setPreferredSize(new Dimension(0, 35));
+        javax.swing.table.JTableHeader header = tblKeyEntries.getTableHeader();
+        header.setDefaultRenderer(new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                c.setBackground(new Color(60, 62, 128));
+                c.setForeground(Color.WHITE);
+                c.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                if (c instanceof JLabel) {
+                    ((JLabel) c).setHorizontalAlignment(JLabel.LEFT);
+                    ((JLabel) c).setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+                }
+                return c;
+            }
+        });
+        header.setPreferredSize(new Dimension(0, 40));
         
         // set preferred column widths
         if (tblKeyEntries.getColumnModel().getColumnCount() >= 12) {
@@ -1340,132 +1371,55 @@ public class MainForm extends JFrame {
         // File menu
         JMenu fileMenu = new JMenu("File");
         
-    JMenuItem viewEntriesItem = new JMenuItem("Refresh");
-    viewEntriesItem.setToolTipText("Refresh and view key entries");
-    viewEntriesItem.setMnemonic(KeyEvent.VK_V);
-        viewEntriesItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showKeyEntriesDialog();
-            }
-        });
+        fileMenu.add(createMenuItem("Refresh", KeyEvent.VK_V, "Refresh and view key entries", e -> showKeyEntriesDialog()));
         
-        JMenuItem searchItem = new JMenuItem("Search Records");
-        searchItem.setToolTipText("Open search dialog (Ctrl+F)");
-        searchItem.setMnemonic(KeyEvent.VK_F);
+        JMenuItem searchItem = createMenuItem("Search Records", KeyEvent.VK_F, "Open search dialog (Ctrl+F)", e -> {
+            SearchWindow searchWindow = new SearchWindow();
+            searchWindow.setVisible(true);
+        });
         searchItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
-        searchItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SearchWindow searchWindow = new SearchWindow();
-                searchWindow.setVisible(true);
-            }
-        });
-        
-    JMenuItem exportItem = new JMenuItem("Export to Excel");
-    exportItem.setToolTipText("Export all records to an Excel workbook (Ctrl+E)");
-    exportItem.setMnemonic(KeyEvent.VK_E);
-    exportItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
-        exportItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                exportToExcel();
-            }
-        });
-        
-    JMenuItem deleteRecordsItem = new JMenuItem("Delete Records");
-    deleteRecordsItem.setToolTipText("Delete records within a specified date range");
-    deleteRecordsItem.setMnemonic(KeyEvent.VK_D);
-        deleteRecordsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showDeleteRecordsDialog();
-            }
-        });
-        
-    JMenuItem preferencesItem = new JMenuItem("Preferences");
-    preferencesItem.setToolTipText("Application preferences");
-    preferencesItem.setMnemonic(KeyEvent.VK_P);
-        preferencesItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showPreferencesDialog();
-            }
-        });
-        
-        JMenuItem exitItem = new JMenuItem("Exit");
-        exitItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-        
-        fileMenu.add(viewEntriesItem);
         fileMenu.add(searchItem);
+        
+        JMenuItem exportItem = createMenuItem("Export to Excel", KeyEvent.VK_E, "Export all records to an Excel workbook (Ctrl+E)", e -> exportToExcel());
+        exportItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
         fileMenu.add(exportItem);
+        
         fileMenu.addSeparator();
-        fileMenu.add(deleteRecordsItem);
-        fileMenu.add(preferencesItem);
+        fileMenu.add(createMenuItem("Delete Records", KeyEvent.VK_D, "Delete records within a specified date range", e -> showDeleteRecordsDialog()));
+        fileMenu.add(createMenuItem("Preferences", KeyEvent.VK_P, "Application preferences", e -> showPreferencesDialog()));
         fileMenu.addSeparator();
-        fileMenu.add(exitItem);
+        fileMenu.add(createMenuItem("Exit", 0, null, e -> System.exit(0)));
         
         // Help menu
         JMenu helpMenu = new JMenu("Help");
-        
-        JMenuItem readmeItem = new JMenuItem("Readme");
-        readmeItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showReadmeDialog();
-            }
-        });
-        
-        JMenuItem aboutItem = new JMenuItem("About");
-        aboutItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(MainForm.this,
+        helpMenu.add(createMenuItem("Readme", 0, null, e -> showReadmeDialog()));
+        helpMenu.add(createMenuItem("About", 0, null, e -> JOptionPane.showMessageDialog(MainForm.this,
                     "KeyBase - Key Management System\nVersion 3.0\n© 2025",
                     "About KeyBase",
-                    JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-        
-        helpMenu.add(readmeItem);
-        helpMenu.add(aboutItem);
+                    JOptionPane.INFORMATION_MESSAGE)));
         
         // Tools menu
         JMenu toolsMenu = new JMenu("Tools");
-        
-        JMenuItem salesMetricsItem = new JMenuItem("Sales Metrics");
-        salesMetricsItem.setToolTipText("View sales analytics and charts");
-        salesMetricsItem.setMnemonic(KeyEvent.VK_M);
-        salesMetricsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showMetricsWindow();
-            }
-        });
-        
-        JMenuItem keyStatsItem = new JMenuItem("Key Statistics");
-        keyStatsItem.setToolTipText("View key counts and breakdowns");
-        keyStatsItem.setMnemonic(KeyEvent.VK_K);
-        keyStatsItem.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showKeyStatisticsWindow();
-            }
-        });
-        
-        toolsMenu.add(salesMetricsItem);
-        toolsMenu.add(keyStatsItem);
+        toolsMenu.add(createMenuItem("Sales Metrics", KeyEvent.VK_M, "View sales analytics and charts", e -> showMetricsWindow()));
+        toolsMenu.add(createMenuItem("Key Statistics", KeyEvent.VK_K, "View key counts and breakdowns", e -> showKeyStatisticsWindow()));
         
         menuBar.add(fileMenu);
         menuBar.add(toolsMenu);
         menuBar.add(helpMenu);
         
         setJMenuBar(menuBar);
+    }
+
+    private JMenuItem createMenuItem(String text, int mnemonic, String toolTip, ActionListener listener) {
+        JMenuItem item = new JMenuItem(text);
+        if (mnemonic != 0) item.setMnemonic(mnemonic);
+        if (toolTip != null) item.setToolTipText(toolTip);
+        if (listener != null) item.addActionListener(listener);
+        
+        // Adjust margin to move text closer to the left
+        item.setMargin(new Insets(2, -20, 2, 2));
+        
+        return item;
     }
     
     private void applyCameraPreferences() {
