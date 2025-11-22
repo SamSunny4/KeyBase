@@ -390,6 +390,14 @@ The application uses **H2 embedded database**:
 
 ## Version History
 
+### Version 4.0
+- Better UI/UX: refined spacing, consistent typography, clearer focus/hover states
+- Better theming: centralized color palette, improved contrast, hover darkening on year selector
+- Fixed UI bugs: hidden Today highlight, missing prev/next buttons, hover highlight loss, minor layout jitter
+- Fixed general bugs: date chooser event firing, live record count validation, export enable state logic
+- Added key type category dual dropdowns (Category + Specific Type) for richer classification
+- Added key type dropdown editor in tables for faster inline edits
+
 ### Version 3.0 (Current): Major visual refresh and analytics
 This release introduces a modern Sales Analytics dashboard, UI polish, and a number of workflow improvements:
 
