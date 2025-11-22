@@ -391,4 +391,27 @@ public class Duplicator {
                 ResultSet.CONCUR_READ_ONLY);
         return stmt.executeQuery(sql);
     }
+    
+    // Count records within a date range
+    public static int countRecordsByDateRange(Date startDate, Date endDate) {
+        String sql = "SELECT COUNT(*) FROM duplicator WHERE date_added BETWEEN ? AND ?";
+        
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setDate(1, new java.sql.Date(startDate.getTime()));
+            pstmt.setDate(2, new java.sql.Date(endDate.getTime()));
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.err.println("Error counting records: " + e.getMessage());
+        }
+        
+        return 0;
+    }
 }

@@ -12,6 +12,8 @@ import java.util.Date;
 public class ExportDateRangeDialog extends JDialog {
     private final JDateChooser startChooser = new JDateChooser();
     private final JDateChooser endChooser = new JDateChooser();
+    private final JLabel countLabel = new JLabel("Calculating...");
+    private final JButton okButton = new JButton("Export");
     private boolean confirmed = false;
 
     public ExportDateRangeDialog(Frame owner) {
@@ -25,43 +27,60 @@ public class ExportDateRangeDialog extends JDialog {
     }
 
     private void init() {
-        setLayout(new BorderLayout(10, 10));
+        setLayout(new BorderLayout(0, 0));
         setBackground(Color.WHITE);
-        JPanel content = new JPanel();
-        content.setLayout(new GridBagLayout());
-        content.setBackground(Color.WHITE);
+        
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+        
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        
+        // Start Date
         gbc.gridx = 0;
         gbc.gridy = 0;
-
-        JLabel startLabel = new JLabel("Start date:");
-        startLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        JLabel startLabel = new JLabel("Start Date:");
+        startLabel.setFont(new Font("Arial", Font.BOLD, 12));
         startLabel.setForeground(new Color(60, 62, 128));
-        content.add(startLabel, gbc);
+        mainPanel.add(startLabel, gbc);
 
         gbc.gridx = 1;
+        gbc.weightx = 1.0;
         startChooser.setDate(new Date());
-        content.add(startChooser, gbc);
+        mainPanel.add(startChooser, gbc);
 
+        // End Date
         gbc.gridx = 0;
         gbc.gridy = 1;
-        JLabel endLabel = new JLabel("End date:");
-        endLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        gbc.weightx = 0.0;
+        JLabel endLabel = new JLabel("End Date:");
+        endLabel.setFont(new Font("Arial", Font.BOLD, 12));
         endLabel.setForeground(new Color(60, 62, 128));
-        content.add(endLabel, gbc);
+        mainPanel.add(endLabel, gbc);
 
         gbc.gridx = 1;
+        gbc.weightx = 1.0;
         endChooser.setDate(new Date());
-        content.add(endChooser, gbc);
+        mainPanel.add(endChooser, gbc);
+        
+        // Count Label
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(15, 5, 5, 5);
+        countLabel.setFont(new Font("Arial", Font.BOLD, 13));
+        countLabel.setForeground(new Color(60, 62, 128));
+        mainPanel.add(countLabel, gbc);
 
-        add(content, BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(230, 230, 230)));
 
-        JButton okButton = new JButton("OK");
         okButton.setFont(new Font("Arial", Font.BOLD, 12));
         okButton.setBackground(new Color(109, 193, 210));
         okButton.setForeground(new Color(60, 62, 128));
@@ -88,8 +107,34 @@ public class ExportDateRangeDialog extends JDialog {
 
         add(buttonPanel, BorderLayout.SOUTH);
 
+        // Add listeners for date changes
+        startChooser.addPropertyChangeListener("date", e -> updateRecordCount());
+        endChooser.addPropertyChangeListener("date", e -> updateRecordCount());
+        
+        // Initial update
+        updateRecordCount();
+
         pack();
         setLocationRelativeTo(getOwner());
+    }
+
+    private void updateRecordCount() {
+        Date start = startChooser.getDate();
+        Date end = endChooser.getDate();
+        
+        if (start != null && end != null) {
+            if (end.before(start)) {
+                countLabel.setText("<html><font color='red'>Invalid range: End date before start date</font></html>");
+                okButton.setEnabled(false);
+            } else {
+                int count = Duplicator.countRecordsByDateRange(start, end);
+                countLabel.setText("Records found: " + count);
+                okButton.setEnabled(true);
+            }
+        } else {
+            countLabel.setText("Select dates to see record count");
+            okButton.setEnabled(false);
+        }
     }
 
     private boolean validateRange() {

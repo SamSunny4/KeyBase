@@ -62,14 +62,13 @@ public class JDateChooser extends JPanel {
         headerPanel.setBackground(DARK_PURPLE);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
-        JButton prevMonth = new JButton("◀"){{
-        setFont(getFont().deriveFont(20f));
-        setPreferredSize(new Dimension(40, 30));
-    }};
-        JButton nextMonth = new JButton("▶"){{
-        setFont(getFont().deriveFont(20f));
-        setPreferredSize(new Dimension(40, 30));
-    }};
+        JButton prevMonth = new JButton("<");
+        prevMonth.setFont(new Font("Arial", Font.BOLD, 18));
+        prevMonth.setPreferredSize(new Dimension(45, 30));
+        
+        JButton nextMonth = new JButton(">");
+        nextMonth.setFont(new Font("Arial", Font.BOLD, 18));
+        nextMonth.setPreferredSize(new Dimension(45, 30));
         
         // Center panel with month and year on two lines
         JPanel centerPanel = new JPanel();
@@ -92,6 +91,20 @@ public class JDateChooser extends JPanel {
         yearButton.setFont(new Font("Arial", Font.PLAIN, 13));
         yearButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         yearButton.setMargin(new Insets(0, 0, 0, 0));
+        yearButton.setToolTipText("Click to change year");
+
+        yearButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                yearButton.setContentAreaFilled(true);
+                yearButton.setBackground(new Color(0, 0, 0, 64)); // Semi-transparent black for darkening
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                yearButton.setContentAreaFilled(false);
+            }
+        });
         
         centerPanel.add(monthLabel);
         centerPanel.add(Box.createVerticalStrut(2)); // Minimal spacing
@@ -229,6 +242,8 @@ public class JDateChooser extends JPanel {
         for (int day = 1; day <= daysInMonth; day++) {
             final int selectedDay = day;
             JButton dayButton = new JButton(String.valueOf(day));
+            dayButton.setContentAreaFilled(false);
+            dayButton.setOpaque(true);
             dayButton.setPreferredSize(new Dimension(35, 30));
             dayButton.setFont(new Font("Arial", Font.PLAIN, 13));
             dayButton.setBackground(Color.WHITE);
@@ -240,26 +255,35 @@ public class JDateChooser extends JPanel {
             if (day == today.get(Calendar.DAY_OF_MONTH) && 
                 month == today.get(Calendar.MONTH) && 
                 year == today.get(Calendar.YEAR)) {
-                dayButton.setBackground(Color.RED);
-                dayButton.setForeground(Color.BLACK);
-                dayButton.setFont(new Font("Eras Bold ITC", Font.BOLD, 13));
+                dayButton.setBackground(new Color(109, 193, 210));
+                dayButton.setForeground(Color.WHITE);
+                dayButton.setFont(new Font("Arial", Font.BOLD, 13));
             }
             
             dayButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseEntered(MouseEvent e) {
-                    if (!dayButton.getBackground().equals(DARK_PURPLE)) {
-                        dayButton.setBackground(new Color(109, 193, 210, 100));
+                    Calendar today = Calendar.getInstance();
+                    boolean isToday = (selectedDay == today.get(Calendar.DAY_OF_MONTH) && 
+                          month == today.get(Calendar.MONTH) && 
+                          year == today.get(Calendar.YEAR));
+                    
+                    if (!isToday) {
+                        dayButton.setBackground(new Color(225, 245, 248));
                     }
                 }
                 
                 @Override
                 public void mouseExited(MouseEvent e) {
                     Calendar today = Calendar.getInstance();
-                    if (!(selectedDay == today.get(Calendar.DAY_OF_MONTH) && 
+                    boolean isToday = (selectedDay == today.get(Calendar.DAY_OF_MONTH) && 
                           month == today.get(Calendar.MONTH) && 
-                          year == today.get(Calendar.YEAR))) {
+                          year == today.get(Calendar.YEAR));
+                          
+                    if (!isToday) {
                         dayButton.setBackground(Color.WHITE);
+                    } else {
+                        dayButton.setBackground(new Color(109, 193, 210));
                     }
                 }
             });
@@ -284,6 +308,7 @@ public class JDateChooser extends JPanel {
     }
     
     public void setDate(Date date) {
+        Date oldDate = selectedDate;
         selectedDate = date;
         if (date != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy");
@@ -291,6 +316,7 @@ public class JDateChooser extends JPanel {
         } else {
             dateField.setText("");
         }
+        firePropertyChange("date", oldDate, selectedDate);
     }
     
     public JTextField getDateField() {
