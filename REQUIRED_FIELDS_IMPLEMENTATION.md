@@ -212,7 +212,7 @@ When user clicks **Save** button:
 
 ## Version Information
 
-- **Version:** 3.0
+- **Version:** 4.0
 - **Feature:** Configurable Required Fields
 - **Date:** 2024
 - **Backward Compatible:** Yes (defaults match previous behavior)

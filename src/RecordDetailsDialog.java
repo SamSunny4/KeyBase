@@ -21,7 +21,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         super(owner, "Record Details - SN: " + duplicator.getDuplicatorId(), true);
         this.duplicator = duplicator;
         
-        setSize(700, 600);
+        setSize(670, 680);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         
@@ -37,24 +37,30 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         // Left side - Details
         detailsPanel = new JPanel(new GridBagLayout());
         detailsPanel.setBackground(Color.WHITE);
-        detailsPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Customer Information",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 14),
-            new Color(60, 62, 128)
-        ));
+        
+        // Custom header for details
+        JPanel detailsHeader = new JPanel(new BorderLayout());
+        detailsHeader.setBackground(new Color(60, 62, 128));
+        JLabel lblDetailsHeader = new JLabel("Customer Information");
+        lblDetailsHeader.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblDetailsHeader.setForeground(Color.WHITE);
+        lblDetailsHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        detailsHeader.add(lblDetailsHeader, BorderLayout.CENTER);
+        
+        JPanel detailsContainer = new JPanel(new BorderLayout());
+        detailsContainer.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
+        detailsContainer.add(detailsHeader, BorderLayout.NORTH);
+        detailsContainer.add(detailsPanel, BorderLayout.CENTER);
         
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 10, 8, 10);
+        gbc.insets = new Insets(8, 15, 8, 15);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
         int row = 0;
         
-    // SN
-    addDetailRow(detailsPanel, gbc, row++, "SN:", String.valueOf(duplicator.getDuplicatorId()));
+        // SN
+        addDetailRow(detailsPanel, gbc, row++, "SN:", String.valueOf(duplicator.getDuplicatorId()));
         
         // Name
         addDetailRow(detailsPanel, gbc, row++, "Name:", duplicator.getName());
@@ -65,33 +71,33 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         // ID Number
         addDetailRow(detailsPanel, gbc, row++, "ID Number:", duplicator.getIdNo());
         
-    // Key Type
-    String keyType = duplicator.getKeyType();
-    
-    // Category (inferred)
-    String category = AppConfig.findParentForChild(keyType);
-    addDetailRow(detailsPanel, gbc, row++, "Category:", (category != null) ? category : "N/A");
-    
-    addDetailRow(detailsPanel, gbc, row++, "Key Type:", (keyType != null && !keyType.trim().isEmpty()) ? keyType : "N/A");
+        // Key Type
+        String keyType = duplicator.getKeyType();
+        
+        // Category (inferred)
+        String category = AppConfig.findParentForChild(keyType);
+        addDetailRow(detailsPanel, gbc, row++, "Category:", (category != null) ? category : "N/A");
+        
+        addDetailRow(detailsPanel, gbc, row++, "Key Type:", (keyType != null && !keyType.trim().isEmpty()) ? keyType : "N/A");
 
-    // Vehicle Number
-    addDetailRow(detailsPanel, gbc, row++, "Vehicle No:", (duplicator.getVehicleNo() != null && !duplicator.getVehicleNo().trim().isEmpty()) ? duplicator.getVehicleNo() : "N/A");
+        // Vehicle Number
+        addDetailRow(detailsPanel, gbc, row++, "Vehicle No:", (duplicator.getVehicleNo() != null && !duplicator.getVehicleNo().trim().isEmpty()) ? duplicator.getVehicleNo() : "N/A");
 
-    // Key Number / Model
-    addDetailRow(detailsPanel, gbc, row++, "Key No/Model:", duplicator.getKeyNo());
+        // Key Number / Model
+        addDetailRow(detailsPanel, gbc, row++, "Key No/Model:", duplicator.getKeyNo());
         
         // Purpose
         String purpose = duplicator.getPurpose();
         addDetailRow(detailsPanel, gbc, row++, "Purpose:", 
             (purpose != null && !purpose.trim().isEmpty()) ? purpose : "N/A");
 
-    // Service Type
-    ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
-    addDetailRow(detailsPanel, gbc, row++, "Service Type:", serviceType.getDisplayName());
+        // Service Type
+        ServiceTypeHelper.ServiceType serviceType = ServiceTypeHelper.detectServiceType(duplicator.getRemarks());
+        addDetailRow(detailsPanel, gbc, row++, "Service Type:", serviceType.getDisplayName());
 
-    // Payment
-    String paymentType = ServiceTypeHelper.hasUpi(duplicator.getRemarks()) ? "UPI" : "Cash";
-    addDetailRow(detailsPanel, gbc, row++, "Payment:", paymentType);
+        // Payment
+        String paymentType = ServiceTypeHelper.hasUpi(duplicator.getRemarks()) ? "UPI" : "Cash";
+        addDetailRow(detailsPanel, gbc, row++, "Payment:", paymentType);
         
         // Date
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM-yyyy");
@@ -111,22 +117,32 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         remarks = ServiceTypeHelper.stripPaymentSuffix(remarks);
         addDetailRow(detailsPanel, gbc, row++, "Remarks:", 
             (remarks != null && !remarks.trim().isEmpty()) ? remarks : "No remarks");
+            
+        // Add filler to push content up
+        gbc.weighty = 1.0;
+        detailsPanel.add(new JLabel(), gbc);
         
-        JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
+        JScrollPane detailsScrollPane = new JScrollPane(detailsContainer);
         detailsScrollPane.setPreferredSize(new Dimension(400, 500));
         detailsScrollPane.setBorder(null);
+        detailsScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         
         // Right side - Image
-        JPanel imagePanel = new JPanel(new BorderLayout(5, 5));
+        JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(Color.WHITE);
-        imagePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Customer Photo",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 14),
-            new Color(60, 62, 128)
-        ));
+        
+        // Custom header for image
+        JPanel imageHeader = new JPanel(new BorderLayout());
+        imageHeader.setBackground(new Color(60, 62, 128));
+        JLabel lblImageHeader = new JLabel("Customer Photo");
+        lblImageHeader.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblImageHeader.setForeground(Color.WHITE);
+        lblImageHeader.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
+        imageHeader.add(lblImageHeader, BorderLayout.CENTER);
+        
+        JPanel imageContainer = new JPanel(new BorderLayout());
+        imageContainer.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
+        imageContainer.add(imageHeader, BorderLayout.NORTH);
         
         lblImagePreview = new JLabel();
         lblImagePreview.setHorizontalAlignment(JLabel.CENTER);
@@ -134,21 +150,20 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         lblImagePreview.setPreferredSize(new Dimension(250, 250));
         lblImagePreview.setBackground(new Color(250, 250, 250));
         lblImagePreview.setOpaque(true);
-        lblImagePreview.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
         
         // Load image if available
         loadImage();
         
-        imagePanel.add(lblImagePreview, BorderLayout.CENTER);
+        imageContainer.add(lblImagePreview, BorderLayout.CENTER);
+        imagePanel.add(imageContainer, BorderLayout.CENTER);
         
         // Split pane
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, 
             detailsScrollPane, imagePanel);
         splitPane.setDividerLocation(400);
-        splitPane.setResizeWeight(0.6);
+        splitPane.setResizeWeight(0.5);
+        splitPane.setDividerSize(5);
+        splitPane.setBorder(null);
         
         contentPanel.add(splitPane, BorderLayout.CENTER);
         
@@ -156,49 +171,25 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonsPanel.setBackground(Color.WHITE);
         
-        JButton btnEdit = new JButton("Edit Details");
-        btnEdit.setFont(new Font("Arial", Font.BOLD, 12));
-        btnEdit.setBackground(new Color(109, 193, 210));
-        btnEdit.setForeground(new Color(60, 62, 128));
-        btnEdit.setFocusPainted(false);
-        btnEdit.setPreferredSize(new Dimension(120, 32));
+        JButton btnEdit = createStyledButton("Edit Details", new Color(109, 193, 210), new Color(60, 62, 128));
         btnEdit.setToolTipText("Edit this record");
         btnEdit.addActionListener(e -> editRecord());
         
-        JButton btnDelete = new JButton("Delete Data");
-        btnDelete.setFont(new Font("Arial", Font.BOLD, 12));
-        btnDelete.setBackground(new Color(220, 80, 80));
-        btnDelete.setForeground(Color.RED);
-        btnDelete.setFocusPainted(false);
-        btnDelete.setPreferredSize(new Dimension(120, 32));
+        JButton btnDelete = createStyledButton("Delete Data", new Color(255, 235, 235), Color.RED);
+        btnDelete.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 200), 1));
         btnDelete.setToolTipText("Delete all data except Name and ID");
         btnDelete.addActionListener(e -> deleteRecordData());
         
-        JButton btnPrint = new JButton("Print");
-        btnPrint.setFont(new Font("Arial", Font.BOLD, 12));
-        btnPrint.setBackground(new Color(109, 193, 210));
-        btnPrint.setForeground(new Color(60, 62, 128));
-        btnPrint.setFocusPainted(false);
-        btnPrint.setPreferredSize(new Dimension(100, 32));
+        JButton btnPrint = createStyledButton("Print", new Color(240, 245, 250), new Color(60, 62, 128));
         btnPrint.setIcon(UIManager.getIcon("FileView.hardDriveIcon"));
         btnPrint.setToolTipText("Print this record");
         btnPrint.addActionListener(e -> printRecord());
         
-    JButton btnExportCsv = new JButton("Export XLSX");
-    btnExportCsv.setFont(new Font("Arial", Font.BOLD, 12));
-    btnExportCsv.setBackground(new Color(109, 193, 210));
-    btnExportCsv.setForeground(new Color(60, 62, 128));
-    btnExportCsv.setFocusPainted(false);
-    btnExportCsv.setPreferredSize(new Dimension(120, 32));
-    btnExportCsv.setToolTipText("Export this record to XLSX (Excel)");
-    btnExportCsv.addActionListener(e -> exportToXlsx());
+        JButton btnExportCsv = createStyledButton("Export XLSX", new Color(240, 245, 250), new Color(60, 62, 128));
+        btnExportCsv.setToolTipText("Export this record to XLSX (Excel)");
+        btnExportCsv.addActionListener(e -> exportToXlsx());
         
-        JButton btnClose = new JButton("Close");
-        btnClose.setFont(new Font("Arial", Font.BOLD, 12));
-        btnClose.setBackground(new Color(240, 240, 240));
-        btnClose.setForeground(new Color(60, 62, 128));
-        btnClose.setFocusPainted(false);
-        btnClose.setPreferredSize(new Dimension(100, 32));
+        JButton btnClose = createStyledButton("Close", new Color(245, 245, 245), Color.BLACK);
         btnClose.addActionListener(e -> dispose());
         
         buttonsPanel.add(btnEdit);
@@ -212,6 +203,18 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         add(contentPanel);
     }
     
+    private JButton createStyledButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFocusPainted(false);
+        btn.setPreferredSize(new Dimension(110, 35));
+        btn.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+    
     private void addDetailRow(JPanel panel, GridBagConstraints gbc, int row, 
                               String label, String value) {
         // Label
@@ -219,7 +222,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         gbc.gridy = row;
         gbc.weightx = 0.0;
         JLabel lblField = new JLabel(label);
-        lblField.setFont(new Font("Arial", Font.BOLD, 13));
+        lblField.setFont(new Font("Segoe UI", Font.BOLD, 13));
         lblField.setForeground(new Color(60, 62, 128));
         panel.add(lblField, gbc);
         
@@ -227,7 +230,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Arial", Font.PLAIN, 13));
+        lblValue.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblValue.setForeground(new Color(50, 50, 50));
         panel.add(lblValue, gbc);
     }

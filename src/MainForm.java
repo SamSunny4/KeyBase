@@ -1394,7 +1394,7 @@ public class MainForm extends JFrame {
         JMenu helpMenu = new JMenu("Help");
         helpMenu.add(createMenuItem("Readme", 0, null, e -> showReadmeDialog()));
         helpMenu.add(createMenuItem("About", 0, null, e -> JOptionPane.showMessageDialog(MainForm.this,
-                    "KeyBase - Key Management System\nVersion 3.0\n© 2025",
+                    "KeyBase - Key Management System\nVersion 4.0\n© 2025",
                     "About KeyBase",
                     JOptionPane.INFORMATION_MESSAGE)));
         

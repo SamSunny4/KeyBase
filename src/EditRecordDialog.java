@@ -45,7 +45,7 @@ public class EditRecordDialog extends JDialog {
         this.duplicator = duplicator;
         this.imagePath = duplicator.getImagePath();
         
-        setSize(1000, 750);
+        setSize(1000, 695);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         
@@ -59,64 +59,80 @@ public class EditRecordDialog extends JDialog {
         contentPanel.setBackground(Color.WHITE);
         
         // Main panel with form on left and image on right
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        // Increased gap to 30 to separate form and image columns better
+        JPanel mainPanel = new JPanel(new BorderLayout(30, 10));
         mainPanel.setBackground(Color.WHITE);
         
         // Form panel
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setBackground(Color.WHITE);
-        formPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Edit Record Details",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 13),
-            new Color(60, 62, 128)
-        ));
+        
+        // Custom header for form
+        JPanel formHeader = new JPanel(new BorderLayout());
+        formHeader.setBackground(new Color(60, 62, 128));
+        JLabel lblFormHeader = new JLabel("Edit Record Details");
+        lblFormHeader.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblFormHeader.setForeground(Color.WHITE);
+        lblFormHeader.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        formHeader.add(lblFormHeader, BorderLayout.CENTER);
+        
+        JPanel formContainer = new JPanel(new BorderLayout());
+        formContainer.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
+        formContainer.add(formHeader, BorderLayout.NORTH);
+        formContainer.add(formPanel, BorderLayout.CENTER);
         
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(6, 10, 6, 10);
+        gbc.insets = new Insets(8, 15, 8, 15);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
         int row = 0;
-        Font labelFont = new Font("Arial", Font.BOLD, 12);
+        Font labelFont = new Font("Segoe UI", Font.BOLD, 13);
         Color labelColor = new Color(60, 62, 128);
+        Font fieldFont = new Font("Segoe UI", Font.PLAIN, 13);
         
         // Name
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblName = new JLabel("Name:");
+        JLabel lblName = new JLabel("Name");
         lblName.setFont(labelFont);
         lblName.setForeground(labelColor);
         formPanel.add(lblName, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtName = new JTextField(25);
-        txtName.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtName.setPreferredSize(new Dimension(300, 26));
+        txtName.setFont(fieldFont);
+        txtName.setPreferredSize(new Dimension(300, 32));
+        txtName.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtName, gbc);
         row++;
         
         // Phone Number
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblPhone = new JLabel("Phone Number:");
+        JLabel lblPhone = new JLabel("Phone Number");
         lblPhone.setFont(labelFont);
         lblPhone.setForeground(labelColor);
         formPanel.add(lblPhone, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtPhoneNumber = new JTextField(25);
-        txtPhoneNumber.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtPhoneNumber.setPreferredSize(new Dimension(300, 26));
+        txtPhoneNumber.setFont(fieldFont);
+        txtPhoneNumber.setPreferredSize(new Dimension(300, 32));
+        txtPhoneNumber.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtPhoneNumber, gbc);
         row++;
         
         // Key Type (Vehicle Type)
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblKeyType = new JLabel("Key Type:");
+        JLabel lblKeyType = new JLabel("Key Type");
         lblKeyType.setFont(labelFont);
         lblKeyType.setForeground(labelColor);
         formPanel.add(lblKeyType, gbc);
@@ -128,16 +144,18 @@ public class EditRecordDialog extends JDialog {
         for (String p : AppConfig.getParentCategories()) {
             cmbKeyCategory.addItem(p);
         }
-        cmbKeyCategory.setFont(new Font("Arial", Font.PLAIN, 12));
-        cmbKeyCategory.setPreferredSize(new Dimension(145, 26));
+        cmbKeyCategory.setFont(fieldFont);
+        cmbKeyCategory.setPreferredSize(new Dimension(145, 32));
+        cmbKeyCategory.setBackground(Color.WHITE);
         
         // Child Category
         cmbKeyType = new JComboBox<>();
-        cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
-        cmbKeyType.setPreferredSize(new Dimension(145, 26));
+        cmbKeyType.setFont(fieldFont);
+        cmbKeyType.setPreferredSize(new Dimension(145, 32));
+        cmbKeyType.setBackground(Color.WHITE);
         
         // Panel
-        JPanel keyTypePanel = new JPanel(new GridLayout(1, 2, 5, 0));
+        JPanel keyTypePanel = new JPanel(new GridLayout(1, 2, 10, 0));
         keyTypePanel.setBackground(Color.WHITE);
         keyTypePanel.add(cmbKeyCategory);
         keyTypePanel.add(cmbKeyType);
@@ -160,82 +178,96 @@ public class EditRecordDialog extends JDialog {
         // Vehicle No
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        lblVehicleNo = new JLabel("Vehicle No:");
+        lblVehicleNo = new JLabel("Vehicle No");
         lblVehicleNo.setFont(labelFont);
         lblVehicleNo.setForeground(labelColor);
         formPanel.add(lblVehicleNo, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtVehicleNo = new JTextField(25);
-        txtVehicleNo.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtVehicleNo.setPreferredSize(new Dimension(300, 26));
+        txtVehicleNo.setFont(fieldFont);
+        txtVehicleNo.setPreferredSize(new Dimension(300, 32));
+        txtVehicleNo.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtVehicleNo, gbc);
         row++;
         
         // ID Number
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblIdNo = new JLabel("ID Number:");
+        JLabel lblIdNo = new JLabel("ID Number");
         lblIdNo.setFont(labelFont);
         lblIdNo.setForeground(labelColor);
         formPanel.add(lblIdNo, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtIdNo = new JTextField(25);
-        txtIdNo.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtIdNo.setPreferredSize(new Dimension(300, 26));
+        txtIdNo.setFont(fieldFont);
+        txtIdNo.setPreferredSize(new Dimension(300, 32));
+        txtIdNo.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtIdNo, gbc);
         row++;
         
     // Key Number / Model
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-    JLabel lblKeyNo = new JLabel("Key No/Model:");
+    JLabel lblKeyNo = new JLabel("Key No/Model");
         lblKeyNo.setFont(labelFont);
         lblKeyNo.setForeground(labelColor);
         formPanel.add(lblKeyNo, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtKeyNo = new JTextField(25);
-        txtKeyNo.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtKeyNo.setPreferredSize(new Dimension(300, 26));
+        txtKeyNo.setFont(fieldFont);
+        txtKeyNo.setPreferredSize(new Dimension(300, 32));
+        txtKeyNo.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtKeyNo, gbc);
         row++;
         
         // Purpose
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblKeyFor = new JLabel("Purpose:");
+        JLabel lblKeyFor = new JLabel("Purpose");
         lblKeyFor.setFont(labelFont);
         lblKeyFor.setForeground(labelColor);
         formPanel.add(lblKeyFor, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
     cmbKeyFor = new JComboBox<>(new String[]{"SELECT", "Personal", "Commercial", "Department", "Suspicious"});
-    cmbKeyFor.setFont(new Font("Arial", Font.PLAIN, 12));
+    cmbKeyFor.setFont(fieldFont);
     cmbKeyFor.setSelectedItem("Personal"); // Default to Personal
-        cmbKeyFor.setPreferredSize(new Dimension(300, 26));
+        cmbKeyFor.setPreferredSize(new Dimension(300, 32));
+        cmbKeyFor.setBackground(Color.WHITE);
         formPanel.add(cmbKeyFor, gbc);
         row++;
         
         // Date
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblDate = new JLabel("Date:");
+        JLabel lblDate = new JLabel("Date");
         lblDate.setFont(labelFont);
         lblDate.setForeground(labelColor);
         formPanel.add(lblDate, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         dateChooser = new JDateChooser();
-    dateChooser.setPreferredSize(new Dimension(160, 30));
+    dateChooser.setPreferredSize(new Dimension(160, 32));
+        dateChooser.setBackground(Color.WHITE);
         formPanel.add(dateChooser, gbc);
         row++;
         
         // Quantity
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblQuantity = new JLabel("Quantity:");
+        JLabel lblQuantity = new JLabel("Quantity");
         lblQuantity.setFont(labelFont);
         lblQuantity.setForeground(labelColor);
         formPanel.add(lblQuantity, gbc);
@@ -245,9 +277,10 @@ public class EditRecordDialog extends JDialog {
     SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
     spnQuantity = new JSpinner(spinnerModel);
     JSpinner.DefaultEditor quantityEditor = (JSpinner.DefaultEditor) spnQuantity.getEditor();
-    quantityEditor.getTextField().setFont(new Font("Arial", Font.PLAIN, 12));
+    quantityEditor.getTextField().setFont(fieldFont);
     quantityEditor.getTextField().setColumns(3);
-    spnQuantity.setPreferredSize(new Dimension(60, 26));
+    spnQuantity.setPreferredSize(new Dimension(80, 32));
+    spnQuantity.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
         formPanel.add(spnQuantity, gbc);
     gbc.weightx = 1.0;
     gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -256,30 +289,30 @@ public class EditRecordDialog extends JDialog {
         // Service Type
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblServiceType = new JLabel("Service Type:");
+        JLabel lblServiceType = new JLabel("Service Type");
         lblServiceType.setFont(labelFont);
         lblServiceType.setForeground(labelColor);
         formPanel.add(lblServiceType, gbc);
 
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        JPanel serviceTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        JPanel serviceTypePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         serviceTypePanel.setBackground(Color.WHITE);
 
         serviceTypeGroup = new ButtonGroup();
 
         rbDuplicate = new JRadioButton("Duplicate");
         rbDuplicate.setBackground(Color.WHITE);
-        rbDuplicate.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbDuplicate.setFont(fieldFont);
     rbDuplicate.setSelected(true);
 
         rbInShop = new JRadioButton("In-shop");
         rbInShop.setBackground(Color.WHITE);
-        rbInShop.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbInShop.setFont(fieldFont);
 
         rbOnSite = new JRadioButton("On-site");
         rbOnSite.setBackground(Color.WHITE);
-        rbOnSite.setFont(new Font("Arial", Font.PLAIN, 12));
+        rbOnSite.setFont(fieldFont);
 
         serviceTypeGroup.add(rbDuplicate);
         serviceTypeGroup.add(rbInShop);
@@ -295,23 +328,23 @@ public class EditRecordDialog extends JDialog {
     // Payment
     gbc.gridx = 0; gbc.gridy = row;
     gbc.weightx = 0.0;
-    JLabel lblPayment = new JLabel("Payment:");
+    JLabel lblPayment = new JLabel("Payment");
     lblPayment.setFont(labelFont);
     lblPayment.setForeground(labelColor);
     formPanel.add(lblPayment, gbc);
 
     gbc.gridx = 1;
     gbc.weightx = 1.0;
-    JPanel paymentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+    JPanel paymentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
     paymentPanel.setBackground(Color.WHITE);
 
     paymentTypeGroup = new ButtonGroup();
     rbPaymentCash = new JRadioButton("Cash");
     rbPaymentCash.setBackground(Color.WHITE);
-    rbPaymentCash.setFont(new Font("Arial", Font.PLAIN, 12));
+    rbPaymentCash.setFont(fieldFont);
     rbPaymentUpi = new JRadioButton("UPI");
     rbPaymentUpi.setBackground(Color.WHITE);
-    rbPaymentUpi.setFont(new Font("Arial", Font.PLAIN, 12));
+    rbPaymentUpi.setFont(fieldFont);
     paymentTypeGroup.add(rbPaymentCash);
     paymentTypeGroup.add(rbPaymentUpi);
     rbPaymentCash.setSelected(true);
@@ -323,88 +356,98 @@ public class EditRecordDialog extends JDialog {
         // Amount
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblAmount = new JLabel("Amount:");
+        JLabel lblAmount = new JLabel("Amount");
         lblAmount.setFont(labelFont);
         lblAmount.setForeground(labelColor);
         formPanel.add(lblAmount, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtAmount = new JTextField(25);
-        txtAmount.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtAmount.setPreferredSize(new Dimension(150, 26));
+        txtAmount.setFont(fieldFont);
+        txtAmount.setPreferredSize(new Dimension(150, 32));
+        txtAmount.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtAmount, gbc);
         row++;
         
         // Remarks
         gbc.gridx = 0; gbc.gridy = row;
         gbc.weightx = 0.0;
-        JLabel lblRemarks = new JLabel("Remarks:");
+        JLabel lblRemarks = new JLabel("Remarks");
         lblRemarks.setFont(labelFont);
         lblRemarks.setForeground(labelColor);
         formPanel.add(lblRemarks, gbc);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         txtRemarks = new JTextField(25);
-        txtRemarks.setFont(new Font("Arial", Font.PLAIN, 12));
-        txtRemarks.setPreferredSize(new Dimension(300, 26));
+        txtRemarks.setFont(fieldFont);
+        txtRemarks.setPreferredSize(new Dimension(300, 32));
+        txtRemarks.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+            BorderFactory.createEmptyBorder(5, 8, 5, 8)
+        ));
         formPanel.add(txtRemarks, gbc);
         row++;
         
-        mainPanel.add(formPanel, BorderLayout.CENTER);
+        // Add filler to push content up
+        gbc.weighty = 1.0;
+        formPanel.add(new JLabel(), gbc);
+        
+        mainPanel.add(formContainer, BorderLayout.CENTER);
         
         // Image panel on the right
-        JPanel imagePanel = new JPanel(new BorderLayout(5, 5));
+        JPanel imagePanel = new JPanel(new BorderLayout());
         imagePanel.setBackground(Color.WHITE);
-        imagePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 2),
-            "Customer Photo",
-            javax.swing.border.TitledBorder.LEFT,
-            javax.swing.border.TitledBorder.TOP,
-            new Font("Arial", Font.BOLD, 12),
-            new Color(60, 62, 128)
-        ));
-    imagePanel.setPreferredSize(new Dimension(320, 0));
+        imagePanel.setPreferredSize(new Dimension(340, 0));
+        
+        // Custom header for image
+        JPanel imageHeader = new JPanel(new BorderLayout());
+        imageHeader.setBackground(new Color(60, 62, 128));
+        JLabel lblImageHeader = new JLabel("Customer Photo");
+        lblImageHeader.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblImageHeader.setForeground(Color.WHITE);
+        lblImageHeader.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        imageHeader.add(lblImageHeader, BorderLayout.CENTER);
+        
+        JPanel imageContainer = new JPanel(new BorderLayout());
+        imageContainer.setBorder(BorderFactory.createLineBorder(new Color(230, 230, 230), 1));
+        imageContainer.add(imageHeader, BorderLayout.NORTH);
+        
+        // Image wrapper to center it and keep it square
+        JPanel imageWrapper = new JPanel(new GridBagLayout());
+        imageWrapper.setBackground(Color.WHITE);
         
         lblImagePreview = new JLabel();
         lblImagePreview.setHorizontalAlignment(JLabel.CENTER);
         lblImagePreview.setVerticalAlignment(JLabel.CENTER);
-    lblImagePreview.setPreferredSize(new Dimension(280, 280));
+        lblImagePreview.setPreferredSize(new Dimension(300, 300));
+        lblImagePreview.setMinimumSize(new Dimension(300, 300));
+        lblImagePreview.setMaximumSize(new Dimension(300, 300));
         lblImagePreview.setBackground(new Color(250, 250, 250));
         lblImagePreview.setOpaque(true);
-        lblImagePreview.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
-            BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        ));
-        imagePanel.add(lblImagePreview, BorderLayout.CENTER);
+        
+        imageWrapper.add(lblImagePreview);
+        imageContainer.add(imageWrapper, BorderLayout.CENTER);
         
     // Image action buttons panel (dynamic: Capture OR Recapture/Delete)
-    imageButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 5));
+    imageButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 15));
     imageButtonsPanel.setBackground(Color.WHITE);
 
-    btnCaptureImage = new JButton("Capture");
-    btnCaptureImage.setFont(new Font("Arial", Font.BOLD, 10));
-    btnCaptureImage.setBackground(new Color(109, 193, 210));
-    btnCaptureImage.setForeground(new Color(60, 62, 128));
-    btnCaptureImage.setFocusPainted(false);
-    btnCaptureImage.setPreferredSize(new Dimension(110, 26));
+    btnCaptureImage = createStyledButton("Capture", new Color(255, 255, 255), new Color(60, 62, 128));
+    btnCaptureImage.setPreferredSize(new Dimension(120, 35));
     btnCaptureImage.setToolTipText("Capture a new image");
     btnCaptureImage.addActionListener(e -> captureNewImage());
 
-    btnRecaptureImage = new JButton("Recapture");
-    btnRecaptureImage.setFont(new Font("Arial", Font.BOLD, 10));
-    btnRecaptureImage.setBackground(new Color(109, 193, 210));
-    btnRecaptureImage.setForeground(new Color(60, 62, 128));
-    btnRecaptureImage.setFocusPainted(false);
-    btnRecaptureImage.setPreferredSize(new Dimension(110, 26));
+    btnRecaptureImage = createStyledButton("Recapture", new Color(255, 255, 255), new Color(60, 62, 128));
+    btnRecaptureImage.setPreferredSize(new Dimension(120, 35));
     btnRecaptureImage.setToolTipText("Capture a new image to replace the current one");
     btnRecaptureImage.addActionListener(e -> recaptureImage());
 
-    btnDeleteImage = new JButton("Delete Image");
-    btnDeleteImage.setFont(new Font("Arial", Font.BOLD, 10));
-    btnDeleteImage.setBackground(new Color(220, 80, 80));
-    btnDeleteImage.setForeground(Color.RED);
-    btnDeleteImage.setFocusPainted(false);
-    btnDeleteImage.setPreferredSize(new Dimension(110, 26));
+    btnDeleteImage = createStyledButton("Delete Image", new Color(255, 255, 255), Color.RED);
+    btnDeleteImage.setBorder(BorderFactory.createLineBorder(new Color(255, 200, 200), 1));
+    btnDeleteImage.setPreferredSize(new Dimension(120, 35));
     btnDeleteImage.setToolTipText("Delete the captured image");
     btnDeleteImage.addActionListener(e -> deleteImage());
 
@@ -412,8 +455,9 @@ public class EditRecordDialog extends JDialog {
     imageButtonsPanel.add(btnCaptureImage);
     imageButtonsPanel.add(btnRecaptureImage);
     imageButtonsPanel.add(btnDeleteImage);
-    imagePanel.add(imageButtonsPanel, BorderLayout.SOUTH);
+    imageContainer.add(imageButtonsPanel, BorderLayout.SOUTH);
         
+        imagePanel.add(imageContainer, BorderLayout.CENTER);
         mainPanel.add(imagePanel, BorderLayout.EAST);
         
         contentPanel.add(mainPanel, BorderLayout.CENTER);
@@ -422,20 +466,12 @@ public class EditRecordDialog extends JDialog {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         buttonPanel.setBackground(Color.WHITE);
         
-        JButton btnSave = new JButton("Save Changes");
-        btnSave.setFont(new Font("Arial", Font.BOLD, 12));
-        btnSave.setBackground(new Color(109, 193, 210));
-        btnSave.setForeground(new Color(60, 62, 128));
-        btnSave.setFocusPainted(false);
-        btnSave.setPreferredSize(new Dimension(130, 32));
+        JButton btnSave = createStyledButton("Save Changes", new Color(109, 193, 210), new Color(60, 62, 128));
+        btnSave.setPreferredSize(new Dimension(140, 38));
         btnSave.addActionListener(e -> saveChanges());
         
-        JButton btnCancel = new JButton("Cancel");
-        btnCancel.setFont(new Font("Arial", Font.BOLD, 12));
-        btnCancel.setBackground(new Color(240, 240, 240));
-        btnCancel.setForeground(new Color(60, 62, 128));
-        btnCancel.setFocusPainted(false);
-        btnCancel.setPreferredSize(new Dimension(100, 32));
+        JButton btnCancel = createStyledButton("Cancel", new Color(255, 255, 255), Color.BLACK);
+        btnCancel.setPreferredSize(new Dimension(110, 38));
         btnCancel.addActionListener(e -> dispose());
         
         buttonPanel.add(btnSave);
@@ -446,6 +482,17 @@ public class EditRecordDialog extends JDialog {
         add(contentPanel);
         
         setupEnterNavigation();
+    }
+    
+    private JButton createStyledButton(String text, Color bg, Color fg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setBackground(bg);
+        btn.setForeground(fg);
+        btn.setFocusPainted(false);
+        btn.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 
     private void setupEnterNavigation() {

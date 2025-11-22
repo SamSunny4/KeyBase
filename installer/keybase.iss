@@ -1,7 +1,7 @@
 #define ProjectRoot "E:\\KeyBase"
 #define StageRoot   "E:\\KeyBase\\dist\\KeyBase"
 #define MyAppName "KeyBase"
-#define MyAppVersion "3.0"
+#define MyAppVersion "4.0"
 #define MyCompany "KeyBase.sam"
 #define InstallDirName "KeyBase"
 

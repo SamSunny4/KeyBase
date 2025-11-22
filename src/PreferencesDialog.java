@@ -191,7 +191,7 @@ public class PreferencesDialog extends JDialog {
         sidebar.add(Box.createVerticalGlue());
         
         // Footer
-        JLabel footerLabel = new JLabel("KeyBase v3.0");
+        JLabel footerLabel = new JLabel("KeyBase v.4.0");
         footerLabel.setFont(new Font("Segoe UI", Font.ITALIC, 10));
         footerLabel.setForeground(new Color(150, 200, 210));
         footerLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
