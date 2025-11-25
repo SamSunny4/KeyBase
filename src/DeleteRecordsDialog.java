@@ -100,18 +100,16 @@ public class DeleteRecordsDialog extends JDialog {
         Date toDate = toDateChooser.getDate();
         
         if (fromDate == null || toDate == null) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showWarning(this,
                 "Please select both From Date and To Date.",
-                "Missing Dates",
-                JOptionPane.WARNING_MESSAGE);
+                "Missing Dates");
             return;
         }
         
         if (fromDate.after(toDate)) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showWarning(this,
                 "From Date must be before or equal to To Date.",
-                "Invalid Date Range",
-                JOptionPane.WARNING_MESSAGE);
+                "Invalid Date Range");
             return;
         }
         
@@ -149,18 +147,16 @@ public class DeleteRecordsDialog extends JDialog {
             if (confirmText.equals("confirm")) {
                 int deletedCount = deleteRecordsByDateRange(fromDate, toDate);
                 if (deletedCount >= 0) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         deletedCount + " record(s) deleted successfully.",
-                        "Success",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Success");
                     parentForm.refreshTable(); // Refresh the parent table
                     dispose();
                 }
             } else {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Deletion cancelled. You must type 'confirm' exactly to proceed.",
-                    "Incorrect Confirmation",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Incorrect Confirmation");
             }
         }
     }
@@ -178,10 +174,9 @@ public class DeleteRecordsDialog extends JDialog {
             return deletedCount;
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Error deleting records: " + e.getMessage(),
-                "Database Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
             return -1;
         }
     }

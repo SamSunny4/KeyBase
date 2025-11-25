@@ -388,10 +388,9 @@ public class MetricsWindow extends JFrame {
             chartPanel.repaint();
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Error loading sales data: " + e.getMessage(),
-                "Database Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
         }
     }
     

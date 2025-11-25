@@ -270,15 +270,13 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         if (doPrint) {
             try {
                 job.print();
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showInfo(this,
                     "Record sent to printer successfully!",
-                    "Print Successful",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Print Successful");
             } catch (PrinterException e) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Error printing record: " + e.getMessage(),
-                    "Print Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Print Error");
             }
         }
     }
@@ -485,15 +483,13 @@ public class RecordDetailsDialog extends JDialog implements Printable {
 
                 SimpleXlsxExporter.export(filePath, "Record_" + duplicator.getDuplicatorId(), columns, rows, SimpleXlsxExporter.Orientation.AUTO);
 
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showInfo(this,
                     "Record exported successfully to:\n" + filePath,
-                    "Export Successful",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Export Successful");
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Error exporting record: " + e.getMessage(),
-                    "Export Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Export Error");
             }
         }
     }
@@ -518,24 +514,15 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             
             // Refresh parent window
             Window owner = getOwner();
-            if (owner instanceof JFrame) {
-                JFrame frame = (JFrame) owner;
-                String className = frame.getClass().getSimpleName();
-                if ("MainForm".equals(className)) {
-                    // Trigger refresh of MainForm table
-                    frame.repaint();
-                    frame.revalidate();
-                } else if ("SearchWindow".equals(className)) {
-                    // Trigger refresh of SearchWindow
-                    frame.repaint();
-                    frame.revalidate();
-                }
+            if (owner instanceof MainForm) {
+                // Trigger refresh of MainForm table
+                ((MainForm) owner).refreshTable();
             }
         }
     }
     
     private void deleteRecordData() {
-        int response = JOptionPane.showConfirmDialog(this,
+        int response = ModernDialog.showConfirm(this,
             "Are you sure you want to delete all data except Name and ID?\n\n" +
             "All fields will be set to 'deleted':\n" +
             "- Phone Number → deleted\n" +
@@ -550,9 +537,7 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             "- Amount → 0.00\n" +
             "- Captured Image → removed\n\n" +
             "Name and ID will be preserved.",
-            "Delete Record Data",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
+            "Delete Record Data");
             
         if (response == JOptionPane.YES_OPTION) {
             // Delete the image file if it exists
@@ -570,11 +555,10 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             
             // Clear the data in database
             if (duplicator.clearDataExceptNameAndId()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showInfo(this,
                     "Record data marked as 'deleted' successfully!\n" +
                     "Name and ID have been preserved.",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Success");
                 dispose();
                 
                 // Refresh parent window if it's MainForm
@@ -589,10 +573,9 @@ public class RecordDetailsDialog extends JDialog implements Printable {
                     }
                 }
             } else {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Failed to clear record data.",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Error");
             }
         }
     }

@@ -72,10 +72,9 @@ public class WebcamCapture extends JDialog {
             java.util.List<Webcam> webcams = Webcam.getWebcams();
             
             if (webcams.isEmpty()) {
-                JOptionPane.showMessageDialog(this, 
+                ModernDialog.showError(this, 
                     "No webcams detected on your system", 
-                    "Webcam Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                    "Webcam Error");
                 return;
             }
             
@@ -92,10 +91,9 @@ public class WebcamCapture extends JDialog {
             mainPanel.add(webcamPanel, BorderLayout.CENTER);
             
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error initializing webcam: " + e.getMessage(), 
-                "Webcam Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Webcam Error");
         }
     }
     
@@ -118,19 +116,17 @@ public class WebcamCapture extends JDialog {
                 ImageIO.write(capturedImage, "JPG", outputFile);
                 savedImagePath = outputFile.getAbsolutePath();
                 
-                JOptionPane.showMessageDialog(this, 
+                ModernDialog.showInfo(this, 
                     "Image captured successfully", 
-                    "Capture Complete", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Capture Complete");
                 
                 closeWebcam();
                 dispose();
                 
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, 
+                ModernDialog.showError(this, 
                     "Error saving image: " + e.getMessage(), 
-                    "File Error", 
-                    JOptionPane.ERROR_MESSAGE);
+                    "File Error");
             }
         }
     }

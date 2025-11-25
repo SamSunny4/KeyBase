@@ -133,10 +133,9 @@ public class PreferencesDialog extends JDialog {
                 webcamSelector.addItem("No webcams detected");
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error loading webcam devices: " + e.getMessage(), 
-                "Webcam Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Webcam Error");
             webcamSelector.addItem("Default webcam");
         }
     }
@@ -1123,12 +1122,6 @@ public class PreferencesDialog extends JDialog {
             DatabaseConnection.closeConnection();
         }
 
-        if (settingsChanged) {
-            JOptionPane.showMessageDialog(this, 
-                "Settings saved successfully.", 
-                "Preferences", 
-                JOptionPane.INFORMATION_MESSAGE);
-        }
         return true;
     }
     

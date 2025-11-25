@@ -1,6 +1,7 @@
 package src;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.*;
@@ -60,6 +61,7 @@ public class MainForm extends JFrame {
     private String cachedImagePath = null;
     
     public MainForm() {
+        applyModernTooltipDefaults();
         loadSplashImage();
         initComponents();
         initMenuBar();
@@ -174,14 +176,14 @@ public class MainForm extends JFrame {
         try {
             Duplicator d = Duplicator.findById(id);
             if (d == null) {
-                JOptionPane.showMessageDialog(this, "Record not found.", "Details", JOptionPane.INFORMATION_MESSAGE);
+                ModernDialog.showInfo(this, "Record not found.", "Details");
                 return;
             }
 
             RecordDetailsDialog dialog = new RecordDetailsDialog(this, d);
             dialog.setVisible(true);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error loading record details: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Error loading record details: " + ex.getMessage(), "Error");
         }
     }
     
@@ -189,7 +191,7 @@ public class MainForm extends JFrame {
         try {
             Duplicator d = Duplicator.findById(id);
             if (d == null) {
-                JOptionPane.showMessageDialog(this, "Record not found.", "Print Error", JOptionPane.ERROR_MESSAGE);
+                ModernDialog.showError(this, "Record not found.", "Print Error");
                 return;
             }
             
@@ -205,22 +207,19 @@ public class MainForm extends JFrame {
             if (job.printDialog()) {
                 try {
                     job.print();
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         "Record sent to printer successfully!",
-                        "Print Successful",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Print Successful");
                 } catch (java.awt.print.PrinterException pe) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Error printing record: " + pe.getMessage(),
-                        "Print Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Print Error");
                 }
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error printing record: " + ex.getMessage(), 
-                "Print Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Print Error");
         }
     }
 
@@ -268,10 +267,9 @@ public class MainForm extends JFrame {
                 }
 
                 if (count == 0) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         "No records found for today (" + df.format(utilToday) + ").",
-                        "Print Records",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Print Records");
                     return;
                 }
 
@@ -286,28 +284,24 @@ public class MainForm extends JFrame {
                 try {
                     boolean jobStarted = printArea.print();
                     if (jobStarted) {
-                        JOptionPane.showMessageDialog(this,
+                        ModernDialog.showInfo(this,
                             "Print job sent successfully.",
-                            "Print Records",
-                            JOptionPane.INFORMATION_MESSAGE);
+                            "Print Records");
                     } else {
-                        JOptionPane.showMessageDialog(this,
+                        ModernDialog.showWarning(this,
                             "Print job was cancelled.",
-                            "Print Records",
-                            JOptionPane.WARNING_MESSAGE);
+                            "Print Records");
                     }
                 } catch (java.awt.print.PrinterException ex) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Error printing records: " + ex.getMessage(),
-                        "Print Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Print Error");
                 }
             }
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Error retrieving today's records: " + ex.getMessage(),
-                "Database Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
         }
     }
 
@@ -323,7 +317,7 @@ public class MainForm extends JFrame {
         try {
             Duplicator d = Duplicator.findById(id);
             if (d == null) {
-                JOptionPane.showMessageDialog(this, "Record not found.", "Export Error", JOptionPane.ERROR_MESSAGE);
+                ModernDialog.showError(this, "Record not found.", "Export Error");
                 return;
             }
             
@@ -369,23 +363,20 @@ public class MainForm extends JFrame {
                     
                     writer.flush();
                     
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         "Record exported successfully to:\n" + filePath,
-                        "Export Successful",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Export Successful");
                         
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Error writing CSV file: " + e.getMessage(),
-                        "Export Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Export Error");
                 }
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error exporting record: " + ex.getMessage(), 
-                "Export Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Export Error");
         }
     }
     
@@ -449,7 +440,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtName.setToolTipText("Customer full name");
         txtName.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -482,7 +472,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtPhoneNumber.setToolTipText("10-digit phone number (digits only)");
         txtPhoneNumber.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -490,10 +479,9 @@ public class MainForm extends JFrame {
                     // Add phone validation
                     String phone = txtPhoneNumber.getText().trim();
                     if (phone.length() != 10 || !phone.matches("\\d{10}")) {
-                        JOptionPane.showMessageDialog(MainForm.this, 
+                        ModernDialog.showError(MainForm.this, 
                             "Phone number must be exactly 10 digits.", 
-                            "Validation Error", 
-                            JOptionPane.ERROR_MESSAGE);
+                            "Validation Error");
                         txtPhoneNumber.requestFocus();
                         return;
                     }
@@ -534,7 +522,6 @@ public class MainForm extends JFrame {
         cmbKeyCategory.setForeground(new Color(60, 62, 128));
         cmbKeyCategory.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyCategory.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        cmbKeyCategory.setToolTipText("Select category");
 
         // Child Category (reusing cmbVehicleType variable)
         cmbVehicleType = new JComboBox<>();
@@ -543,7 +530,6 @@ public class MainForm extends JFrame {
         cmbVehicleType.setForeground(new Color(60, 62, 128));
         cmbVehicleType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbVehicleType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        cmbVehicleType.setToolTipText("Select sub-category");
 
         // Populate child categories based on initial parent
         updateChildCategories();
@@ -634,7 +620,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtVehicleNo.setToolTipText("Vehicle registration number");
         txtVehicleNo.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -667,7 +652,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtIdNo.setToolTipText("ID / national ID number");
         txtIdNo.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -700,7 +684,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtKeyNo.setToolTipText("Key identifier or serial number");
         txtKeyNo.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -731,7 +714,6 @@ public class MainForm extends JFrame {
         cmbKeyType.setForeground(new Color(60, 62, 128));
         cmbKeyType.setFont(new Font("Arial", Font.PLAIN, 12));
         cmbKeyType.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        cmbKeyType.setToolTipText("Purpose of the key");
         
         // Override the default Enter key behavior completely
         InputMap inputMap = cmbKeyType.getInputMap(JComponent.WHEN_FOCUSED);
@@ -782,7 +764,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtRemarks.setToolTipText("Optional notes or remarks");
         txtRemarks.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -812,19 +793,16 @@ public class MainForm extends JFrame {
         rbDuplicate.setFont(new Font("Arial", Font.PLAIN, 12));
         rbDuplicate.setBackground(Color.WHITE);
         rbDuplicate.setForeground(new Color(60, 62, 128));
-        rbDuplicate.setToolTipText("Regular key duplication");
 
         rbInShop = new JRadioButton("In-shop");
         rbInShop.setFont(new Font("Arial", Font.PLAIN, 12));
         rbInShop.setBackground(Color.WHITE);
         rbInShop.setForeground(new Color(60, 62, 128));
-        rbInShop.setToolTipText("Key made in shop (adds remark)");
 
         rbOnSite = new JRadioButton("On-site");
         rbOnSite.setFont(new Font("Arial", Font.PLAIN, 12));
         rbOnSite.setBackground(Color.WHITE);
         rbOnSite.setForeground(new Color(60, 62, 128));
-        rbOnSite.setToolTipText("Key made on site (adds remark)");
 
         serviceTypeGroup.add(rbDuplicate);
         serviceTypeGroup.add(rbInShop);
@@ -838,7 +816,6 @@ public class MainForm extends JFrame {
         SpinnerNumberModel spinnerModel = new SpinnerNumberModel(1, 0, 999, 1);
         JSpinner spnQuantity = new JSpinner(spinnerModel);
         spnQuantity.setPreferredSize(new Dimension(75, 30));
-        spnQuantity.setToolTipText("Number of keys (use arrow keys to increment/decrement)");
         ((JSpinner.DefaultEditor) spnQuantity.getEditor()).getTextField().setColumns(5);
 
         // Style the spinner's text field
@@ -927,7 +904,6 @@ public class MainForm extends JFrame {
             BorderFactory.createLineBorder(new Color(109, 193, 210), 1),
             BorderFactory.createEmptyBorder(2, 5, 2, 5)
         ));
-        txtAmount.setToolTipText("Amount in currency (e.g., 100.00)");
         txtAmount.setText("");
         txtAmount.addKeyListener(new KeyAdapter() {
             @Override
@@ -1014,7 +990,6 @@ public class MainForm extends JFrame {
         dateChooser.setBackground(new Color(239, 250, 250));
         dateChooser.setForeground(new Color(60, 62, 128));
         dateChooser.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        dateChooser.setToolTipText("Date when the key was created/received");
         dateChooser.setDate(new Date()); // Default to current date
 
         // Add key listener to the date chooser's text field
@@ -1085,7 +1060,6 @@ public class MainForm extends JFrame {
         btnCaptureImage.setFocusPainted(false);
         btnCaptureImage.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         btnCaptureImage.setMnemonic(KeyEvent.VK_C);
-        btnCaptureImage.setToolTipText("Open webcam to capture a customer image (Alt+C)");
         btnCaptureImage.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1110,7 +1084,6 @@ public class MainForm extends JFrame {
         btnDeleteImage.setFont(new Font("Arial", Font.BOLD, 12));
         btnDeleteImage.setFocusPainted(false);
         btnDeleteImage.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        btnDeleteImage.setToolTipText("Delete the captured image");
         btnDeleteImage.setVisible(false); // Hidden by default
         btnDeleteImage.addActionListener(new ActionListener() {
             @Override
@@ -1149,7 +1122,6 @@ public class MainForm extends JFrame {
     btnSave.setFont(new Font("Arial", Font.BOLD, 14));
     btnSave.setFocusPainted(false);
     btnSave.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
-        btnSave.setToolTipText("Save current record (Alt+S)");
         btnSave.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1174,7 +1146,6 @@ public class MainForm extends JFrame {
         btnReset.setFocusPainted(false);
         btnReset.setBorder(BorderFactory.createLineBorder(new Color(109, 193, 210), 1));
         btnReset.setMnemonic(KeyEvent.VK_R);
-        btnReset.setToolTipText("Clear the form (Alt+R)");
         btnReset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1225,12 +1196,69 @@ public class MainForm extends JFrame {
         // Minimal padding around the whole section
         tablePanel.setBorder(BorderFactory.createEmptyBorder(2, 10, 5, 10));
         
-        // Title label
+        // Title panel with label and refresh button
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        titlePanel.setBackground(Color.WHITE);
+        
         JLabel lblRecordsTitle = new JLabel("Records");
         lblRecordsTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblRecordsTitle.setForeground(new Color(60, 62, 128));
-        lblRecordsTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
-        tablePanel.add(lblRecordsTitle, BorderLayout.NORTH);
+        titlePanel.add(lblRecordsTitle);
+        
+        // Refresh button using resource icon with high-quality scaling
+        ImageIcon refreshIcon = ResourceHelper.loadScaledIcon("resources/refresh.png", 24, 24);
+        JButton btnRefresh = new JButton(refreshIcon);
+        btnRefresh.setPreferredSize(new Dimension(36, 30));
+        btnRefresh.setContentAreaFilled(false);
+        btnRefresh.setBorder(BorderFactory.createEmptyBorder());
+        btnRefresh.setFocusPainted(false);
+        btnRefresh.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        // Add visual feedback on click (opacity change)
+        btnRefresh.addMouseListener(new MouseAdapter() {
+            private float originalOpacity = 1.0f;
+            
+            @Override
+            public void mousePressed(MouseEvent e) {
+                btnRefresh.setContentAreaFilled(true);
+                btnRefresh.setBackground(new Color(240, 240, 240));
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                btnRefresh.setContentAreaFilled(false);
+            }
+            
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btnRefresh.setContentAreaFilled(true);
+                btnRefresh.setBackground(new Color(245, 245, 245));
+            }
+            
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btnRefresh.setContentAreaFilled(false);
+            }
+        });
+        
+        btnRefresh.addActionListener(e -> {
+            // Animate button rotation effect
+            btnRefresh.setEnabled(false);
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+                SwingUtilities.invokeLater(() -> {
+                    loadKeyEntries();
+                    btnRefresh.setEnabled(true);
+                });
+            }).start();
+        });
+        titlePanel.add(btnRefresh);
+        
+        tablePanel.add(titlePanel, BorderLayout.NORTH);
 
         JScrollPane scrollPane = new JScrollPane(tblKeyEntries);
         // Remove the default border or set a very thin one
@@ -1393,10 +1421,9 @@ public class MainForm extends JFrame {
         // Help menu
         JMenu helpMenu = new JMenu("Help");
         helpMenu.add(createMenuItem("Readme", 0, null, e -> showReadmeDialog()));
-        helpMenu.add(createMenuItem("About", 0, null, e -> JOptionPane.showMessageDialog(MainForm.this,
+        helpMenu.add(createMenuItem("About", 0, null, e -> ModernDialog.showInfo(MainForm.this,
                     "KeyBase - Key Management System\nVersion 4.0\n© 2025",
-                    "About KeyBase",
-                    JOptionPane.INFORMATION_MESSAGE)));
+                    "About KeyBase")));
         
         // Tools menu
         JMenu toolsMenu = new JMenu("Tools");
@@ -1658,21 +1685,15 @@ public class MainForm extends JFrame {
         if (duplicator.save()) {
             cachedImagePath = null;
             
-            JOptionPane.showMessageDialog(this,
-                "Record saved successfully!",
-                "Success",
-                JOptionPane.INFORMATION_MESSAGE);
-            
             // Refresh the table
             loadKeyEntries();
             
             // Reset form for next entry
             resetForm();
         } else {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Failed to save record. Please try again.",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Error");
         }
     }
     
@@ -1680,10 +1701,9 @@ public class MainForm extends JFrame {
         // Check Name if required
         if (AppConfig.isFieldRequired("NAME")) {
             if (txtName.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter a name.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtName.requestFocus();
                 return false;
             }
@@ -1693,20 +1713,18 @@ public class MainForm extends JFrame {
         if (AppConfig.isFieldRequired("PHONE")) {
             String phoneNumber = txtPhoneNumber.getText().trim();
             if (phoneNumber.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter a phone number.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtPhoneNumber.requestFocus();
                 return false;
             }
             
             // Validate phone number format (must be 10 digits) only if not empty
             if (phoneNumber.length() != 10 || !phoneNumber.matches("\\d{10}")) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Phone number must be exactly 10 digits.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtPhoneNumber.requestFocus();
                 return false;
             }
@@ -1714,10 +1732,9 @@ public class MainForm extends JFrame {
             // If phone is not required but is filled, validate format
             String phoneNumber = txtPhoneNumber.getText().trim();
             if (!phoneNumber.isEmpty() && (phoneNumber.length() != 10 || !phoneNumber.matches("\\d{10}"))) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Phone number must be exactly 10 digits.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtPhoneNumber.requestFocus();
                 return false;
             }
@@ -1726,10 +1743,9 @@ public class MainForm extends JFrame {
         // Check ID Number if required
         if (AppConfig.isFieldRequired("ID_NO")) {
             if (txtIdNo.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter an ID number.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtIdNo.requestFocus();
                 return false;
             }
@@ -1738,10 +1754,9 @@ public class MainForm extends JFrame {
         // Check Vehicle Number if required
         if (AppConfig.isFieldRequired("VEHICLE_NO")) {
             if (txtVehicleNo.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter a vehicle number.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtVehicleNo.requestFocus();
                 return false;
             }
@@ -1750,10 +1765,9 @@ public class MainForm extends JFrame {
         // Check Key Number if required
         if (AppConfig.isFieldRequired("KEY_NO")) {
             if (txtKeyNo.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter a key number.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtKeyNo.requestFocus();
                 return false;
             }
@@ -1763,10 +1777,9 @@ public class MainForm extends JFrame {
         if (AppConfig.isFieldRequired("PURPOSE")) {
             Object selectedPurpose = cmbKeyType.getSelectedItem();
             if (selectedPurpose == null || selectedPurpose.toString().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please select a purpose.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 cmbKeyType.requestFocus();
                 return false;
             }
@@ -1775,10 +1788,9 @@ public class MainForm extends JFrame {
         // Check Remarks if required
         if (AppConfig.isFieldRequired("REMARKS")) {
             if (txtRemarks.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter remarks.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtRemarks.requestFocus();
                 return false;
             }
@@ -1788,28 +1800,25 @@ public class MainForm extends JFrame {
         if (AppConfig.isFieldRequired("QUANTITY")) {
             String qtyText = txtQuantity.getText().trim();
             if (qtyText.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter quantity.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtQuantity.requestFocus();
                 return false;
             }
             try {
                 int qty = Integer.parseInt(qtyText);
                 if (qty <= 0) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Quantity must be greater than 0.",
-                        "Validation Error",
-                        JOptionPane.WARNING_MESSAGE);
+                        "Validation Error");
                     txtQuantity.requestFocus();
                     return false;
                 }
             } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Quantity must be a valid number.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtQuantity.requestFocus();
                 return false;
             }
@@ -1819,28 +1828,25 @@ public class MainForm extends JFrame {
         if (AppConfig.isFieldRequired("AMOUNT")) {
             String amtText = txtAmount.getText().trim();
             if (amtText.isEmpty()) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please enter amount.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtAmount.requestFocus();
                 return false;
             }
             try {
                 double amt = Double.parseDouble(amtText);
                 if (amt < 0) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Amount cannot be negative.",
-                        "Validation Error",
-                        JOptionPane.WARNING_MESSAGE);
+                        "Validation Error");
                     txtAmount.requestFocus();
                     return false;
                 }
             } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Amount must be a valid number.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 txtAmount.requestFocus();
                 return false;
             }
@@ -1849,10 +1855,9 @@ public class MainForm extends JFrame {
         // Check Date if required
         if (AppConfig.isFieldRequired("DATE")) {
             if (dateChooser.getDate() == null) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Please select a date.",
-                    "Validation Error",
-                    JOptionPane.WARNING_MESSAGE);
+                    "Validation Error");
                 dateChooser.requestFocus();
                 return false;
             }
@@ -2001,6 +2006,21 @@ public class MainForm extends JFrame {
     private void showKeyStatisticsWindow() {
         KeyStatisticsWindow statsWindow = new KeyStatisticsWindow(this);
         statsWindow.setVisible(true);
+    }
+
+    private void applyModernTooltipDefaults() {
+        Color tooltipBg = new Color(32, 34, 46);
+        Color tooltipBorder = new Color(109, 193, 210);
+        UIManager.put("ToolTip.background", tooltipBg);
+        UIManager.put("ToolTip.foreground", Color.WHITE);
+        UIManager.put("ToolTip.font", new Font("Segoe UI", Font.PLAIN, 10));
+        UIManager.put("ToolTip.border", BorderFactory.createCompoundBorder(
+            new LineBorder(tooltipBorder, 1, true),
+            BorderFactory.createEmptyBorder(3, 6, 3, 6)
+        ));
+        ToolTipManager.sharedInstance().setInitialDelay(350);
+        ToolTipManager.sharedInstance().setReshowDelay(180);
+        ToolTipManager.sharedInstance().setDismissDelay(5000);
     }
     
     private void exportToExcel() {

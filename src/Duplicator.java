@@ -2,7 +2,6 @@ package src;
 
 import java.sql.*;
 import java.util.Date;
-import javax.swing.JOptionPane;
 
 public class Duplicator {
     private int duplicatorId;
@@ -222,10 +221,9 @@ public class Duplicator {
             return false;
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, 
+            ModernDialog.showError(null, 
                 "Error saving record: " + e.getMessage(), 
-                "Database Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
             return false;
         }
     }
@@ -259,10 +257,9 @@ public class Duplicator {
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, 
+            ModernDialog.showError(null, 
                 "Error finding record: " + e.getMessage(), 
-                "Database Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
         }
         
         return null;
@@ -337,10 +334,9 @@ public class Duplicator {
             return affectedRows > 0;
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, 
+            ModernDialog.showError(null, 
                 "Error updating record: " + e.getMessage(), 
-                "Database Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
             return false;
         }
     }
@@ -374,10 +370,9 @@ public class Duplicator {
             return false;
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, 
+            ModernDialog.showError(null, 
                 "Error clearing record data: " + e.getMessage(), 
-                "Database Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
             return false;
         }
     }

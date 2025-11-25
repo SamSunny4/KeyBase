@@ -689,18 +689,16 @@ public class SearchWindow extends JFrame {
                 setTitle("Search Key Records - " + resultCount + " record(s) found");
             } else {
                 setTitle("Search Key Records - No results");
-                JOptionPane.showMessageDialog(this, 
+                ModernDialog.showInfo(this, 
                     "No records found matching your criteria.", 
-                    "Search Results", 
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Search Results");
                 showNoResultsImage();
             }
             
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error searching records: " + e.getMessage(), 
-                "Database Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
         }
     }
     
@@ -776,10 +774,9 @@ public class SearchWindow extends JFrame {
     private void exportResultsToExcel() {
         int visibleRowCount = tblResults.getRowCount();
         if (visibleRowCount == 0) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showWarning(this,
                 "No data to export.",
-                "Export Error",
-                JOptionPane.WARNING_MESSAGE);
+                "Export Error");
             return;
         }
 
@@ -818,16 +815,14 @@ public class SearchWindow extends JFrame {
 
             try {
                 SimpleXlsxExporter.export(filePath, "Search Results", columns, rows, orientation);
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showInfo(this,
                     "Filtered results exported successfully!\n" +
                     visibleRowCount + " record(s) exported to:\n" + filePath,
-                    "Export Successful",
-                    JOptionPane.INFORMATION_MESSAGE);
+                    "Export Successful");
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Error exporting data: " + ex.getMessage(),
-                    "Export Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Export Error");
             }
         }
     }
@@ -910,17 +905,16 @@ public class SearchWindow extends JFrame {
         try {
             Duplicator d = Duplicator.findById(id);
             if (d == null) {
-                JOptionPane.showMessageDialog(this, "Record not found.", "Details", JOptionPane.INFORMATION_MESSAGE);
+                ModernDialog.showInfo(this, "Record not found.", "Details");
                 return;
             }
 
             RecordDetailsDialog dialog = new RecordDetailsDialog(this, d);
             dialog.setVisible(true);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error loading record details: " + ex.getMessage(),
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Error");
         }
     }
     
@@ -928,7 +922,7 @@ public class SearchWindow extends JFrame {
         try {
             Duplicator d = Duplicator.findById(id);
             if (d == null) {
-                JOptionPane.showMessageDialog(this, "Record not found.", "Print Error", JOptionPane.ERROR_MESSAGE);
+                ModernDialog.showError(this, "Record not found.", "Print Error");
                 return;
             }
             
@@ -938,22 +932,19 @@ public class SearchWindow extends JFrame {
             if (job.printDialog()) {
                 try {
                     job.print();
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         "Record sent to printer successfully!",
-                        "Print Successful",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Print Successful");
                 } catch (java.awt.print.PrinterException pe) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Error printing record: " + pe.getMessage(),
-                        "Print Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Print Error");
                 }
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error printing record: " + ex.getMessage(), 
-                "Print Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Print Error");
         }
     }
     
@@ -961,7 +952,7 @@ public class SearchWindow extends JFrame {
         try {
             Duplicator d = Duplicator.findById(id);
             if (d == null) {
-                JOptionPane.showMessageDialog(this, "Record not found.", "Export Error", JOptionPane.ERROR_MESSAGE);
+                ModernDialog.showError(this, "Record not found.", "Export Error");
                 return;
             }
             
@@ -1007,23 +998,20 @@ public class SearchWindow extends JFrame {
                     
                     writer.flush();
                     
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         "Record exported successfully to:\n" + filePath,
-                        "Export Successful",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Export Successful");
                         
                 } catch (Exception e) {
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showError(this,
                         "Error writing CSV file: " + e.getMessage(),
-                        "Export Error",
-                        JOptionPane.ERROR_MESSAGE);
+                        "Export Error");
                 }
             }
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Error exporting record: " + ex.getMessage(), 
-                "Export Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Export Error");
         }
     }
     

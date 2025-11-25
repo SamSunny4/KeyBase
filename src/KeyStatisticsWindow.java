@@ -254,10 +254,9 @@ public class KeyStatisticsWindow extends JFrame {
             }
             updateUI();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Error loading statistics: " + e.getMessage(),
-                "Database Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Database Error");
             e.printStackTrace();
         }
     }

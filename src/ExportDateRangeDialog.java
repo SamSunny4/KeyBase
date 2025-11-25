@@ -141,17 +141,15 @@ public class ExportDateRangeDialog extends JDialog {
         Date start = startChooser.getDate();
         Date end = endChooser.getDate();
         if (start == null || end == null) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showWarning(this,
                 "Select both a start and end date.",
-                "Validation Error",
-                JOptionPane.WARNING_MESSAGE);
+                "Validation Error");
             return false;
         }
         if (end.before(start)) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showWarning(this,
                 "End date must be on or after the start date.",
-                "Validation Error",
-                JOptionPane.WARNING_MESSAGE);
+                "Validation Error");
             return false;
         }
         return true;

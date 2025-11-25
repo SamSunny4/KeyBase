@@ -54,10 +54,9 @@ public class KeyBase {
                         boolean licenseActivated = licenseManager.promptForLicenseKey(null);
                         
                         if (!licenseActivated) {
-                            JOptionPane.showMessageDialog(null,
+                            ModernDialog.showError(null,
                                 "KeyBase cannot start without a valid license.\nApplication will now exit.",
-                                "License Required",
-                                JOptionPane.ERROR_MESSAGE);
+                                "License Required");
                             System.exit(0);
                         } else {
                             // License activated, restart the splash and continue
@@ -127,9 +126,8 @@ public class KeyBase {
             "3. KeyBase database exists (run the SQL script in config/init_database.sql)\n\n" +
             "Would you like to continue without database connection?";
             
-        int response = JOptionPane.showConfirmDialog(
-            null, message, "Database Connection Error", 
-            JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+        int response = ModernDialog.showConfirm(
+            null, message, "Database Connection Error");
             
         if (response == JOptionPane.YES_OPTION) {
             // Continue with limited functionality

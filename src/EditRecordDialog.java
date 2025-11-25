@@ -45,7 +45,7 @@ public class EditRecordDialog extends JDialog {
         this.duplicator = duplicator;
         this.imagePath = duplicator.getImagePath();
         
-        setSize(1000, 695);
+        setSize(1000, 745);
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout(10, 10));
         
@@ -677,19 +677,16 @@ public class EditRecordDialog extends JDialog {
     
     private void deleteImage() {
         if (imagePath == null || imagePath.trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showInfo(this,
                 "No image to delete.",
-                "Information",
-                JOptionPane.INFORMATION_MESSAGE);
+                "Information");
             return;
         }
         
-        int response = JOptionPane.showConfirmDialog(this,
+        int response = ModernDialog.showConfirm(this,
             "Are you sure you want to delete the captured image?\n" +
             "This action cannot be undone.",
-            "Confirm Image Deletion",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE);
+            "Confirm Image Deletion");
             
         if (response == JOptionPane.YES_OPTION) {
             // Delete the image file
@@ -705,15 +702,13 @@ public class EditRecordDialog extends JDialog {
                         lblImagePreview.setText("Image deleted");
                         updateImageButtonsState();
                         
-                        JOptionPane.showMessageDialog(this,
+                        ModernDialog.showInfo(this,
                             "Image deleted successfully.",
-                            "Success",
-                            JOptionPane.INFORMATION_MESSAGE);
+                            "Success");
                     } else {
-                        JOptionPane.showMessageDialog(this,
+                        ModernDialog.showError(this,
                             "Failed to delete the image file.",
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
+                            "Error");
                     }
                 } else {
                     // File doesn't exist, just clear the path
@@ -722,10 +717,9 @@ public class EditRecordDialog extends JDialog {
                     lblImagePreview.setText("No image");
                     updateImageButtonsState();
                     
-                    JOptionPane.showMessageDialog(this,
+                    ModernDialog.showInfo(this,
                         "Image file not found. Reference cleared.",
-                        "Information",
-                        JOptionPane.INFORMATION_MESSAGE);
+                        "Information");
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this,
@@ -745,12 +739,10 @@ public class EditRecordDialog extends JDialog {
         String newImagePath = captureDialog.getSavedImagePath();
         if (newImagePath == null || newImagePath.trim().isEmpty()) return;
 
-        int confirm = JOptionPane.showConfirmDialog(
+        int confirm = ModernDialog.showConfirm(
             this,
             "Save this new image as a replacement? It will apply only after you click 'Save Changes'.",
-            "Confirm Recapture",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE
+            "Confirm Recapture"
         );
         if (confirm != JOptionPane.YES_OPTION) {
             try { new File(newImagePath).delete(); } catch (Exception ignore) {}
@@ -768,10 +760,9 @@ public class EditRecordDialog extends JDialog {
             lblImagePreview.setText("");
             updateImageButtonsState();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Failed to load staged image: " + ex.getMessage(),
-                "Image Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Image Error");
         }
     }
     
@@ -791,10 +782,9 @@ public class EditRecordDialog extends JDialog {
             lblImagePreview.setText("");
             updateImageButtonsState();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
+            ModernDialog.showError(this,
                 "Failed to load captured image: " + ex.getMessage(),
-                "Image Error",
-                JOptionPane.ERROR_MESSAGE);
+                "Image Error");
         }
     }
 
@@ -818,43 +808,43 @@ public class EditRecordDialog extends JDialog {
         java.util.Set<String> required = AppConfig.getRequiredFields();
         
         if (required.contains("NAME") && txtName.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Name is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Name is required!", "Validation Error");
             txtName.requestFocus();
             return;
         }
         
         if (required.contains("PHONE") && txtPhoneNumber.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Phone number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Phone number is required!", "Validation Error");
             txtPhoneNumber.requestFocus();
             return;
         }
         
         if (required.contains("ID_NO") && txtIdNo.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "ID number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "ID number is required!", "Validation Error");
             txtIdNo.requestFocus();
             return;
         }
         
         if (required.contains("VEHICLE_NO") && txtVehicleNo.isVisible() && txtVehicleNo.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Vehicle number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Vehicle number is required!", "Validation Error");
             txtVehicleNo.requestFocus();
             return;
         }
         
         if (required.contains("KEY_NO") && txtKeyNo.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Key number is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Key number is required!", "Validation Error");
             txtKeyNo.requestFocus();
             return;
         }
         
         if (required.contains("PURPOSE") && "SELECT".equals(cmbKeyFor.getSelectedItem())) {
-            JOptionPane.showMessageDialog(this, "Purpose is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Purpose is required!", "Validation Error");
             cmbKeyFor.requestFocus();
             return;
         }
         
         if (required.contains("REMARKS") && txtRemarks.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Remarks is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            ModernDialog.showError(this, "Remarks is required!", "Validation Error");
             txtRemarks.requestFocus();
             return;
         }
@@ -864,7 +854,7 @@ public class EditRecordDialog extends JDialog {
                 double amt = Double.parseDouble(txtAmount.getText().trim());
                 if (amt < 0) throw new NumberFormatException();
             } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "Valid amount is required!", "Validation Error", JOptionPane.ERROR_MESSAGE);
+                ModernDialog.showError(this, "Valid amount is required!", "Validation Error");
                 txtAmount.requestFocus();
                 return;
             }
@@ -940,10 +930,9 @@ public class EditRecordDialog extends JDialog {
                     pendingImagePath = null; // adopted
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this,
+                ModernDialog.showError(this,
                     "Failed to commit staged image: " + ex.getMessage(),
-                    "Image Commit Error",
-                    JOptionPane.ERROR_MESSAGE);
+                    "Image Commit Error");
             }
         }
 
@@ -953,16 +942,11 @@ public class EditRecordDialog extends JDialog {
         // Save to database
         if (duplicator.update()) {
             saved = true;
-            JOptionPane.showMessageDialog(this, 
-                "Record updated successfully!", 
-                "Success", 
-                JOptionPane.INFORMATION_MESSAGE);
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, 
+            ModernDialog.showError(this, 
                 "Failed to update record!", 
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
+                "Error");
         }
     }
     

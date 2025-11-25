@@ -1,0 +1,13 @@
+/build/
+.dart_tool/
+.packages
+flutter_*.png
+*.iml
+.idea/
+android/
+ios/
+linux/
+macos/
+windows/
+web/
+**/GeneratedPluginRegistrant.dart
