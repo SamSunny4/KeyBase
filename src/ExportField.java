@@ -17,6 +17,7 @@ public enum ExportField {
     PURPOSE("PURPOSE", "Purpose", 18.0, SimpleXlsxExporter.CellType.STRING),
     VEHICLE_NO("VEHICLE_NO", "Vehicle No", 18.0, SimpleXlsxExporter.CellType.STRING),
     DATE("DATE", "Date", 14.0, SimpleXlsxExporter.CellType.STRING),
+    TIME("TIME", "Time", 14.0, SimpleXlsxExporter.CellType.STRING),
     REMARKS("REMARKS", "Remarks", 28.0, SimpleXlsxExporter.CellType.STRING),
     QUANTITY("QUANTITY", "Quantity", 12.0, SimpleXlsxExporter.CellType.NUMBER),
     AMOUNT("AMOUNT", "Amount", 14.0, SimpleXlsxExporter.CellType.NUMBER);

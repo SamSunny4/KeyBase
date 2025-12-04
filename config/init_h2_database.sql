@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS duplicator (
     key_type VARCHAR(50),
     purpose VARCHAR(50),
     date_added DATE,
+    time_added TIME,
     remarks VARCHAR(500),
     quantity INT DEFAULT 1,
     amount DECIMAL(10, 2) DEFAULT 0.00,

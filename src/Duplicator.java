@@ -13,6 +13,7 @@ public class Duplicator {
     private String keyType;
     private String purpose;
     private Date dateAdded;
+    private java.sql.Time timeAdded;
     private String remarks;
     private int quantity;
     private double amount;
@@ -24,7 +25,7 @@ public class Duplicator {
 
     // Constructor with all fields except ID (which is auto-incremented)
     public Duplicator(String name, String phoneNumber, String idNo, String vehicleNo,
-                      String keyNo, String keyType, String purpose, Date dateAdded, String remarks, 
+                      String keyNo, String keyType, String purpose, Date dateAdded, java.sql.Time timeAdded, String remarks, 
                       int quantity, double amount, String imagePath) {
         this.name = name;
         this.phoneNumber = phoneNumber;
@@ -34,6 +35,7 @@ public class Duplicator {
         this.keyType = keyType;
         this.purpose = purpose;
         this.dateAdded = dateAdded;
+        this.timeAdded = timeAdded;
         this.remarks = remarks;
         this.quantity = quantity;
         this.amount = amount;
@@ -120,7 +122,15 @@ public class Duplicator {
     public void setDateAdded(Date dateAdded) {
         this.dateAdded = dateAdded;
     }
-    
+
+    public java.sql.Time getTimeAdded() {
+        return timeAdded;
+    }
+
+    public void setTimeAdded(java.sql.Time timeAdded) {
+        this.timeAdded = timeAdded;
+    }
+
     public String getRemarks() {
         return remarks;
     }
@@ -147,8 +157,17 @@ public class Duplicator {
 
     // Save to database
     public boolean save() {
-        String sql = "INSERT INTO duplicator (name, phone_number, id_no, vehicle_no, key_no, key_type, purpose, date_added, remarks, quantity, amount, image_path) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Check if time_added column exists
+        boolean hasTimeColumn = checkTimeColumnExists();
+        
+        String sql;
+        if (hasTimeColumn) {
+            sql = "INSERT INTO duplicator (name, phone_number, id_no, vehicle_no, key_no, key_type, purpose, date_added, time_added, remarks, quantity, amount, image_path) " +
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        } else {
+            sql = "INSERT INTO duplicator (name, phone_number, id_no, vehicle_no, key_no, key_type, purpose, date_added, remarks, quantity, amount, image_path) " +
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        }
                      
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -192,19 +211,38 @@ public class Duplicator {
                 pstmt.setNull(8, java.sql.Types.DATE);
             }
             
-            if (remarks == null || remarks.trim().isEmpty()) {
-                pstmt.setNull(9, java.sql.Types.VARCHAR);
+            int remarkIndex, quantityIndex, amountIndex, imageIndex;
+            
+            if (hasTimeColumn) {
+                if (timeAdded != null) {
+                    pstmt.setTime(9, timeAdded);
+                } else {
+                    pstmt.setNull(9, java.sql.Types.TIME);
+                }
+                remarkIndex = 10;
+                quantityIndex = 11;
+                amountIndex = 12;
+                imageIndex = 13;
             } else {
-                pstmt.setString(9, remarks);
+                remarkIndex = 9;
+                quantityIndex = 10;
+                amountIndex = 11;
+                imageIndex = 12;
             }
             
-            pstmt.setInt(10, quantity);
-            pstmt.setDouble(11, amount);
+            if (remarks == null || remarks.trim().isEmpty()) {
+                pstmt.setNull(remarkIndex, java.sql.Types.VARCHAR);
+            } else {
+                pstmt.setString(remarkIndex, remarks);
+            }
+            
+            pstmt.setInt(quantityIndex, quantity);
+            pstmt.setDouble(amountIndex, amount);
             
             if (imagePath == null || imagePath.trim().isEmpty()) {
-                pstmt.setNull(12, java.sql.Types.VARCHAR);
+                pstmt.setNull(imageIndex, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setString(12, imagePath);
+                pstmt.setString(imageIndex, imagePath);
             }
             
             int affectedRows = pstmt.executeUpdate();
@@ -249,6 +287,15 @@ public class Duplicator {
                 duplicator.setKeyType(rs.getString("key_type"));
                 duplicator.setPurpose(rs.getString("purpose"));
                 duplicator.setDateAdded(rs.getDate("date_added"));
+                
+                // Try to get time_added, set to null if column doesn't exist
+                try {
+                    duplicator.setTimeAdded(rs.getTime("time_added"));
+                } catch (SQLException timeEx) {
+                    // Column doesn't exist yet, leave as null
+                    duplicator.setTimeAdded(null);
+                }
+                
                 duplicator.setRemarks(rs.getString("remarks"));
                 duplicator.setQuantity(rs.getInt("quantity"));
                 duplicator.setAmount(rs.getDouble("amount"));
@@ -267,9 +314,19 @@ public class Duplicator {
     
     // Update existing record
     public boolean update() {
-        String sql = "UPDATE duplicator SET name = ?, phone_number = ?, id_no = ?, vehicle_no = ?, key_no = ?, " +
-                     "key_type = ?, purpose = ?, date_added = ?, remarks = ?, quantity = ?, amount = ?, image_path = ? " +
-                     "WHERE duplicator_id = ?";
+        // First check if time_added column exists
+        boolean hasTimeColumn = checkTimeColumnExists();
+        
+        String sql;
+        if (hasTimeColumn) {
+            sql = "UPDATE duplicator SET name = ?, phone_number = ?, id_no = ?, vehicle_no = ?, key_no = ?, " +
+                  "key_type = ?, purpose = ?, date_added = ?, time_added = ?, remarks = ?, quantity = ?, amount = ?, image_path = ? " +
+                  "WHERE duplicator_id = ?";
+        } else {
+            sql = "UPDATE duplicator SET name = ?, phone_number = ?, id_no = ?, vehicle_no = ?, key_no = ?, " +
+                  "key_type = ?, purpose = ?, date_added = ?, remarks = ?, quantity = ?, amount = ?, image_path = ? " +
+                  "WHERE duplicator_id = ?";
+        }
                      
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -313,22 +370,43 @@ public class Duplicator {
                 pstmt.setNull(8, java.sql.Types.DATE);
             }
             
-            if (remarks == null || remarks.trim().isEmpty()) {
-                pstmt.setNull(9, java.sql.Types.VARCHAR);
+            int remarkIndex, quantityIndex, amountIndex, imageIndex, idIndex;
+            
+            if (hasTimeColumn) {
+                if (timeAdded != null) {
+                    pstmt.setTime(9, timeAdded);
+                } else {
+                    pstmt.setNull(9, java.sql.Types.TIME);
+                }
+                remarkIndex = 10;
+                quantityIndex = 11;
+                amountIndex = 12;
+                imageIndex = 13;
+                idIndex = 14;
             } else {
-                pstmt.setString(9, remarks);
+                remarkIndex = 9;
+                quantityIndex = 10;
+                amountIndex = 11;
+                imageIndex = 12;
+                idIndex = 13;
             }
             
-            pstmt.setInt(10, quantity);
-            pstmt.setDouble(11, amount);
+            if (remarks == null || remarks.trim().isEmpty()) {
+                pstmt.setNull(remarkIndex, java.sql.Types.VARCHAR);
+            } else {
+                pstmt.setString(remarkIndex, remarks);
+            }
+            
+            pstmt.setInt(quantityIndex, quantity);
+            pstmt.setDouble(amountIndex, amount);
             
             if (imagePath == null || imagePath.trim().isEmpty()) {
-                pstmt.setNull(12, java.sql.Types.VARCHAR);
+                pstmt.setNull(imageIndex, java.sql.Types.VARCHAR);
             } else {
-                pstmt.setString(12, imagePath);
+                pstmt.setString(imageIndex, imagePath);
             }
             
-            pstmt.setInt(13, duplicatorId);
+            pstmt.setInt(idIndex, duplicatorId);
             
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
@@ -408,5 +486,17 @@ public class Duplicator {
         }
         
         return 0;
+    }
+    
+    // Helper method to check if time_added column exists
+    private static boolean checkTimeColumnExists() {
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement("SELECT time_added FROM duplicator WHERE 1=0")) {
+            pstmt.executeQuery();
+            return true;
+        } catch (SQLException e) {
+            // Column doesn't exist
+            return false;
+        }
     }
 }

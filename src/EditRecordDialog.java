@@ -888,6 +888,11 @@ public class EditRecordDialog extends JDialog {
             selectedDate = new Date();
         }
         duplicator.setDateAdded(selectedDate);
+        
+        // Set current time when updating
+        java.sql.Time currentTime = new java.sql.Time(System.currentTimeMillis());
+        duplicator.setTimeAdded(currentTime);
+        
         duplicator.setQuantity((Integer) spnQuantity.getValue());
         
         try {

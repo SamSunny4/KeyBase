@@ -352,6 +352,11 @@ public class MainForm extends JFrame {
                         ? dateFormat.format(d.getDateAdded()) : "N/A";
                     writer.append("Date Added,").append(dateStr).append("\n");
                     
+                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                    String timeStr = (d.getTimeAdded() != null) 
+                        ? timeFormat.format(d.getTimeAdded()) : "Not Available";
+                    writer.append("Time Added,").append(timeStr).append("\n");
+                    
                     writer.append("Quantity,").append(String.valueOf(d.getQuantity())).append("\n");
                     writer.append("Amount,").append(String.format("%.2f", d.getAmount())).append("\n");
                     
@@ -1216,8 +1221,6 @@ public class MainForm extends JFrame {
         
         // Add visual feedback on click (opacity change)
         btnRefresh.addMouseListener(new MouseAdapter() {
-            private float originalOpacity = 1.0f;
-            
             @Override
             public void mousePressed(MouseEvent e) {
                 btnRefresh.setContentAreaFilled(true);
@@ -1633,6 +1636,9 @@ public class MainForm extends JFrame {
             currentDate = new Date(); // Use current date as fallback
         }
         
+        // Get current time
+        java.sql.Time currentTime = new java.sql.Time(System.currentTimeMillis());
+        
         // Parse quantity and amount
         int quantity = 1;
         double amount = 0.00;
@@ -1675,6 +1681,7 @@ public class MainForm extends JFrame {
             (String) cmbVehicleType.getSelectedItem(),
             (String) cmbKeyType.getSelectedItem(),
             currentDate,
+            currentTime,
             remarks,
             quantity,
             amount,
@@ -2058,7 +2065,7 @@ public class MainForm extends JFrame {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
 
             String sql =
-                "SELECT duplicator_id, name, phone_number, id_no, key_no, key_type, purpose, vehicle_no, date_added, remarks, quantity, amount " +
+                "SELECT duplicator_id, name, phone_number, id_no, key_no, key_type, purpose, vehicle_no, date_added, time_added, remarks, quantity, amount " +
                 "FROM duplicator WHERE date_added BETWEEN ? AND ? ORDER BY duplicator_id DESC";
             try (Connection conn = DatabaseConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -2079,6 +2086,14 @@ public class MainForm extends JFrame {
                         String vehicleNo = blankIfNull(rs.getString("vehicle_no"));
                         java.sql.Date dateAdded = rs.getDate("date_added");
                         String dateStr = dateAdded != null ? dateFormat.format(dateAdded) : "";
+                        java.sql.Time timeAdded = null;
+                        try {
+                            timeAdded = rs.getTime("time_added");
+                        } catch (SQLException timeEx) {
+                            // Column might not exist in older databases
+                        }
+                        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                        String timeStr = timeAdded != null ? timeFormat.format(timeAdded) : "";
                         String remarks = blankIfNull(rs.getString("remarks"));
                         int quantity = rs.getInt("quantity");
                         BigDecimal amount = BigDecimal.valueOf(rs.getDouble("amount")).setScale(2, RoundingMode.HALF_UP);
@@ -2095,6 +2110,7 @@ public class MainForm extends JFrame {
                                 case PURPOSE -> row.add(purpose);
                                 case VEHICLE_NO -> row.add(vehicleNo);
                                 case DATE -> row.add(dateStr);
+                                case TIME -> row.add(timeStr);
                                 case REMARKS -> row.add(remarks);
                                 case QUANTITY -> row.add(quantity);
                                 case AMOUNT -> row.add(amount);

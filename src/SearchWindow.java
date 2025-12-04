@@ -325,11 +325,11 @@ public class SearchWindow extends JFrame {
         splitPane.setContinuousLayout(true);
         
         // Table for results
-    String[] columnNames = {"SN", "Name", "Phone", "Vehicle No", "Key No/Model", "Key Type", "Purpose", "ID No", "Date", "Remarks", "Quantity", "Amount"};
+    String[] columnNames = {"SN", "Name", "Phone", "Vehicle No", "Key No/Model", "Key Type", "Purpose", "ID No", "Date", "Time", "Remarks", "Quantity", "Amount"};
         tableModel = new DefaultTableModel(columnNames, 0) {
             private final Class<?>[] columnTypes = new Class<?>[] {
                 Integer.class, String.class, String.class, String.class, String.class, String.class,
-                String.class, String.class, String.class, String.class, Integer.class, String.class
+                String.class, String.class, String.class, String.class, String.class, Integer.class, String.class
             };
 
             @Override
@@ -662,6 +662,15 @@ public class SearchWindow extends JFrame {
                 java.sql.Date dateAdded = rs.getDate("date_added");
                 String dateStr = (dateAdded != null) ? dateFormat.format(dateAdded) : "";
                 
+                java.sql.Time timeAdded = null;
+                try {
+                    timeAdded = rs.getTime("time_added");
+                } catch (SQLException timeEx) {
+                    // Column might not exist in older databases
+                }
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                String timeStr = (timeAdded != null) ? timeFormat.format(timeAdded) : "";
+                
                 String keyType = rs.getString("key_type");
                 // Category removed from table view
                 
@@ -675,6 +684,7 @@ public class SearchWindow extends JFrame {
                     rs.getString("purpose"),
                     rs.getString("id_no"),
                     dateStr,
+                    timeStr,
                     rs.getString("remarks"),
                     rs.getInt("quantity"),
                     String.format("%.2f", rs.getDouble("amount"))
@@ -878,10 +888,11 @@ public class SearchWindow extends JFrame {
             case KEY_TYPE -> safeString(tableModel.getValueAt(modelRow, 5));
             case PURPOSE -> safeString(tableModel.getValueAt(modelRow, 6));
             case DATE -> safeString(tableModel.getValueAt(modelRow, 8));
+            case TIME -> safeString(tableModel.getValueAt(modelRow, 9));
             case ID_NO -> safeString(tableModel.getValueAt(modelRow, 7));
-            case REMARKS -> safeString(tableModel.getValueAt(modelRow, 9));
+            case REMARKS -> safeString(tableModel.getValueAt(modelRow, 10));
             case QUANTITY -> {
-                Object value = tableModel.getValueAt(modelRow, 10);
+                Object value = tableModel.getValueAt(modelRow, 11);
                 if (value instanceof Number number) {
                     yield number.intValue();
                 }
@@ -895,7 +906,7 @@ public class SearchWindow extends JFrame {
                 yield 0;
             }
             case AMOUNT -> {
-                Object value = tableModel.getValueAt(modelRow, 11);
+                Object value = tableModel.getValueAt(modelRow, 12);
                 yield toAmount(value);
             }
         };
@@ -986,6 +997,11 @@ public class SearchWindow extends JFrame {
                     String dateStr = (d.getDateAdded() != null) 
                         ? dateFormat.format(d.getDateAdded()) : "N/A";
                     writer.append("Date Added,").append(dateStr).append("\n");
+                    
+                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                    String timeStr = (d.getTimeAdded() != null) 
+                        ? timeFormat.format(d.getTimeAdded()) : "Not Available";
+                    writer.append("Time Added,").append(timeStr).append("\n");
                     
                     writer.append("Quantity,").append(String.valueOf(d.getQuantity())).append("\n");
                     writer.append("Amount,").append(String.format("%.2f", d.getAmount())).append("\n");

@@ -105,6 +105,12 @@ public class RecordDetailsDialog extends JDialog implements Printable {
             ? dateFormat.format(duplicator.getDateAdded()) : "N/A";
         addDetailRow(detailsPanel, gbc, row++, "Date Added:", dateStr);
         
+        // Time
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
+        String timeStr = (duplicator.getTimeAdded() != null) 
+            ? timeFormat.format(duplicator.getTimeAdded()) : "Not Available";
+        addDetailRow(detailsPanel, gbc, row++, "Time Added:", timeStr);
+        
         // Quantity
         addDetailRow(detailsPanel, gbc, row++, "Quantity:", String.valueOf(duplicator.getQuantity()));
         
@@ -387,6 +393,15 @@ public class RecordDetailsDialog extends JDialog implements Printable {
         y += lineHeight;
         
         g2d.setFont(labelFont);
+        g2d.drawString("Time Added:", labelX, y);
+        g2d.setFont(valueFont);
+        SimpleDateFormat timeFormat = new SimpleDateFormat("hh:mm:ss a");
+        String timeStr = (duplicator.getTimeAdded() != null) 
+            ? timeFormat.format(duplicator.getTimeAdded()) : "Not Available";
+        g2d.drawString(timeStr, valueX, y);
+        y += lineHeight;
+        
+        g2d.setFont(labelFont);
         g2d.drawString("Quantity:", labelX, y);
         g2d.setFont(valueFont);
         g2d.drawString(String.valueOf(duplicator.getQuantity()), valueX, y);
@@ -471,6 +486,10 @@ public class RecordDetailsDialog extends JDialog implements Printable {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String dateStr = (duplicator.getDateAdded() != null) ? dateFormat.format(duplicator.getDateAdded()) : "N/A";
                 rows.add(Arrays.asList("Date Added", dateStr));
+                
+                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+                String timeStr = (duplicator.getTimeAdded() != null) ? timeFormat.format(duplicator.getTimeAdded()) : "Not Available";
+                rows.add(Arrays.asList("Time Added", timeStr));
 
                 rows.add(Arrays.asList("Quantity", duplicator.getQuantity()));
                 rows.add(Arrays.asList("Amount", String.format("%.2f", duplicator.getAmount())));

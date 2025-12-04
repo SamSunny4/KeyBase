@@ -119,6 +119,14 @@ public class DatabaseInitializer {
                 System.out.println("Could not add purpose column: " + e.getMessage());
             }
             
+            // Try to add time_added column if it doesn't exist (for existing databases)
+            try {
+                stmt.execute("ALTER TABLE duplicator ADD COLUMN IF NOT EXISTS time_added TIME");
+                System.out.println("Added time_added column to duplicator table (if it didn't exist).");
+            } catch (Exception e) {
+                System.out.println("Could not add time_added column: " + e.getMessage());
+            }
+            
             // After creating tables, optionally look for sample data script and execute it
             // Try multiple possible locations for the sample data file
             String[] samplePaths = {
