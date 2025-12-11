@@ -5,14 +5,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import javax.swing.*;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 public class KeyBase {
     public static void main(String[] args) {
@@ -79,6 +82,17 @@ public class KeyBase {
                     splash.close();
                     showDatabaseConnectionError(e);
                     return;
+                }
+                
+                // Initialize/update database schema
+                splash.updateStatus("Initializing database schema...");
+                Thread.sleep(300);
+                try {
+                    DatabaseInitializer.initializeDatabase();
+                    System.out.println("Database schema initialization completed.");
+                } catch (Exception e) {
+                    System.err.println("Warning: Database initialization failed: " + e.getMessage());
+                    // Continue anyway - database might already be initialized
                 }
                 
                 // Start the main application
