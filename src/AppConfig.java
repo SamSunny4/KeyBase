@@ -1,7 +1,15 @@
 package src;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.Set;
 
 public class AppConfig {
     private static final String CONFIG_FILE = "config/app.properties";
@@ -11,6 +19,7 @@ public class AppConfig {
     private static final String EXPORT_FIELDS_KEY = "export.fields";
     private static final String CUSTOM_DB_PATH_KEY = "database.customPath";
     private static final String REQUIRED_FIELDS_KEY = "form.requiredFields";
+    private static final String BACKUP_DIRECTORY_KEY = "backup.directory";
     
     // Key Catalog Keys
     private static final String KEY_CATEGORIES = "key.categories";
@@ -73,6 +82,8 @@ public class AppConfig {
         properties.setProperty(EXPORT_FIELDS_KEY, String.join(",", ExportField.defaultKeys()));
         properties.setProperty(CUSTOM_DB_PATH_KEY, "");
         properties.setProperty(REQUIRED_FIELDS_KEY, "NAME,PHONE,ID_NO");
+        properties.setProperty(BACKUP_DIRECTORY_KEY, defaultBackupDirectory());
+        new File(properties.getProperty(BACKUP_DIRECTORY_KEY)).mkdirs();
 
         // Default Key Catalog
         if (!properties.containsKey(KEY_CATEGORIES)) {
@@ -129,6 +140,19 @@ public class AppConfig {
             properties.setProperty(REQUIRED_FIELDS_KEY, "NAME,PHONE,ID_NO");
             changed = true;
         }
+
+        if (!properties.containsKey(BACKUP_DIRECTORY_KEY)) {
+            properties.setProperty(BACKUP_DIRECTORY_KEY, defaultBackupDirectory());
+            changed = true;
+        }
+
+        String backupDir = properties.getProperty(BACKUP_DIRECTORY_KEY, "").trim();
+        if (backupDir.isEmpty()) {
+            backupDir = defaultBackupDirectory();
+            properties.setProperty(BACKUP_DIRECTORY_KEY, backupDir);
+            changed = true;
+        }
+        new File(backupDir).mkdirs();
 
         // Ensure Key Catalog defaults
         if (!properties.containsKey(KEY_CATEGORIES)) {
@@ -409,6 +433,40 @@ public class AppConfig {
             return false;
         }
         return getRequiredFields().contains(fieldName.trim().toUpperCase(Locale.ROOT));
+    }
+
+    public static String getBackupDirectory() {
+        String configured = properties.getProperty(BACKUP_DIRECTORY_KEY, "").trim();
+        if (configured.isEmpty()) {
+            configured = defaultBackupDirectory();
+            properties.setProperty(BACKUP_DIRECTORY_KEY, configured);
+            saveProperties();
+        }
+
+        File dir = new File(configured);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        return dir.getAbsolutePath();
+    }
+
+    public static void setBackupDirectory(String directory) {
+        String target;
+        if (directory == null || directory.trim().isEmpty()) {
+            target = defaultBackupDirectory();
+        } else {
+            target = new File(directory.trim()).getAbsolutePath();
+        }
+
+        properties.setProperty(BACKUP_DIRECTORY_KEY, target);
+        new File(target).mkdirs();
+        saveProperties();
+    }
+
+    private static String defaultBackupDirectory() {
+        String userHome = System.getProperty("user.home", ".");
+        return userHome + File.separator + "KeyBase" + File.separator + "backups";
     }
 
     private static void saveProperties() {

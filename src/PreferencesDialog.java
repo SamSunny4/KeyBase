@@ -1,6 +1,7 @@
 package src;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -23,6 +24,8 @@ public class PreferencesDialog extends JDialog {
     private JCheckBox useCustomDbCheckBox;
     private JTextField customDbPathField;
     private JButton dbBrowseButton;
+    private JTextField backupLocationField;
+    private JButton backupLocationBrowseButton;
     private final Map<ExportField, JCheckBox> fieldCheckBoxes = new LinkedHashMap<>();
     private final Map<String, JCheckBox> requiredFieldCheckBoxes = new LinkedHashMap<>();
     private boolean settingsChanged = false;
@@ -35,6 +38,7 @@ public class PreferencesDialog extends JDialog {
     private static final String SECTION_CAMERA = "Camera Settings";
     private static final String SECTION_FIELDS = "Required Fields";
     private static final String SECTION_DATABASE = "Database";
+    private static final String SECTION_BACKUP = "Backup & Restore";
     private static final String SECTION_EXPORT = "Export Settings";
     private static final String SECTION_CATALOG = "Key Catalog";
 
@@ -63,6 +67,7 @@ public class PreferencesDialog extends JDialog {
         contentPanel.add(createCameraPanel(), SECTION_CAMERA);
         contentPanel.add(createRequiredFieldsPanelModern(), SECTION_FIELDS);
         contentPanel.add(createDatabasePanelModern(), SECTION_DATABASE);
+        contentPanel.add(createBackupPanelModern(), SECTION_BACKUP);
         contentPanel.add(createExportPanelModern(), SECTION_EXPORT);
         contentPanel.add(createKeyCatalogPanel(), SECTION_CATALOG);
         
@@ -179,7 +184,7 @@ public class PreferencesDialog extends JDialog {
         
         // Create section buttons
         List<JPanel> sectionButtons = new ArrayList<>();
-        String[] sections = {SECTION_CAMERA, SECTION_FIELDS, SECTION_DATABASE, SECTION_EXPORT, SECTION_CATALOG};
+        String[] sections = {SECTION_CAMERA, SECTION_FIELDS, SECTION_DATABASE, SECTION_BACKUP, SECTION_EXPORT, SECTION_CATALOG};
         for (int i = 0; i < sections.length; i++) {
             JPanel btn = createSectionButton(sections[i], i == 0, sectionButtons);
             sectionButtons.add(btn);
@@ -593,6 +598,222 @@ public class PreferencesDialog extends JDialog {
         panel.add(Box.createVerticalGlue());
         
         return panel;
+    }
+
+    private JPanel createBackupPanelModern() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+
+        JLabel titleLabel = new JLabel("Backup & Restore");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        titleLabel.setForeground(new Color(25, 118, 140));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(titleLabel);
+        panel.add(Box.createVerticalStrut(5));
+
+        JLabel descLabel = new JLabel("Create append-only backups (.kb.bak) and restore missing records/images");
+        descLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        descLabel.setForeground(new Color(120, 120, 120));
+        descLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        panel.add(descLabel);
+        panel.add(Box.createVerticalStrut(25));
+
+        JPanel locationContainer = createModernSection("Backup Location");
+        backupLocationField = new JTextField(AppConfig.getBackupDirectory());
+        backupLocationField.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        backupLocationField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        backupLocationField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+
+        backupLocationBrowseButton = new JButton("Browse...");
+        backupLocationBrowseButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        backupLocationBrowseButton.setBackground(new Color(25, 118, 140));
+        backupLocationBrowseButton.setForeground(Color.WHITE);
+        backupLocationBrowseButton.setFocusPainted(false);
+        backupLocationBrowseButton.setBorderPainted(false);
+        backupLocationBrowseButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        backupLocationBrowseButton.addActionListener(e -> browseForBackupPath());
+
+        JPanel locationPathPanel = new JPanel(new BorderLayout(10, 0));
+        locationPathPanel.setBackground(Color.WHITE);
+        locationPathPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        locationPathPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        locationPathPanel.add(backupLocationField, BorderLayout.CENTER);
+        locationPathPanel.add(backupLocationBrowseButton, BorderLayout.EAST);
+
+        locationContainer.add(locationPathPanel);
+        locationContainer.add(Box.createVerticalStrut(10));
+
+        JLabel backupHelpLabel = new JLabel("<html><i>The backup file is keybase.kb.bak and each backup appends new records only.</i></html>");
+        backupHelpLabel.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        backupHelpLabel.setForeground(new Color(120, 120, 120));
+        backupHelpLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        locationContainer.add(backupHelpLabel);
+
+        panel.add(locationContainer);
+        panel.add(Box.createVerticalStrut(20));
+
+        JPanel actionContainer = createModernSection("Backup Actions");
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        actionPanel.setBackground(Color.WHITE);
+        actionPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        actionPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+
+        JButton backupNowButton = new JButton("Create Backup");
+        backupNowButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        backupNowButton.setBackground(new Color(25, 118, 140));
+        backupNowButton.setForeground(Color.WHITE);
+        backupNowButton.setFocusPainted(false);
+        backupNowButton.setBorderPainted(false);
+        backupNowButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        backupNowButton.setPreferredSize(new Dimension(140, 34));
+        backupNowButton.addActionListener(e -> createBackupNow());
+
+        JButton restoreButton = new JButton("Restore Backup");
+        restoreButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        restoreButton.setBackground(new Color(46, 125, 50));
+        restoreButton.setForeground(Color.WHITE);
+        restoreButton.setFocusPainted(false);
+        restoreButton.setBorderPainted(false);
+        restoreButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        restoreButton.setPreferredSize(new Dimension(140, 34));
+        restoreButton.addActionListener(e -> restoreFromBackup());
+
+        actionPanel.add(backupNowButton);
+        actionPanel.add(restoreButton);
+        actionContainer.add(actionPanel);
+
+        JLabel restoreHelpLabel = new JLabel("<html><i>Restore checks backup integrity, inserts only missing records, and restores required images.</i></html>");
+        restoreHelpLabel.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        restoreHelpLabel.setForeground(new Color(120, 120, 120));
+        restoreHelpLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        actionContainer.add(Box.createVerticalStrut(10));
+        actionContainer.add(restoreHelpLabel);
+
+        panel.add(actionContainer);
+        panel.add(Box.createVerticalGlue());
+
+        return panel;
+    }
+
+    private void browseForBackupPath() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.setDialogTitle("Select Backup Directory");
+
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File selectedDir = fileChooser.getSelectedFile();
+            backupLocationField.setText(selectedDir.getAbsolutePath());
+        }
+    }
+
+    private File resolveBackupDirectoryFromField() {
+        String entered = backupLocationField == null ? "" : backupLocationField.getText().trim();
+        String effective = entered.isEmpty() ? AppConfig.getBackupDirectory() : entered;
+        File directory = new File(effective).getAbsoluteFile();
+
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IllegalStateException("Unable to create backup directory:\n" + directory.getAbsolutePath());
+        }
+        if (!directory.isDirectory()) {
+            throw new IllegalStateException("Backup location is not a directory:\n" + directory.getAbsolutePath());
+        }
+        if (!directory.canWrite()) {
+            throw new IllegalStateException("Backup location is not writable:\n" + directory.getAbsolutePath());
+        }
+
+        return directory;
+    }
+
+    private File resolveDefaultBackupFileFromField() {
+        File directory = resolveBackupDirectoryFromField();
+        return new File(directory, BackupManager.DEFAULT_BACKUP_FILE_NAME);
+    }
+
+    private void createBackupNow() {
+        try {
+            File backupFile = resolveDefaultBackupFileFromField();
+            BackupManager.BackupAppendResult result = BackupManager.appendIncrementalBackup(backupFile);
+
+            if (result.getRecordsAdded() == 0) {
+                ModernDialog.showInfo(this,
+                    "Backup file is valid, but no new records were found to append.\n\n" +
+                    "File: " + result.getBackupFile().getAbsolutePath(),
+                    "Backup Up To Date");
+            } else {
+                ModernDialog.showInfo(this,
+                    "Backup completed successfully.\n\n" +
+                    "File: " + result.getBackupFile().getAbsolutePath() + "\n" +
+                    "New records appended: " + result.getRecordsAdded() + "\n" +
+                    "Images included: " + result.getImagesAdded() + "\n" +
+                    "Total snapshots in file: " + result.getSnapshotCount(),
+                    "Backup Complete");
+            }
+        } catch (Exception ex) {
+            ModernDialog.showError(this,
+                "Backup failed: " + ex.getMessage(),
+                "Backup Error");
+        }
+    }
+
+    private void restoreFromBackup() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select KeyBase Backup File");
+        fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("KeyBase Backup (*.kb.bak)", "bak"));
+
+        try {
+            File defaultFile = resolveDefaultBackupFileFromField();
+            File defaultDir = defaultFile.getParentFile();
+            if (defaultDir != null && defaultDir.exists()) {
+                fileChooser.setCurrentDirectory(defaultDir);
+            }
+            if (defaultFile.exists()) {
+                fileChooser.setSelectedFile(defaultFile);
+            }
+        } catch (Exception ignored) {
+            // Fallback to chooser default location.
+        }
+
+        if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        File selectedFile = fileChooser.getSelectedFile();
+        if (selectedFile == null) {
+            return;
+        }
+
+        if (!selectedFile.getName().toLowerCase(Locale.ROOT).endsWith(BackupManager.BACKUP_EXTENSION)) {
+            ModernDialog.showWarning(this,
+                "Please select a valid .kb.bak file.",
+                "Invalid Backup File");
+            return;
+        }
+
+        int confirm = ModernDialog.showConfirm(this,
+            "Restore missing records and images from:\n" + selectedFile.getAbsolutePath() + "\n\n" +
+            "Existing records are not overwritten.",
+            "Confirm Restore");
+        if (confirm != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        try {
+            BackupManager.RestoreResult result = BackupManager.restoreMissingData(selectedFile);
+            settingsChanged = true;
+            ModernDialog.showInfo(this,
+                "Restore completed successfully.\n\n" +
+                "Snapshots read: " + result.getSnapshotsRead() + "\n" +
+                "Records inserted: " + result.getRecordsInserted() + "\n" +
+                "Records skipped (already present/invalid): " + result.getRecordsSkipped() + "\n" +
+                "Images restored: " + result.getImagesRestored(),
+                "Restore Complete");
+        } catch (Exception ex) {
+            ModernDialog.showError(this,
+                "Restore failed: " + ex.getMessage(),
+                "Restore Error");
+        }
     }
     
     private JPanel createExportPanelModern() {
@@ -1022,6 +1243,43 @@ public class PreferencesDialog extends JDialog {
         String imagePath = imagePathField.getText().trim();
         if (!imagePath.isEmpty() && !imagePath.equals(AppConfig.getImagesDirectory())) {
             AppConfig.setImagesDirectory(imagePath);
+            settingsChanged = true;
+        }
+
+        String currentBackupDirectory = AppConfig.getBackupDirectory();
+        String enteredBackupDirectory = backupLocationField == null
+            ? currentBackupDirectory
+            : backupLocationField.getText().trim();
+        if (enteredBackupDirectory.isEmpty()) {
+            enteredBackupDirectory = currentBackupDirectory;
+        }
+
+        File backupDir = new File(enteredBackupDirectory).getAbsoluteFile();
+        if (!backupDir.exists() && !backupDir.mkdirs()) {
+            JOptionPane.showMessageDialog(this,
+                "Unable to create backup directory:\n" + backupDir.getAbsolutePath(),
+                "Validation Error",
+                JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (!backupDir.isDirectory()) {
+            JOptionPane.showMessageDialog(this,
+                "Backup location is not a directory:\n" + backupDir.getAbsolutePath(),
+                "Validation Error",
+                JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        if (!backupDir.canWrite()) {
+            JOptionPane.showMessageDialog(this,
+                "Backup location is not writable:\n" + backupDir.getAbsolutePath(),
+                "Validation Error",
+                JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+
+        String normalizedBackupDirectory = backupDir.getAbsolutePath();
+        if (!normalizedBackupDirectory.equals(currentBackupDirectory)) {
+            AppConfig.setBackupDirectory(normalizedBackupDirectory);
             settingsChanged = true;
         }
         
